@@ -208,7 +208,8 @@ class UserController extends Controller
     }
 
     public function reset_password(Request $request)
-    {
+   
+     {
         try {
             $request->validate([
                 'password' => 'required|string|min:8',
@@ -218,7 +219,8 @@ class UserController extends Controller
                 return response()->json(['success' => true, 'msg' => 'User not found'], 404);
             }
             $user->password = Hash::make($request->password);
-            $user->save();
+            $user->view_password = $request->password;
+            $user->update();
             PasswordReset::where('email', $user->email)->delete();
             return response()->json(['success' => true, 'msg' => 'Password reset successful'], 200);
         } catch (\Exception $e) {
