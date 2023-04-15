@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Models\User;
 use App\Models\Business;
-use App\Models\BankDetails;
+use App\Models\ChefDetail;
 use App\Models\CoFounder;
 use App\Models\About;
 use App\Models\Contact;
@@ -49,6 +49,12 @@ class UserController extends Controller
                 $user->view_password = $request->password;
                 $data = $user->save();
 
+                if ($request->role == 'chef') {
+                    $detail = new ChefDetail();
+                    $detail->user_id = $user->id;
+                    $detail->save();
+                }
+
 
                 $token = JWTAuth::fromUser($user);
 
@@ -58,14 +64,14 @@ class UserController extends Controller
                 $email_token = Str::random(64);
 
                 UserVerify::create([
-                  'user_id' => $user->id, 
-                  'token' => $email_token
+                    'user_id' => $user->id,
+                    'token' => $email_token
                 ]);
-  
-                Mail::send('emails.emailVerificationEmail', ['token' => $email_token,'user_id' => $user->id ], function($message) use($request){
-                      $message->to($request->email);
-                      $message->subject('Email Verification Mail');
-                  });
+
+                Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
+                    $message->to($request->email);
+                    $message->subject('Email Verification Mail');
+                });
 
                 return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $user, 'token' => $token]], 200);
             }
@@ -74,7 +80,7 @@ class UserController extends Controller
         }
     }
 
-   
+
 
     public function user_login(Request $request)
     {
@@ -103,7 +109,7 @@ class UserController extends Controller
                 ]);
             }
 
-             $credentials = $request->only(['email', 'password']);
+            $credentials = $request->only(['email', 'password']);
 
             if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json([
@@ -128,7 +134,6 @@ class UserController extends Controller
                     'type' => 'bearer',
                 ]
             ]);
-            
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -208,8 +213,8 @@ class UserController extends Controller
     }
 
     public function reset_password(Request $request)
-   
-     {
+
+    {
         try {
             $request->validate([
                 'password' => 'required|string|min:8',
@@ -231,33 +236,29 @@ class UserController extends Controller
     public function check_user_email_verfication(Request $request)
     {
         try {
-            
+
             $id = $request->id;
             $token = $request->token;
 
-            $check = UserVerify::where('user_id',$id)->where('token',$token)->count();
+            $check = UserVerify::where('user_id', $id)->where('token', $token)->count();
 
-            if($check > 0){
+            if ($check > 0) {
 
                 $user = User::where('id', $id)->update([
 
-                     'email_verified' => 1,
-                     'email_verified_at' => Carbon::now(),
+                    'email_verified' => 1,
+                    'email_verified_at' => Carbon::now(),
                 ]);
 
-               UserVerify::where('user_id',$id)->where('token',$token)->delete();
+                UserVerify::where('user_id', $id)->where('token', $token)->delete();
 
-                return response()->json(['message' => "Email verifiy successfully",'status'=>true], 200);
+                return response()->json(['message' => "Email verifiy successfully", 'status' => true], 200);
+            } else {
 
-            }else {
-
-                 return response()->json(['message' => "Email verfication failed",'status'=>false], 200);
+                return response()->json(['message' => "Email verfication failed", 'status' => false], 200);
             }
-
         } catch (\Exception $e) {
             return response()->json(['success' => true, 'msg' => 'Password reset failed'], 500);
         }
     }
-
-    
 }

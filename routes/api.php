@@ -28,7 +28,13 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('/get-reset-password',[App\Http\Controllers\Api\UserController::class,'get_reset_password']);
     Route::post('/reset-password',[App\Http\Controllers\Api\UserController::class,'reset_password']);
 
+});
 
+Route::group(['middleware' => ['api']], function ($router) {        
+    Route::get('/get-chef-detail/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_detail']);
+    Route::post('/update-chef-profile/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_profile']);
+    Route::post('/update-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_resume']);
+    Route::get('/get-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_resume']);
 });
 
 
