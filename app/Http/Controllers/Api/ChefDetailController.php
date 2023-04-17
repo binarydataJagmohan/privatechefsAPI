@@ -39,6 +39,15 @@ class ChefDetailController extends Controller
             $user->bank_name = $request->bank_name;
             $user->holder_name = $request->holder_name;
             $user->bank_address = $request->bank_address;
+
+            if ($request->hasFile('image')) {
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imagePath = $request->file('image');
+                $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                $imagePath->move('images/chef', $imageName);
+                $user->pic = $imageName;
+            } 
+
             $savedata = $user->save();
             if ($savedata) {
                 return response()->json(['status' => true, 'message' => "Profile has been updated succesfully", 'data' => $user], 200);
@@ -72,6 +81,18 @@ class ChefDetailController extends Controller
                 $resume->linkedin_link = $request->linkedin_link;
                 $resume->youtube_link = $request->youtube_link;
                 $savedata = $resume->save();
+
+                $user = User::find($request->id);
+                if ($request->hasFile('image')) {
+                    $randomNumber = mt_rand(1000000000, 9999999999);
+                    $imagePath = $request->file('image');
+                    $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                    $imagePath->move('images/chef', $imageName);
+                    $user->pic = $imageName;
+                } 
+
+                $user->save();
+
                 if ($savedata) {
                     return response()->json(['status' => true, 'message' => "Resume has been updated successfully", 'data' => $resume], 200);
                 } else {
