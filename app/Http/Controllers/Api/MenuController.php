@@ -32,8 +32,6 @@ class MenuController extends Controller
 
     public function save_chef_menu(Request $request)
     {
-        
-
         try {
 
            $checkmenuname = Menu::where('menu_name',$request->name)->where('status','active')->count();
@@ -45,19 +43,23 @@ class MenuController extends Controller
             $menu->description =  $request->description;
             $menu->description =  $request->description;
             $menu->cuisine_id = $request->cuisineid;
+            $menu->user_id = $request->user_id;
 
             if ($request->hasFile('image')) {
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('public/images/chef/menu', $imageName);
+                $imagePath->move('images/chef/menu', $imageName);
                 $menu->image = $imageName;
             } 
 
             $menu->save();
 
              if($menu->save()){
-                 return response()->json(['status' => true, 'message' => 'Menu has been save successfully', 'error' => '', 'data' => '']);
+
+                 $getallchefmenu = Menu::where('user_id',$request->user_id)->where('status','active')->orderBy('id','desc')->get();
+
+                 return response()->json(['status' => true, 'message' => 'Menu has been save successfully', 'error' => '', 'data' => $getallchefmenu ]);
              }else {
 
                  return response()->json(['status' => true, 'message' => 'There has been for saving the menu', 'error' => '', 'data' => '']);
@@ -74,4 +76,6 @@ class MenuController extends Controller
         }
 
     }
+
+  
 }
