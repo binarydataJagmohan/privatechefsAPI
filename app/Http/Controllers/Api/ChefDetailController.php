@@ -40,6 +40,15 @@ class ChefDetailController extends Controller
             $user->bank_name = $request->bank_name;
             $user->holder_name = $request->holder_name;
             $user->bank_address = $request->bank_address;
+
+            if ($request->hasFile('image')) {
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imagePath = $request->file('image');
+                $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                $imagePath->move('images/chef', $imageName);
+                $user->pic = $imageName;
+            } 
+
             $savedata = $user->save();
             if ($savedata) {
                 return response()->json(['status' => true, 'message' => "Profile has been updated succesfully", 'data' => $user], 200);
@@ -73,6 +82,18 @@ class ChefDetailController extends Controller
                 $resume->linkedin_link = $request->linkedin_link;
                 $resume->youtube_link = $request->youtube_link;
                 $savedata = $resume->save();
+
+                $user = User::find($request->id);
+                if ($request->hasFile('image')) {
+                    $randomNumber = mt_rand(1000000000, 9999999999);
+                    $imagePath = $request->file('image');
+                    $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                    $imagePath->move('images/chef', $imageName);
+                    $user->pic = $imageName;
+                } 
+
+                $user->save();
+
                 if ($savedata) {
                     return response()->json(['status' => true, 'message' => "Resume has been updated successfully", 'data' => $resume], 200);
                 } else {
@@ -99,6 +120,7 @@ class ChefDetailController extends Controller
         }
     }
 
+<<<<<<< HEAD
     public function get_all_chef_menu(Request $request,$id)
     {
     
@@ -119,5 +141,22 @@ class ChefDetailController extends Controller
         }
 
     }
+=======
+    public function getAllChefDetails()
+{
+    try { 
+        $users = User::where('role', 'chef')->get();
+        return response()->json([
+            'status' => true,
+            'message' => "Chef resume fetched successfully",
+            'data' => $users
+        ], 200);
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
+    }
+}
+
+
+>>>>>>> ce842dc349c1b615f7f37e32b24544b099b97828
 }
 
