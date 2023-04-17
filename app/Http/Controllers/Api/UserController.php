@@ -21,7 +21,6 @@ use Carbon\Carbon;
 use App\Models\UserVerify;
 use Illuminate\Support\Str;
 use App\Models\PasswordReset;
-use App\Models\ChefDetail;
 
 class UserController extends Controller
 {
@@ -50,11 +49,8 @@ class UserController extends Controller
                 $user->view_password = $request->password;
                 $data = $user->save();
 
-<<<<<<< HEAD
-                 if ($request->role == 'chef') {
-=======
+
                 if ($request->role == 'chef') {
->>>>>>> d6a25d4b8a5e075937aad41ebaf17972f9bc43c4
                     $detail = new ChefDetail();
                     $detail->user_id = $user->id;
                     $detail->save();
@@ -216,15 +212,9 @@ class UserController extends Controller
         }
     }
 
-<<<<<<< HEAD
     public function updated_reset_password(Request $request)
    
      {
-=======
-    public function reset_password(Request $request)
-
-    {
->>>>>>> d6a25d4b8a5e075937aad41ebaf17972f9bc43c4
         try {
             $request->validate([
                 'password' => 'required|string|min:8',
