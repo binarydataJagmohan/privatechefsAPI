@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use App\Models\UserVerify;
 use Illuminate\Support\Str;
 use App\Models\PasswordReset;
+use App\Models\ChefDetail;
 
 class UserController extends Controller
 {
@@ -48,6 +49,12 @@ class UserController extends Controller
                 $user->password = Hash::make($request->password);
                 $user->view_password = $request->password;
                 $data = $user->save();
+
+                 if ($request->role == 'chef') {
+                    $detail = new ChefDetail();
+                    $detail->user_id = $user->id;
+                    $detail->save();
+                }
 
 
                 $token = JWTAuth::fromUser($user);
@@ -165,11 +172,11 @@ class UserController extends Controller
     {
         // return $request->all();
         try {
-            $user =  User::where('email', $request->email)->get();
-            if (count($user) > 0) {
+            $user =  User::where('email', $request->email)->first();
+            if ($user) {
                 $token = Str::random(40);
-                $domain = 'http://localhost:3000';
-                $url = $domain . '/auth/resetpassword?token=' . $token;
+                $domain = env('NEXT_URL');
+                $url = $domain . '/?userid='.$user->id.'&resettoken=' . $token;
                 $data['url'] = $url;
                 $data['email'] = $request->email;
                 $data['title'] = "password reset";
@@ -179,52 +186,51 @@ class UserController extends Controller
                 });
                 $datetime = Carbon::now()->format('Y-m-d H:i:s');
                 PasswordReset::updateOrCreate(
-                    ['email' => $request->email],
+                    ['user_id' => $user->id],
                     [
-                        'email' => $request->email,
+                        'user_id' => $user->id,
                         'token' => $token,
                         'created_at' => $datetime,
                     ]
                 );
-                return response()->json(['success' => true, 'msg' => 'Please check your email!']);
+                return response()->json(['status' => true, 'message' => 'Mail has been sent please check your email!']);
             } else {
-                return response()->json(['success' => false, 'msg' => 'user not found!']);
+                return response()->json(['status' => false, 'message' => 'Mail doesn`t not exist']);
             }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'msg' => $e->getMessage()]);
         }
     }
 
-    public function get_reset_password(Request $request)
+    public function check_user_reset_password_verfication(Request $request)
     {
-        $resetData = PasswordReset::where('token', $request->token)->first();
+        $resetData = PasswordReset::where('user_id', $request->id)->where('token', $request->token)->count();
 
-        if ($resetData) {
-            $user = User::Where('email', $resetData['email'])->first();
-            return view('resetpassword', compact('user'));
+        if ($resetData > 0) {
+            return response()->json(['status' => true, 'message' => 'Valid password reset id and token']);
         } else {
-            return view('404');
+            return response()->json(['status' => false, 'message' => 'Invalid password reset id and token']);
         }
     }
 
-    public function reset_password(Request $request)
+    public function updated_reset_password(Request $request)
    
      {
         try {
             $request->validate([
                 'password' => 'required|string|min:8',
             ]);
-            $user = User::where('email', $request->email)->first();
+            $user = User::find($request->user_id);
             if (!$user) {
-                return response()->json(['success' => true, 'msg' => 'User not found'], 404);
+                return response()->json(['status' => false, 'msg' => 'User not found'], 404);
             }
             $user->password = Hash::make($request->password);
             $user->view_password = $request->password;
             $user->update();
-            PasswordReset::where('email', $user->email)->delete();
-            return response()->json(['success' => true, 'msg' => 'Password reset successful'], 200);
+            PasswordReset::where('user_id', $request->user_id)->delete();
+            return response()->json(['status' => true, 'message' => 'Password reset successful'], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => true, 'msg' => 'Password reset failed'], 500);
+            return response()->json(['success' => true, 'message' => 'Password reset failed'], 500);
         }
     }
 

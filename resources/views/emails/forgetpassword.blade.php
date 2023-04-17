@@ -63,7 +63,7 @@
                                    style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                 <tr>
                                     <td style="text-align: center">
-                                        <a href="#" style="display: block;margin-bottom: 10px;"> <img src="http://127.0.0.1:8000/assets/images/logo.png" height="20" alt="logo"/></a> <br/>
+                                         <a href="#" style="display: block;margin-bottom: 10px;"> <img src="{{asset('/images/logo.png')}}" height="50" alt="logo"/></a> <br/>
                                     </td>
                                 </tr>
             

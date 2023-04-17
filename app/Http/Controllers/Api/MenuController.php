@@ -1,10 +1,77 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use App\Models\Cuisine;
+use App\Models\Menu;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 class MenuController extends Controller
 {
-    //
+    public function get_all_cuisine(Request $request)
+    {
+    
+        try {
+
+            $cuisine_data = Cuisine::where('status','active')->orderBy('id', 'DESC');
+            $count = $cuisine_data->count();
+            $cuisine = $cuisine_data->get();
+
+            if($count > 0 ){
+                return response()->json(['status'=>true,'message' => "Cuisine Data fetch successfully", 'data' => $cuisine,'status'=>true], 200);
+            }else {
+                return response()->json(['status'=>false,'message' => "No Cuisine data found", 'data' => ""], 200);
+            }
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+
+    }
+
+    public function save_chef_menu(Request $request)
+    {
+        
+
+        try {
+
+           $checkmenuname = Menu::where('menu_name',$request->name)->where('status','active')->count();
+
+           if($checkmenuname <= 0 ) {
+
+            $menu = new Menu();
+            $menu->menu_name =  $request->name;
+            $menu->description =  $request->description;
+            $menu->description =  $request->description;
+            $menu->cuisine_id = $request->cuisineid;
+
+            if ($request->hasFile('image')) {
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imagePath = $request->file('image');
+                $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                $imagePath->move('public/images/chef/menu', $imageName);
+                $menu->image = $imageName;
+            } 
+
+            $menu->save();
+
+             if($menu->save()){
+                 return response()->json(['status' => true, 'message' => 'Menu has been save successfully', 'error' => '', 'data' => '']);
+             }else {
+
+                 return response()->json(['status' => true, 'message' => 'There has been for saving the menu', 'error' => '', 'data' => '']);
+             }
+
+           }else {
+
+             return response()->json(['status' => false, 'message' => 'Menu name already exit please choose different name', 'error' => '', 'data' => '']);
+
+           }
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+
+    }
 }
