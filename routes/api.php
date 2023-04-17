@@ -28,9 +28,17 @@ Route::group(['middleware' => ['api']], function ($router) {
 
 });
 
+<<<<<<< HEAD
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {        
     Route::get('/get-all-cuisine', [App\Http\Controllers\Api\MenuController::class, 'get_all_cuisine']);
     Route::post('/save-chef-menu', [App\Http\Controllers\Api\MenuController::class, 'save_chef_menu']);
+=======
+Route::group(['middleware' => ['api']], function ($router) {        
+    Route::get('/get-chef-detail/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_detail']);
+    Route::post('/update-chef-profile/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_profile']);
+    Route::post('/update-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_resume']);
+    Route::get('/get-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_resume']);
+>>>>>>> d6a25d4b8a5e075937aad41ebaf17972f9bc43c4
 });
 
 

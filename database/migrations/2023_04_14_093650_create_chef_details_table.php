@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('languages')->nullable();
             $table->string('experience')->nullable();
             $table->string('skills')->nullable();
+            $table->string('love_cooking')->nullable();
             $table->string('favorite_chef')->nullable();
             $table->string('favorite_dishes')->nullable();
             $table->string('cooking_des')->nullable();

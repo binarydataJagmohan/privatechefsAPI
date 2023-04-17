@@ -26,7 +26,10 @@ class ChefDetailController extends Controller
     public function update_chef_profile(Request $request)
     {
         try {
+<<<<<<< HEAD
             
+=======
+>>>>>>> d6a25d4b8a5e075937aad41ebaf17972f9bc43c4
             $user = User::find($request->id);
             $user->name = $request->name;
             $user->surname = $request->surname;
@@ -97,4 +100,8 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> d6a25d4b8a5e075937aad41ebaf17972f9bc43c4
