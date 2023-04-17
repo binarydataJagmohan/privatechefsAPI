@@ -98,5 +98,20 @@ class ChefDetailController extends Controller
         }
     }
 
+    public function getAllChefDetails()
+{
+    try { 
+        $users = User::where('role', 'chef')->get();
+        return response()->json([
+            'status' => true,
+            'message' => "Chef resume fetched successfully",
+            'data' => $users
+        ], 200);
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
+    }
+}
+
+
 }
 

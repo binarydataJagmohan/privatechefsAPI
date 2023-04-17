@@ -41,6 +41,12 @@ Route::group(['middleware' => ['api','jwt.auth']], function ($router) {
     Route::post('/update-chef-profile/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_profile']);
     Route::post('/update-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_resume']);
     Route::get('/get-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_resume']);
+
+    
 });
+Route::get('/getAllChefDetails',[App\Http\Controllers\Api\ChefDetailController::class, 'getAllChefDetails']);
+
+
+
 
 //chef edit profile
