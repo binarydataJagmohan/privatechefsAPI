@@ -45,7 +45,7 @@ class ChefDetailController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef', $imageName);
+                $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
             } 
 
@@ -120,7 +120,6 @@ class ChefDetailController extends Controller
         }
     }
 
-<<<<<<< HEAD
     public function get_all_chef_menu(Request $request,$id)
     {
     
@@ -141,7 +140,6 @@ class ChefDetailController extends Controller
         }
 
     }
-=======
     public function getAllChefDetails()
 {
     try { 
@@ -157,6 +155,5 @@ class ChefDetailController extends Controller
 }
 
 
->>>>>>> ce842dc349c1b615f7f37e32b24544b099b97828
 }
 

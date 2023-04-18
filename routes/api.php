@@ -47,8 +47,8 @@ Route::group(['middleware' => ['api','jwt.auth']], function ($router) {
     
 });
 
-
-
-
-
-//chef edit profile
+//user edit profile
+Route::group(['middleware' => ['api','jwt.auth']], function ($router) {        
+    Route::get('/get-single-user-profile/{id}', [App\Http\Controllers\Api\UserController::class, 'get_single_user_profile']);
+    Route::post('/update-user-profile/{id}', [App\Http\Controllers\Api\UserController::class, 'update_user_profile']);
+});
