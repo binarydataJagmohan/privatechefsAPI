@@ -20,12 +20,16 @@ class CreateUsersTable extends Migration
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->string('passport_no')->nullable();
-            $table->string('timezone')->nullable();
+            $table->date('timezone')->nullable();
             $table->string('currency')->nullable();
             $table->date('birthday')->nullable();
             $table->integer('login_count')->default(0)->nullable();
             $table->dateTime('last_login')->nullable();
             $table->text('pic')->nullable();
+            $table->enum('invoice_details', ['0', '1'])->nullable()->default('0');
+            $table->string('company_name')->nullable();
+            $table->string('vat_no')->nullable();
+            $table->string('tax_id')->nullable();
             $table->string('BIC')->nullable();
             $table->string('IBAN')->nullable();
             $table->string('bank_name')->nullable();

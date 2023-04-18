@@ -46,7 +46,7 @@ class ChefDetailController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef', $imageName);
+                $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
             } 
 
@@ -122,20 +122,16 @@ class ChefDetailController extends Controller
     }
 
     public function get_all_chef_menu(Request $request,$id)
-    {
-    
+    {    
         try {
-
             $menu_data = Menu::where('user_id',$id)->where('status','active')->orderBy('id', 'DESC');
             $count = $menu_data->count();
             $menu = $menu_data->get();
-
             if($count > 0 ){
                 return response()->json(['status'=>true,'message' => "Menu Data fetch successfully", 'data' => $menu,'status'=>true], 200);
             }else {
                 return response()->json(['status'=>false,'message' => "No Menu data found", 'data' => ""], 200);
             }
-            
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
