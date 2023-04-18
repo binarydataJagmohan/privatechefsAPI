@@ -139,26 +139,33 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-    public function update_profile(Request $request)
+    public function update_user_profile(Request $request)
     {
         try {
             $user = User::find($request->id);
             $user->name =  $request->name;
-            $user->phone_no = $request->phone_no;
-            $user->gender =  $request->gender;
-            $user->city = $request->city;
-            $user->country = $request->country;
-            $user->linkedin_url = $request->linkedin_url;
-            if ($request->hasFile('profile_pic')) {
+            $user->surname =  $request->surname;
+            $user->phone = $request->phone;
+            $user->birthday =  $request->birthday;
+            $user->address = $request->address;
+            $user->timezone = $request->timezone;
+            $user->currency = $request->currency;
+            $user->invoice_details = $request->invoice_details;
+            $user->company_name = $request->company_name;
+            $user->vat_no = $request->vat_no;
+            $user->tax_id = $request->tax_id;
+
+            if ($request->hasFile('image')) {
                 $randomNumber = mt_rand(1000000000, 9999999999);
-                $imagePath = $request->file('profile_pic');
+                $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/profile', $imageName);
-                $user->profile_pic = $imageName;
-            }
+                $imagePath->move('images/chef/users', $imageName);
+                $user->pic = $imageName;
+            } 
+
             $savedata = $user->save();
             if ($savedata) {
-                return response()->json(['status' => true, 'message' => "Profile has been updated succesfully", 'data' => $savedata], 200);
+                return response()->json(['status' => true, 'message' => "User profile has been updated succesfully", 'data' => $user], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "There has been error for updating the profile", 'data' => ""], 200);
             }
@@ -259,6 +266,18 @@ class UserController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json(['success' => true, 'msg' => 'Password reset failed'], 500);
+        }
+    }
+    public function get_single_user_profile(Request $request){
+        try{
+          $user = User::where('id',$request->id)->first();
+          if ($user) {            
+            return response()->json(['status' => true, 'message' => "Single profile data fetch successfully", 'data' => $user], 200);
+        } else {
+            return response()->json(['status' => false, 'message' => "There has been error for fetching the data", 'data' => ""], 200);
+        }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'msg' => $e->getMessage()]);
         }
     }
 }

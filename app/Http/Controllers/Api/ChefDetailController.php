@@ -45,7 +45,7 @@ class ChefDetailController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef', $imageName);
+                $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
             } 
 
