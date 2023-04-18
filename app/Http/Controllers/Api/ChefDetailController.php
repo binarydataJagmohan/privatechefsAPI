@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\ChefDetail;
 use App\Models\Menu;
+use App\Models\Dishes;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ChefDetailController extends Controller
@@ -120,7 +121,6 @@ class ChefDetailController extends Controller
         }
     }
 
-<<<<<<< HEAD
     public function get_all_chef_menu(Request $request,$id)
     {
     
@@ -141,22 +141,49 @@ class ChefDetailController extends Controller
         }
 
     }
-=======
     public function getAllChefDetails()
-{
-    try { 
-        $users = User::where('role', 'chef')->get();
-        return response()->json([
-            'status' => true,
-            'message' => "Chef resume fetched successfully",
-            'data' => $users
-        ], 200);
-    } catch (\Exception $e) {
-        throw new HttpException(500, $e->getMessage());
+    {
+        try { 
+            $users = User::where('role', 'chef')->get();
+            return response()->json([
+                'status' => true,
+                'message' => "Chef resume fetched successfully",
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
     }
-}
+
+    public function save_chef_dishes(Request $request)
+    {
+        try {
+
+            $dishes = new Dishes();
+            $dishes->menu_id =  $request->menu_id;
+            $dishes->user_id = $request->user_id;
+            $dishes->type =  $request->type;
+            $dishes->item_name =  $request->item_name;
+            $dishes->save();
+
+             if($dishes->save()){
+
+                 $getallchefmenu = Dishes::where('menu_id',$request->user_id)->where('user_id',$request->user_id)->where('status','active')->orderBy('id','desc')->get();
+
+                 return response()->json(['status' => true, 'message' => 'Menu has been save successfully', 'error' => '', 'data' => $getallchefmenu ]);
+             }else {
+
+                 return response()->json(['status' => true, 'message' => 'There has been for saving the menu', 'error' => '', 'data' => '']);
+             }
+
+           
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+
+    }
 
 
->>>>>>> ce842dc349c1b615f7f37e32b24544b099b97828
 }
 

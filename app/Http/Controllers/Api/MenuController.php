@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Cuisine;
 use App\Models\Menu;
+use App\Models\Dishes;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 class MenuController extends Controller
 {
@@ -70,6 +71,27 @@ class MenuController extends Controller
              return response()->json(['status' => false, 'message' => 'Menu name already exit please choose different name', 'error' => '', 'data' => '']);
 
            }
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+
+    }
+
+    public function get_single_chef_menu(Request $request,$id)
+    {
+    
+        try {
+
+            $MenuData = Menu::find($id);
+        
+            $Dishes = Dishes::where('status','active')->where('menu_id',$id)->get();
+
+            if($MenuData){
+                return response()->json(['status'=>true,'message' => "Single menu Data fetch successfully", 'menudata' => $MenuData,'dishes'=>$Dishes,'status'=>true], 200);
+            }else {
+                return response()->json(['status'=>false,'message' => "No Single menu data found", 'data' => ""], 200);
+            }
             
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
