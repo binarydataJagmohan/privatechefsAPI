@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\AllergyController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -43,9 +43,17 @@ Route::group(['middleware' => ['api','jwt.auth']], function ($router) {
     Route::post('/update-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_resume']);
     Route::get('/get-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_resume']);
      Route::get('/get-all-chef-menu/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_chef_menu']);
-     Route::get('/getAllChefDetails',[App\Http\Controllers\Api\ChefDetailController::class, 'getAllChefDetails']);
+    Route::get('/getAllChefDetails',[App\Http\Controllers\Api\ChefDetailController::class, 'getAllChefDetails']);
+
     
 });
+
+Route::post('/saveAllergy',[AllergyController::class, 'saveAllergy']);
+Route::get('/getAllergyDetails',[AllergyController::class,'getAllergyDetails']);
+
+
+
+
 
 
 

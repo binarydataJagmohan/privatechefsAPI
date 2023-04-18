@@ -120,28 +120,22 @@ class ChefDetailController extends Controller
         }
     }
 
-<<<<<<< HEAD
     public function get_all_chef_menu(Request $request,$id)
-    {
-    
+    {    
         try {
-
             $menu_data = Menu::where('user_id',$id)->where('status','active')->orderBy('id', 'DESC');
             $count = $menu_data->count();
             $menu = $menu_data->get();
-
             if($count > 0 ){
                 return response()->json(['status'=>true,'message' => "Menu Data fetch successfully", 'data' => $menu,'status'=>true], 200);
             }else {
                 return response()->json(['status'=>false,'message' => "No Menu data found", 'data' => ""], 200);
             }
-            
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
 
     }
-=======
     public function getAllChefDetails()
 {
     try { 
@@ -157,6 +151,5 @@ class ChefDetailController extends Controller
 }
 
 
->>>>>>> ce842dc349c1b615f7f37e32b24544b099b97828
 }
 
