@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AllergyController;
+use App\Http\Controllers\Api\ServiceChoiceController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -49,17 +50,18 @@ Route::group(['middleware' => ['api','jwt.auth']], function ($router) {
     
 });
 
+Route::group(['middleware' => ['api','jwt.auth']], function ($router) { 
+
 Route::post('/saveAllergy',[AllergyController::class, 'saveAllergy']);
 Route::get('/getAllergyDetails',[AllergyController::class,'getAllergyDetails']);
+Route::get('/allergyDelete/{id}',[AllergyController::class,'allergyDelete']);
+Route::post('/saveService',[ServiceChoiceController::class,'saveService']);
+Route::get('/getServiceDetails',[ServiceChoiceController::class,'getServiceDetails']);
+Route::get('/serviceDelete/{id}',[ServiceChoiceController::class,'serviceDelete']);
 
+});
 
-
-
-
-
-
-
-
+        
 //chef edit profile
 //user edit profile
 Route::group(['middleware' => ['api','jwt.auth']], function ($router) {        

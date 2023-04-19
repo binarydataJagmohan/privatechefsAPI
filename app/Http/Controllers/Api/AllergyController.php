@@ -14,6 +14,7 @@ class AllergyController extends Controller
     public function getAllergyDetails()
     {
         try{
+            
         $getallallergydetails = Allergy::where('status','active')->orderBy('id','desc')->get();
          return response()->json([
             'status' => true,
@@ -100,8 +101,19 @@ class AllergyController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Allergy $allergy)
+    public function allergyDelete($id)
     {
-        //
-    }
+        try{
+        $allergy = Allergy::find($id);
+        if (!$allergy) 
+        {
+        return response()->json(['status' => 'Allergy not found'], 404);
+        }
+       $allergy->delete();
+       return response()->json(['status'=> true, 'message' => 'Allergy deleted','data'=>$allergy]);
+       }
+        catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+   }
 }
