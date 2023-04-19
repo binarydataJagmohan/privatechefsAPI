@@ -59,8 +59,10 @@ class UserController extends Controller
 
                 $token = JWTAuth::fromUser($user);
 
-                unset($user->password);
-                unset($user->view_password);
+                $auth_user = User::select('name','email','role','id','surname','pic')->where('id',$user->id)->first();
+
+                // unset($user->password);
+                // unset($user->view_password);
 
                 $email_token = Str::random(64);
 
@@ -74,7 +76,7 @@ class UserController extends Controller
                     $message->subject('Email Verification Mail');
                 });
 
-                return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $user, 'token' => $token]], 200);
+                return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $auth_user, 'token' => $token]], 200);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
@@ -129,6 +131,8 @@ class UserController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'pic' => $user->pic,
+                    'surname' => $user->surname,
                 ],
                 'authorisation' => [
                     'token' => $token,
@@ -146,9 +150,9 @@ class UserController extends Controller
             $user->name =  $request->name;
             $user->surname =  $request->surname;
             $user->phone = $request->phone;
-            $user->birthday =  $request->birthday;
+            $user->birthday =  date('Y-m-d', strtotime($request->birthday));
             $user->address = $request->address;
-            $user->timezone = $request->timezone;
+            $user->timezone = date('Y-m-d', strtotime($request->timezone));
             $user->currency = $request->currency;
             $user->invoice_details = $request->invoice_details;
             $user->company_name = $request->company_name;

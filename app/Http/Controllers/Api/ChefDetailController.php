@@ -28,7 +28,6 @@ class ChefDetailController extends Controller
     public function update_chef_profile(Request $request)
     {
         try {
-
             $user = User::find($request->id);
             $user->name = $request->name;
             $user->surname = $request->surname;
@@ -84,16 +83,16 @@ class ChefDetailController extends Controller
                 $resume->youtube_link = $request->youtube_link;
                 $savedata = $resume->save();
 
-                $user = User::find($request->id);
+                $resume = User::find($request->id);
                 if ($request->hasFile('image')) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
                     $imagePath = $request->file('image');
                     $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                    $imagePath->move('images/chef', $imageName);
-                    $user->pic = $imageName;
+                    $imagePath->move('images/chef/users', $imageName);
+                    $resume->pic = $imageName;
                 } 
 
-                $user->save();
+                $resume->save();
 
                 if ($savedata) {
                     return response()->json(['status' => true, 'message' => "Resume has been updated successfully", 'data' => $resume], 200);
