@@ -28,7 +28,6 @@ class ChefDetailController extends Controller
     public function update_chef_profile(Request $request)
     {
         try {
-
             $user = User::find($request->id);
             $user->name = $request->name;
             $user->surname = $request->surname;
@@ -84,16 +83,16 @@ class ChefDetailController extends Controller
                 $resume->youtube_link = $request->youtube_link;
                 $savedata = $resume->save();
 
-                $user = User::find($request->id);
+                $resume = User::find($request->id);
                 if ($request->hasFile('image')) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
                     $imagePath = $request->file('image');
                     $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                    $imagePath->move('images/chef', $imageName);
-                    $user->pic = $imageName;
+                    $imagePath->move('images/chef/users', $imageName);
+                    $resume->pic = $imageName;
                 } 
 
-                $user->save();
+                $resume->save();
 
                 if ($savedata) {
                     return response()->json(['status' => true, 'message' => "Resume has been updated successfully", 'data' => $resume], 200);
@@ -164,12 +163,12 @@ class ChefDetailController extends Controller
 
              if($dishes->save()){
 
-                 $getallchefmenu = Dishes::where('menu_id',$request->user_id)->where('user_id',$request->user_id)->where('status','active')->orderBy('id','desc')->get();
+                 $Dishes = Dishes::where('menu_id',$request->menu_id)->where('user_id',$request->user_id)->where('status','active')->orderBy('id','desc')->get();
 
-                 return response()->json(['status' => true, 'message' => 'Menu has been save successfully', 'error' => '', 'data' => $getallchefmenu ]);
+                 return response()->json(['status' => true, 'message' => 'Dishes data save successfully', 'error' => '', 'dishes' => $Dishes ]);
              }else {
 
-                 return response()->json(['status' => true, 'message' => 'There has been for saving the menu', 'error' => '', 'data' => '']);
+                 return response()->json(['status' => true, 'message' => 'There has been for saving the dishes', 'error' => '', 'data' => '']);
              }
 
            
@@ -179,6 +178,25 @@ class ChefDetailController extends Controller
         }
 
     }
+
+    public function delete_single_dish(Request $request)
+    {
+
+        try {
+
+            $Dishes = Dishes::where('id', $request->id)->update([
+                'status' => 'deleted'
+            ]);
+            if ($Dishes) {
+                return response()->json(['status' => true, 'message' => 'Dish has been deleted successfully!','status'=>true], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => 'There has been error for deleting the dish!','status'=>false], 200);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
 
 
 }
