@@ -72,3 +72,9 @@ Route::group(['middleware' => ['api','jwt.auth']], function ($router) {
     Route::get('/get-single-user-profile/{id}', [App\Http\Controllers\Api\UserController::class, 'get_single_user_profile']);
     Route::post('/update-user-profile/{id}', [App\Http\Controllers\Api\UserController::class, 'update_user_profile']);
 });
+
+//notification
+Route::group(['middleware' => ['api','jwt.auth']], function ($router) {        
+    Route::get('/notification-for-user-admin/{id}', [App\Http\Controllers\Api\NotificationController::class, 'notification_for_user_admin']);
+    Route::post('/notification-status/{id}', [App\Http\Controllers\Api\NotificationController::class, 'notification_status']);
+});

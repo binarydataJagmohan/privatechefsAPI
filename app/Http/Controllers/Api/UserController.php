@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Models\User;
-use App\Models\Business;
+use App\Models\Notification;
 use App\Models\ChefDetail;
 use App\Models\CoFounder;
 use App\Models\About;
@@ -21,6 +21,8 @@ use Carbon\Carbon;
 use App\Models\UserVerify;
 use Illuminate\Support\Str;
 use App\Models\PasswordReset;
+use Helpers;
+
 
 class UserController extends Controller
 {
@@ -71,6 +73,16 @@ class UserController extends Controller
                     'token' => $email_token
                 ]);
 
+                $admin = User::select('id')->where('role', 'admin')->get();   
+
+                $notify_by = $user->id;
+                $notify_to =  $admin;
+                $description = 'Thank you for registering. We hope you enjoy using our website.';
+                $description1 = $user->name .' registered on our website. Please review their account.';
+                $type = 'Register';
+
+                createNotificationForUserAndAdmins($notify_by, $notify_to, $description,$description1, $type);
+                
                 Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
                     $message->to($request->email);
                     $message->subject('Email Verification Mail');
@@ -82,7 +94,6 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-
 
 
     public function user_login(Request $request)
