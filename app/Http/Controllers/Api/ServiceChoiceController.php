@@ -14,7 +14,7 @@ class ServiceChoiceController extends Controller
     {
         try{
             
-        $getservicedetails = ServiceChoice::where('status','active')->get();
+        $getservicedetails = ServiceChoice::where('status','active')->orderBy('id','desc')->get();
          return response()->json([
             'status' => true,
             'message' => "Service details fetched successfully",
@@ -58,7 +58,9 @@ class ServiceChoiceController extends Controller
 
             if($service->save())
             {  
-                return response()->json(['status' => true, 'message' => 'Service details has been save successfully']);
+                 $getallservicedetails = ServiceChoice::where('status','active')->orderBy('id','desc')->get();
+
+                return response()->json(['status' => true, 'message' => 'Service details has been save successfully','data' => $getallservicedetails]);
             }
             else
             {
@@ -81,9 +83,21 @@ class ServiceChoiceController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ServiveChoice $serviveChoice)
+    public function getSingleServiceDetail(Request $request,$id)
     {
-        //
+        try {
+
+            $service = ServiceChoice::find($id);
+        
+            if($service){
+                return response()->json(['status'=>true,'message' => "Single Service Data fetch successfully", 'data' => $service], 200);
+            }else {
+                return response()->json(['status'=>false,'message' => "No Single Service data found"]);
+            }
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
     }
 
     /**

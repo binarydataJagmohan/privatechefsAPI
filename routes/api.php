@@ -54,6 +54,7 @@ Route::group(['middleware' => ['api','jwt.auth']], function ($router) {
     
 });
 
+//Allergy or service Edit,update,get Routes
 Route::group(['middleware' => ['api','jwt.auth']], function ($router) { 
 
 Route::post('/saveAllergy',[AllergyController::class, 'saveAllergy']);
@@ -63,7 +64,11 @@ Route::post('/saveService',[ServiceChoiceController::class,'saveService']);
 Route::get('/getServiceDetails',[ServiceChoiceController::class,'getServiceDetails']);
 Route::get('/serviceDelete/{id}',[ServiceChoiceController::class,'serviceDelete']);
 
+
 });
+Route::get('/getSingleAllergyDetails/{id}',[AllergyController::class,'getSingleAllergyDetails']);
+Route::put('/updateAllergy/{id}',[AllergyController::class,'updateAllergy']);
+Route::get('/getSingleServiceDetail/{id}',[ServiceChoiceController::class,'getSingleServiceDetail']);
 
 
 //chef edit profile

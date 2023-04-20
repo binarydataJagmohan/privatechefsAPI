@@ -85,18 +85,55 @@ class AllergyController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Allergy $allergy)
+    public function getSingleAllergyDetails(Allergy $allergy,$id)
     {
-        //
+         try {
+
+            $allergy = Allergy::find($id);
+        
+            if($allergy){
+                return response()->json(['status'=>true,'message' => "Single Allergy Data fetch successfully", 'allergy' => $allergy], 200);
+            }else {
+                return response()->json(['status'=>false,'message' => "No Single Allergy data found"]);
+            }
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Allergy $allergy)
-    {
-        //
+  public function updateAllergy(Request $request, $id)
+{
+    try {
+        
+        $allergy = Allergy::find($id);
+        if (!$allergy) {
+            return response()->json(['status' => false, 'message' => 'Allergy not found', 'error' => '', 'data' => '']);
+        }
+
+        $allergy->allergy_name = $request->input('allergy_name');
+        $allergy->description = $request->input('description');
+
+        if ($request->hasFile('image')) {
+            $randomNumber = mt_rand(1000000000, 9999999999);
+            $imagePath = $request->file('image');
+            $imageName = $randomNumber . $imagePath->getClientOriginalName();
+            $imagePath->move('images/admin/allergy', $imageName);
+            $allergy->image = $imageName;
+        }
+
+        if ($allergy->update()) {
+            return response()->json(['status' => true, 'message' => 'Allergy has been updated successfully', 'error' => '', 'data' => $allergy]);
+        } else {
+            return response()->json(['status' => false, 'message' => 'There has been an error while updating the allergy', 'error' => '', 'data' => '']);
+        }
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
     }
+}
 
     /**
      * Remove the specified resource from storage.
