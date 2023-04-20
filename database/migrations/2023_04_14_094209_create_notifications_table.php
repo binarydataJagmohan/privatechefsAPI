@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('notify_by')->nullable();
             $table->unsignedBigInteger('notify_to')->nullable();
             $table->longText('description')->nullable();
+            $table->string('type')->nullable();
             $table->enum('status', ['seen', 'unseen'])->default('unseen');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
