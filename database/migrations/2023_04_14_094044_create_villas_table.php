@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('villas', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->string('villas_img')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('name')->nullable();
+            $table->string('address')->nullable();
+            $table->string('map_location')->nullable();
+            $table->enum('status', ['active', 'inactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->unsignedBigInteger('service_id')->nullable();
+            $table->unsignedBigInteger('cuisine_id')->nullable();
             $table->string('menu_name')->nullable();
             $table->string('image')->nullable();
             $table->longText('description')->nullable();
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('min_price')->nullable();
             $table->integer('max_price')->nullable();
             $table->integer('discount')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('status', ['active', 'inactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });
