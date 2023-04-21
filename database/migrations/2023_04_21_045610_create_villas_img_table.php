@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('allergies', function (Blueprint $table) {
+        Schema::create('villas_img', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->string('allergy_name')->nullable();
-            $table->longText('description')->nullable();
+            $table->unsignedBigInteger('villa_id')->nullable();
             $table->string('image')->nullable();
             $table->enum('status', ['active', 'inactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('allergies');
+        Schema::dropIfExists('villas_img');
     }
 };

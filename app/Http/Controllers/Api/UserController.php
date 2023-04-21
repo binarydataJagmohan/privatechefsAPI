@@ -103,37 +103,46 @@ class UserController extends Controller
                 'email' => 'required|email',
                 'password' => 'required',
             ]);
-
+    
             $email = $request->input('email');
             $password = $request->input('password');
-
+    
             $user = User::where('email', $email)->first();
-
+    
             if (!$user) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Email does not exist!',
                 ]);
             }
-
+    
             if (!Hash::check($password, $user->password)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Incorrect password!',
                 ]);
             }
-
+    
             $credentials = $request->only(['email', 'password']);
-
+    
             if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Invalid email or password!',
                 ]);
             }
-
+    
             $user = Auth::user();
-
+            $admin = User::select('id')->where('role', 'admin')->get();   
+    
+            $notify_by = $user->id;
+            $notify_to =  $admin;
+            $description = 'Welcome back! You have successfully logged in to your account.';
+            $description1 = 'A user with username "' . $user->name . '" has logged in to their account.';
+            $type = 'Login';
+    
+            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+    
             return response()->json([
                 'status' => true,
                 'message' => 'User logged in successfully',
@@ -154,6 +163,7 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+    
     public function update_user_profile(Request $request)
     {
         try {
@@ -177,6 +187,16 @@ class UserController extends Controller
                 $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
             } 
+
+            $admin = User::select('id')->where('role', 'admin')->get();
+
+            $notify_by = $user->id;
+            $notify_to =  $admin;
+            $description = 'Your profile has been successfully updated.';
+            $description1 = $user->name . ', has just updated their profile.';
+            $type = 'update_profile';
+
+            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
             $savedata = $user->save();
             if ($savedata) {
@@ -214,6 +234,17 @@ class UserController extends Controller
                         'created_at' => $datetime,
                     ]
                 );
+
+                $admin = User::select('id')->where('role', 'admin')->get();
+
+                $notify_by = $user->id;
+                $notify_to =  $admin;
+                $description = 'Please follow the link sent to your email to reset your password';
+                $description1 = $user->name . ', has just requested to reset their password.';
+                $type = 'forget_password';
+
+                createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
                 return response()->json(['status' => true, 'message' => 'Mail has been sent please check your email!']);
             } else {
                 return response()->json(['status' => false, 'message' => 'Mail doesn`t not exist']);
@@ -249,6 +280,17 @@ class UserController extends Controller
             $user->view_password = $request->password;
             $user->update();
             PasswordReset::where('user_id', $request->user_id)->delete();
+
+              $admin = User::select('id')->where('role', 'admin')->get();
+
+                $notify_by = $user->id;
+                $notify_to =  $admin;
+                $description = 'Your password has been reset successfully.';
+                $description1 = $user->name . ', has just reset their password.';
+                $type = 'forget_password';
+
+                createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
             return response()->json(['status' => true, 'message' => 'Password reset successful'], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => true, 'message' => 'Password reset failed'], 500);

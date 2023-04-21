@@ -47,7 +47,17 @@ class ChefDetailController extends Controller
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
                 $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
-            } 
+            }
+
+            $admin = User::select('id')->where('role', 'admin')->get();
+
+            $notify_by = $user->id;
+            $notify_to =  $admin;
+            $description = 'Your profile has been successfully updated.';
+            $description1 = $user->name . ', has just updated their profile.';
+            $type = 'update_profile';
+
+            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
             $savedata = $user->save();
             if ($savedata) {
@@ -90,7 +100,17 @@ class ChefDetailController extends Controller
                     $imageName = $randomNumber . $imagePath->getClientOriginalName();
                     $imagePath->move('images/chef/users', $imageName);
                     $resume->pic = $imageName;
-                } 
+                }
+
+                $admin = User::select('id')->where('role', 'admin')->get();
+
+                $notify_by = $chef->id;
+                $notify_to =  $admin;
+                $description = 'Your resume has been successfully updated.';
+                $description1 = $chef->name . ', has just updated their resume.';
+                $type = 'update_profile';
+
+                createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
                 $resume->save();
 
@@ -120,25 +140,24 @@ class ChefDetailController extends Controller
         }
     }
 
-    public function get_all_chef_menu(Request $request,$id)
-    {    
+    public function get_all_chef_menu(Request $request, $id)
+    {
         try {
-            $menu_data = Menu::where('user_id',$id)->where('status','active')->orderBy('id', 'DESC');
+            $menu_data = Menu::where('user_id', $id)->where('status', 'active')->orderBy('id', 'DESC');
             $count = $menu_data->count();
             $menu = $menu_data->get();
-            if($count > 0 ){
-                return response()->json(['status'=>true,'message' => "Menu Data fetch successfully", 'data' => $menu,'status'=>true], 200);
-            }else {
-                return response()->json(['status'=>false,'message' => "No Menu data found", 'data' => ""], 200);
+            if ($count > 0) {
+                return response()->json(['status' => true, 'message' => "Menu Data fetch successfully", 'data' => $menu, 'status' => true], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "No Menu data found", 'data' => ""], 200);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
-
     }
     public function getAllChefDetails()
     {
-        try { 
+        try {
             $users = User::where('role', 'chef')->get();
             return response()->json([
                 'status' => true,
@@ -161,22 +180,18 @@ class ChefDetailController extends Controller
             $dishes->item_name =  $request->item_name;
             $dishes->save();
 
-             if($dishes->save()){
+            if ($dishes->save()) {
 
-                 $Dishes = Dishes::where('menu_id',$request->menu_id)->where('user_id',$request->user_id)->where('status','active')->orderBy('id','desc')->get();
+                $Dishes = Dishes::where('menu_id', $request->menu_id)->where('user_id', $request->user_id)->where('status', 'active')->orderBy('id', 'desc')->get();
 
-                 return response()->json(['status' => true, 'message' => 'Dishes data save successfully', 'error' => '', 'dishes' => $Dishes ]);
-             }else {
+                return response()->json(['status' => true, 'message' => 'Dishes data save successfully', 'error' => '', 'dishes' => $Dishes]);
+            } else {
 
-                 return response()->json(['status' => true, 'message' => 'There has been for saving the dishes', 'error' => '', 'data' => '']);
-             }
-
-           
-            
+                return response()->json(['status' => true, 'message' => 'There has been for saving the dishes', 'error' => '', 'data' => '']);
+            }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
-
     }
 
     public function delete_single_dish(Request $request)
@@ -188,16 +203,12 @@ class ChefDetailController extends Controller
                 'status' => 'deleted'
             ]);
             if ($Dishes) {
-                return response()->json(['status' => true, 'message' => 'Dish has been deleted successfully!','status'=>true], 200);
+                return response()->json(['status' => true, 'message' => 'Dish has been deleted successfully!', 'status' => true], 200);
             } else {
-                return response()->json(['status' => false, 'message' => 'There has been error for deleting the dish!','status'=>false], 200);
+                return response()->json(['status' => false, 'message' => 'There has been error for deleting the dish!', 'status' => false], 200);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
     }
-
-
-
 }
-

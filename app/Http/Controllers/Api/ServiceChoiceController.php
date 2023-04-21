@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\ServiceChoice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ServiceChoiceController extends Controller
 {
@@ -40,6 +41,18 @@ class ServiceChoiceController extends Controller
      */
     public function saveService(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+        'name' => 'required|string|unique:service_choices,service_name|max:50|regex:/^[a-zA-Z]+$/',
+        'description' => 'required|string|max:500',
+        //'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['status' => false, 'message' => $validator->errors()->first(), 'error' => $validator->errors(), 'data' => '']);
+    }
+
+
+
         try {
 
          $service = new ServiceChoice();
@@ -119,7 +132,7 @@ class ServiceChoiceController extends Controller
     } 
     $service->save();
 
-    return response()->json(['message' => 'Allergy updated successfully', 'data' => $service]);
+    return response()->json(['status'=>true, 'message' => 'Service updated successfully', 'data' => $service]);
 } catch (\Exception $e) {
     throw new HttpException(500, $e->getMessage());
 }

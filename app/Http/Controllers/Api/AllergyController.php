@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Allergy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 
 class AllergyController extends Controller
@@ -41,6 +42,16 @@ class AllergyController extends Controller
      */
     public function saveAllergy(Request $request)
     {
+
+        $validator = Validator::make($request->all(), [
+        'name' => 'required|string|unique:service_choices,service_name|max:50|regex:/^[a-zA-Z]+$/',
+        'description' => 'required|string|max:500',
+        //'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+       ]);
+
+        if ($validator->fails()) {
+        return response()->json(['status' => false, 'message' => $validator->errors()->first(), 'error' => $validator->errors(), 'data' => '']);
+    }
 
          try {
 
