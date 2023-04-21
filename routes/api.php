@@ -67,8 +67,9 @@ Route::get('/serviceDelete/{id}',[ServiceChoiceController::class,'serviceDelete'
 
 });
 Route::get('/getSingleAllergyDetails/{id}',[AllergyController::class,'getSingleAllergyDetails']);
-Route::put('/updateAllergy/{id}',[AllergyController::class,'updateAllergy']);
+Route::post('/updateAllergy/{id}',[AllergyController::class,'updateAllergy']);
 Route::get('/getSingleServiceDetail/{id}',[ServiceChoiceController::class,'getSingleServiceDetail']);
+Route::post('/serviceUpdate/{id}',[ServiceChoiceController::class,'serviceUpdate']);
 
 
 //chef edit profile

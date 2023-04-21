@@ -43,6 +43,7 @@ class ServiceChoiceController extends Controller
         try {
 
          $service = new ServiceChoice();
+         $service->user_id = $request->user_id;
          $service->service_name = $request->name;
          $service->description = $request->description;
 
@@ -103,9 +104,25 @@ class ServiceChoiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ServiveChoice $serviveChoice)
+    public function serviceUpdate(Request $request,$id)
     {
-        //
+        try {
+    $service = ServiceChoice::findOrFail($id);
+    $service->service_name = $request->input('service_name');
+    $service->description = $request->input('description');
+    if ($request->hasFile('image')) {
+        $randomNumber = mt_rand(1000000000, 9999999999);
+        $imagePath = $request->file('image');
+        $imageName = $randomNumber . $imagePath->getClientOriginalName();
+        $imagePath->move('images/admin/service', $imageName);
+        $service->image = $imageName;
+    } 
+    $service->save();
+
+    return response()->json(['message' => 'Allergy updated successfully', 'data' => $service]);
+} catch (\Exception $e) {
+    throw new HttpException(500, $e->getMessage());
+}
     }
 
     /**
