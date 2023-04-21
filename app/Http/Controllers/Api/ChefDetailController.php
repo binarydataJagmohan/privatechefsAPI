@@ -55,7 +55,7 @@ class ChefDetailController extends Controller
             $notify_to =  $admin;
             $description = 'Your profile has been successfully updated.';
             $description1 = $user->name . ', has just updated their profile.';
-            $type = 'Profile Update';
+            $type = 'update_profile';
 
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
@@ -108,7 +108,7 @@ class ChefDetailController extends Controller
                 $notify_to =  $admin;
                 $description = 'Your resume has been successfully updated.';
                 $description1 = $chef->name . ', has just updated their resume.';
-                $type = 'Profile Update';
+                $type = 'update_profile';
 
                 createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 

@@ -188,6 +188,16 @@ class UserController extends Controller
                 $user->pic = $imageName;
             } 
 
+            $admin = User::select('id')->where('role', 'admin')->get();
+
+            $notify_by = $user->id;
+            $notify_to =  $admin;
+            $description = 'Your profile has been successfully updated.';
+            $description1 = $user->name . ', has just updated their profile.';
+            $type = 'update_profile';
+
+            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
             $savedata = $user->save();
             if ($savedata) {
                 return response()->json(['status' => true, 'message' => "User profile has been updated succesfully", 'data' => $user], 200);
@@ -231,7 +241,7 @@ class UserController extends Controller
                 $notify_to =  $admin;
                 $description = 'Please follow the link sent to your email to reset your password';
                 $description1 = $user->name . ', has just requested to reset their password.';
-                $type = 'Forget Password';
+                $type = 'forget_password';
 
                 createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
@@ -277,7 +287,7 @@ class UserController extends Controller
                 $notify_to =  $admin;
                 $description = 'Your password has been reset successfully.';
                 $description1 = $user->name . ', has just reset their password.';
-                $type = 'Profile Update';
+                $type = 'forget_password';
 
                 createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
