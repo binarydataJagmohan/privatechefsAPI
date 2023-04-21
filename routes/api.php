@@ -86,3 +86,4 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/save-villa', [App\Http\Controllers\Api\VillasController::class, 'save_villa']);
     Route::post('/update-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'update_villas']);
 });
+
