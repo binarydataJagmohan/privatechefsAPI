@@ -53,17 +53,14 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
 //Allergy or service Edit,update,get Routes
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
-
     Route::post('/saveAllergy', [AllergyController::class, 'saveAllergy']);
-    Route::get('/getAllergyDetails', [AllergyController::class, 'getAllergyDetails']);
     Route::get('/allergyDelete/{id}', [AllergyController::class, 'allergyDelete']);
     Route::post('/saveService', [ServiceChoiceController::class, 'saveService']);
-    Route::get('/getServiceDetails', [ServiceChoiceController::class, 'getServiceDetails']);
     Route::get('/serviceDelete/{id}', [ServiceChoiceController::class, 'serviceDelete']);
+    Route::get('/getSingleAllergyDetails/{id}', [AllergyController::class, 'getSingleAllergyDetails']);
+    Route::put('/updateAllergy/{id}', [AllergyController::class, 'updateAllergy']);
+    Route::get('/getSingleServiceDetail/{id}', [ServiceChoiceController::class, 'getSingleServiceDetail']);
 });
-Route::get('/getSingleAllergyDetails/{id}', [AllergyController::class, 'getSingleAllergyDetails']);
-Route::put('/updateAllergy/{id}', [AllergyController::class, 'updateAllergy']);
-Route::get('/getSingleServiceDetail/{id}', [ServiceChoiceController::class, 'getSingleServiceDetail']);
 
 
 //chef edit profile
@@ -84,4 +81,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-all-villas', [App\Http\Controllers\Api\VillasController::class, 'get_all_villas']);
     Route::post('/save-villa', [App\Http\Controllers\Api\VillasController::class, 'save_villa']);
     Route::post('/update-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'update_villas']);
+});
+
+Route::group(['middleware' => ['api']], function ($router) {
+    Route::get('/getServiceDetails', [ServiceChoiceController::class, 'getServiceDetails']);
+    Route::get('/get-all-cuisine', [App\Http\Controllers\Api\CuisineController::class, 'get_all_cuisine']);
+    Route::get('/getAllergyDetails', [AllergyController::class, 'getAllergyDetails']);
 });
