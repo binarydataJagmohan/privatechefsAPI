@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Allergy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 
 class AllergyController extends Controller
@@ -42,9 +43,21 @@ class AllergyController extends Controller
     public function saveAllergy(Request $request)
     {
 
+        $validator = Validator::make($request->all(), [
+        'name' => 'required|string|unique:service_choices,service_name|max:50|',
+        'description' => 'required|string|max:500',
+        //'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+       ]);
+
+        if ($validator->fails()) {
+        return response()->json(['status' => false, 'message' => $validator->errors()->first(), 'error' => $validator->errors(), 'data' => '']);
+    }
+
          try {
 
+
          $allergy = new Allergy();
+         $allergy->user_id = $request->user_id;
          $allergy->allergy_name = $request->name;
          $allergy->description = $request->description;
 
@@ -105,34 +118,25 @@ class AllergyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-  public function updateAllergy(Request $request, $id)
+    public function updateAllergy(Request $request, $id)
 {
     try {
-        
-        $allergy = Allergy::find($id);
-        if (!$allergy) {
-            return response()->json(['status' => false, 'message' => 'Allergy not found', 'error' => '', 'data' => '']);
-        }
+    $allergy = Allergy::findOrFail($id);
+    $allergy->allergy_name = $request->input('allergy_name');
+    $allergy->description = $request->input('description');
+    if ($request->hasFile('image')) {
+        $randomNumber = mt_rand(1000000000, 9999999999);
+        $imagePath = $request->file('image');
+        $imageName = $randomNumber . $imagePath->getClientOriginalName();
+        $imagePath->move('images/admin/allergy', $imageName);
+        $allergy->image = $imageName;
+    } 
+    $allergy->save();
 
-        $allergy->allergy_name = $request->input('allergy_name');
-        $allergy->description = $request->input('description');
-
-        if ($request->hasFile('image')) {
-            $randomNumber = mt_rand(1000000000, 9999999999);
-            $imagePath = $request->file('image');
-            $imageName = $randomNumber . $imagePath->getClientOriginalName();
-            $imagePath->move('images/admin/allergy', $imageName);
-            $allergy->image = $imageName;
-        }
-
-        if ($allergy->update()) {
-            return response()->json(['status' => true, 'message' => 'Allergy has been updated successfully', 'error' => '', 'data' => $allergy]);
-        } else {
-            return response()->json(['status' => false, 'message' => 'There has been an error while updating the allergy', 'error' => '', 'data' => '']);
-        }
-    } catch (\Exception $e) {
-        throw new HttpException(500, $e->getMessage());
-    }
+    return response()->json(['message' => 'Allergy updated successfully', 'data' => $allergy]);
+} catch (\Exception $e) {
+    throw new HttpException(500, $e->getMessage());
+}
 }
 
     /**

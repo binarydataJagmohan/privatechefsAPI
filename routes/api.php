@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AllergyController;
 use App\Http\Controllers\Api\ServiceChoiceController;
+use App\Http\Controllers\Api\DishCategoryController;
+use App\Http\Controllers\Api\DishesController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -60,9 +62,13 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/getSingleAllergyDetails/{id}', [AllergyController::class, 'getSingleAllergyDetails']);
     Route::put('/updateAllergy/{id}', [AllergyController::class, 'updateAllergy']);
     Route::get('/getSingleServiceDetail/{id}', [ServiceChoiceController::class, 'getSingleServiceDetail']);
+    Route::post('/serviceUpdate/{id}',[ServiceChoiceController::class,'serviceUpdate']);
+    Route::get('/getDishecategory',[DishCategoryController::class,'getDishecategory']);
+    Route::post('/dishInsert',[DishesController::class,'dishInsert']);
+    Route::get('/getDishes',[DishesController::class,'getDishes']);
+
 });
-
-
+   
 //chef edit profile
 //user edit profile
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -79,8 +85,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 //villas
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-all-villas', [App\Http\Controllers\Api\VillasController::class, 'get_all_villas']);
+    Route::get('/get-single-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'get_single_villas']);
     Route::post('/save-villa', [App\Http\Controllers\Api\VillasController::class, 'save_villa']);
     Route::post('/update-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'update_villas']);
+    Route::post('/delete-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'deleteVillas']);
 });
 
 Route::group(['middleware' => ['api']], function ($router) {

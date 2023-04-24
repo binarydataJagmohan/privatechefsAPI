@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\ServiceChoice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ServiceChoiceController extends Controller
 {
@@ -40,9 +41,22 @@ class ServiceChoiceController extends Controller
      */
     public function saveService(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+        'name' => 'required|string|unique:service_choices,service_name|max:50|',
+        'description' => 'required|string|max:500',
+        //'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['status' => false, 'message' => $validator->errors()->first(), 'error' => $validator->errors(), 'data' => '']);
+    }
+
+
+
         try {
 
          $service = new ServiceChoice();
+         $service->user_id = $request->user_id;
          $service->service_name = $request->name;
          $service->description = $request->description;
 
@@ -103,9 +117,25 @@ class ServiceChoiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ServiveChoice $serviveChoice)
+    public function serviceUpdate(Request $request,$id)
     {
-        //
+        try {
+    $service = ServiceChoice::findOrFail($id);
+    $service->service_name = $request->input('service_name');
+    $service->description = $request->input('description');
+    if ($request->hasFile('image')) {
+        $randomNumber = mt_rand(1000000000, 9999999999);
+        $imagePath = $request->file('image');
+        $imageName = $randomNumber . $imagePath->getClientOriginalName();
+        $imagePath->move('images/admin/service', $imageName);
+        $service->image = $imageName;
+    } 
+    $service->save();
+
+    return response()->json(['status'=>true, 'message' => 'Service updated successfully', 'data' => $service]);
+} catch (\Exception $e) {
+    throw new HttpException(500, $e->getMessage());
+}
     }
 
     /**
