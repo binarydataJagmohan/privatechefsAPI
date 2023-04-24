@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AllergyController;
 use App\Http\Controllers\Api\ServiceChoiceController;
+use App\Http\Controllers\Api\DishCategoryController;
+use App\Http\Controllers\Api\DishesController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -60,11 +62,16 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/saveService', [ServiceChoiceController::class, 'saveService']);
     Route::get('/getServiceDetails', [ServiceChoiceController::class, 'getServiceDetails']);
     Route::get('/serviceDelete/{id}', [ServiceChoiceController::class, 'serviceDelete']);
+    Route::get('/getSingleAllergyDetails/{id}',[AllergyController::class,'getSingleAllergyDetails']);
+    Route::post('/updateAllergy/{id}',[AllergyController::class,'updateAllergy']);
+    Route::get('/getSingleServiceDetail/{id}',[ServiceChoiceController::class,'getSingleServiceDetail']);
+    Route::post('/serviceUpdate/{id}',[ServiceChoiceController::class,'serviceUpdate']);
 });
-Route::get('/getSingleAllergyDetails/{id}',[AllergyController::class,'getSingleAllergyDetails']);
-Route::post('/updateAllergy/{id}',[AllergyController::class,'updateAllergy']);
-Route::get('/getSingleServiceDetail/{id}',[ServiceChoiceController::class,'getSingleServiceDetail']);
-Route::post('/serviceUpdate/{id}',[ServiceChoiceController::class,'serviceUpdate']);
+
+    Route::get('/getDishecategory',[DishCategoryController::class,'getDishecategory']);
+    Route::post('/dishInsert',[DishesController::class,'dishInsert']);
+    Route::get('/getDishes',[DishesController::class,'getDishes']);
+
 
 
 //chef edit profile

@@ -1,7 +1,7 @@
 <?php
 
 namespace Database\Seeders;
-
+use App\Models\DishCategory;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -18,5 +18,9 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
+         //  DishCategory::create(['dish_category' => 'starter']);
+         // DishCategory::create(['dish_category' => 'first course']);
+         // DishCategory::create(['dish_category' => 'main Course']);
+         // DishCategory::create(['dish_category' => 'Desert']);
     }
 }
