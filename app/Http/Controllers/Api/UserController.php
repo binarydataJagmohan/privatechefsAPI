@@ -329,9 +329,9 @@ class UserController extends Controller
         try{
           $user = User::where('id',$request->id)->first();
           if ($user) {            
-            return response()->json(['status' => true, 'message' => "Single profile data fetch successfully", 'data' => $user], 200);
+            return response()->json(['status' => true, 'message' => "Single profile data fetched successfully", 'data' => $user], 200);
         } else {
-            return response()->json(['status' => false, 'message' => "There has been error for fetching the data", 'data' => ""], 200);
+            return response()->json(['status' => false, 'message' => "There has been error for fetching the single profile", 'data' => ""], 200);
         }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'msg' => $e->getMessage()]);

@@ -83,7 +83,9 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 //villas
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-all-villas', [App\Http\Controllers\Api\VillasController::class, 'get_all_villas']);
+    Route::get('/get-single-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'get_single_villas']);
     Route::post('/save-villa', [App\Http\Controllers\Api\VillasController::class, 'save_villa']);
     Route::post('/update-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'update_villas']);
+    Route::post('/delete-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'deleteVillas']);
 });
 
