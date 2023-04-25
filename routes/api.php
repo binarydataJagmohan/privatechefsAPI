@@ -95,4 +95,8 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('/getServiceDetails', [ServiceChoiceController::class, 'getServiceDetails']);
     Route::get('/get-all-cuisine', [App\Http\Controllers\Api\CuisineController::class, 'get_all_cuisine']);
     Route::get('/getAllergyDetails', [AllergyController::class, 'getAllergyDetails']);
+    Route::get('/getAllergyDetails', [AllergyController::class, 'getAllergyDetails']);
+    Route::post('/save-booking', [App\Http\Controllers\Api\BookingController::class, 'save_booking']);
 });
+
+
