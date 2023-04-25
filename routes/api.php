@@ -63,12 +63,19 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::put('/updateAllergy/{id}', [AllergyController::class, 'updateAllergy']);
     Route::get('/getSingleServiceDetail/{id}', [ServiceChoiceController::class, 'getSingleServiceDetail']);
     Route::post('/serviceUpdate/{id}',[ServiceChoiceController::class,'serviceUpdate']);
+    
     Route::get('/getDishecategory',[DishCategoryController::class,'getDishecategory']);
-    Route::post('/dishInsert',[DishesController::class,'dishInsert']);
     Route::get('/getDishes',[DishesController::class,'getDishes']);
+    Route::get('/delete-dish/{id}',[DishesController::class,'dish_delete']);
+    Route::get('/get-single-dish/{id}',[DishesController::class,'get_single_dish']);
 
+    
 });
-   
+
+  Route::post('/dishInsert',[DishesController::class,'dishInsert']);
+  Route::get('/get-item-by-category/{id}',[DishesController::class,'get_item_by_category']);
+
+  
 //chef edit profile
 //user edit profile
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
