@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('service_name')->nullable();
             $table->longText('description')->nullable();
             $table->string('image')->nullable();
-            $table->enum('status', ['active', 'inactive','deletd'])->default('active');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

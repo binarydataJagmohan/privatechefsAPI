@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('villa_id')->nullable();
             $table->string('image')->nullable();
-            $table->enum('status', ['active', 'inactive','deleted'])->default('active');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

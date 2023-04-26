@@ -14,17 +14,18 @@ return new class extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->unsignedBigInteger('services_id')->nullable();
-            $table->date('booking_date')->nullable();
+            $table->string('service_id',20)->nullable();
+            $table->string('cuisine_id',50)->nullable();
+            $table->string('allergies_id',50)->nullable();
+            $table->text('notes')->nullable();
             $table->string('location')->nullable();
-            $table->integer('adult')->nullable();
-            $table->integer('children')->nullable();
-            $table->integer('teen')->nullable();
-            $table->text('booking_location')->nullable();
+            $table->integer('adults')->nullable();
+            $table->integer('childrens')->nullable();
+            $table->integer('teens')->nullable();
             $table->text('chef_offer')->nullable();
             $table->unsignedBigInteger('assigned_to_user_id')->nullable();
-            $table->enum('category', ['one_time', 'multiple_times'])->default('one_time');
-            $table->enum('status', ['completed', 'upcoming', 'canceled'])->default('upcoming');
+            $table->enum('booking_status', ['completed', 'upcoming', 'canceled'])->default('upcoming');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });
