@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\ServiceChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ServiceChoiceController extends Controller
 {
@@ -149,7 +150,8 @@ class ServiceChoiceController extends Controller
         {
         return response()->json(['status' => 'error','message'=>'service not found'], 404);
         }
-       $service->delete();
+       $service->status = 'deleted';
+       $service->save();
        return response()->json(['status'=> true, 'message' => 'service deleted','data'=>$service]);
        }
         catch (\Exception $e) {

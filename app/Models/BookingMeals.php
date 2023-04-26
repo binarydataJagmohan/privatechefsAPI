@@ -9,5 +9,5 @@ class BookingMeals extends Model
 {
     use HasFactory;
 
-    protected $table = "bookings_meals";
+    protected $table = "booking_meals";
 }

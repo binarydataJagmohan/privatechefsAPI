@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use DB;
 
 class BookingController extends Controller
 {
@@ -183,4 +184,19 @@ class BookingController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+   public function get_User_By_Booking()
+{
+    $user = DB::table('users')
+        ->join('bookings', 'users.id', '=', 'bookings.user_id')
+        ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
+        ->select('users.name','users.surname','users.address','bookings.booking_status','booking_meals.category','booking_meals.date','booking_meals.created_at')
+        ->get();
+        
+    if (!$user) {
+        return response()->json(['message' => 'Booking not found','status'=>true], 404);
+    }
+
+    return response()->json(['status'=>true,'message'=>'Data fetched','data'=>$user]);
+}
 }

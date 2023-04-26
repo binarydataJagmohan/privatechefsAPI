@@ -36,7 +36,7 @@ return new class extends Migration
             $table->string('twitter_link')->nullable();
             $table->string('linkedin_link')->nullable();
             $table->string('youtube_link')->nullable();
-            $table->enum('status', ['active', 'inactive','deleted'])->default('active');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

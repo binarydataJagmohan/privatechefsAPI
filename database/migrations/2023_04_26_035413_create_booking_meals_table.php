@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_choices', function (Blueprint $table) {
-           $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->string('service_name')->nullable();
-            $table->longText('description')->nullable();
-            $table->string('image')->nullable();
+        Schema::create('booking_meals', function (Blueprint $table) {
+            $table->id();
+            $table->integer('booking_id')->nullable();
+            $table->date('date')->nullable();
+            $table->string('breakfast',20)->nullable();
+            $table->string('lunch',20)->nullable();
+            $table->string('dinner',20)->nullable();
+            $table->enum('category', ['onetime', 'multipletimes'])->default('onetime');
             $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('servive_choices');
+        Schema::dropIfExists('booking_meals');
     }
 };
