@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Allergy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 
 class AllergyController extends Controller
@@ -150,7 +151,8 @@ class AllergyController extends Controller
         {
         return response()->json(['status' => 'Allergy not found'], 404);
         }
-       $allergy->delete();
+        $allergy->status = 'deleted'; // Change the status to 'inactive'
+        $allergy->save();
        return response()->json(['status'=> true, 'message' => 'Allergy deleted','data'=>$allergy]);
        }
         catch (\Exception $e) {
