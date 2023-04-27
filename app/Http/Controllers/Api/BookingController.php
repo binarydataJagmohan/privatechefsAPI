@@ -190,7 +190,8 @@ class BookingController extends Controller
     $user = DB::table('users')
         ->join('bookings', 'users.id', '=', 'bookings.user_id')
         ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
-        ->select('users.name','users.surname','users.address','bookings.booking_status','booking_meals.category','booking_meals.date','booking_meals.created_at')
+        ->select('users.name','users.id','users.surname','users.address','bookings.booking_status','booking_meals.category','booking_meals.date','booking_meals.created_at')
+        ->groupBy('users.id')
         ->get();
         
     if (!$user) {
