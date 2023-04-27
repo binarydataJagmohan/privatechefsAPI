@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('min_price')->nullable();
             $table->integer('max_price')->nullable();
             $table->integer('discount')->nullable();
-            $table->longText('comments')->nullable();
+            $table->text('comments')->nullable();
             $table->integer('starter_items',1)->default(0);
             $table->integer('firstcourse_items',1)->default(0);
             $table->integer('maincourse_items',1)->default(0);

@@ -54,12 +54,11 @@ class VillasController extends Controller
             $villa_img->image = implode(',', $names);
             $villa_img->save();
             
-            
-
             return response()->json([
                 'status' => true,
                 'message' => 'Villa saved successfully.',
                 'data' => $villa,
+               
                 'villa' => $villa_img
             ]);
         } catch (\Exception $e) {
@@ -133,11 +132,13 @@ class VillasController extends Controller
     public function get_all_villas()
     {
         try {
+            $villas_count = Villas::count();
             $villas = Villas::select('villas.*', 'villas_img.image')->join('villas_img', 'villas.id', 'villas_img.villa_id')->orderBy('villas.id', 'DESC')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All Villas fetched successfully.',
-                'data' => $villas
+                'data' => $villas,
+                'villas_count' => $villas_count
             ]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());

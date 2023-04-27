@@ -14,7 +14,7 @@ class NotificationController extends Controller
     public function notification_for_user_admin(Request $request)
     {
         try{
-            $count = Notification::where('notify_to',$request->id)->where('status','unseen')->count(); 
+            $count = Notification::where('notify_to',$request->id)->where('notifications_status','unseen')->count(); 
             $notifications = DB::table('notifications')
             ->join('users', 'notifications.notify_by', '=', 'users.id')
             ->select('notifications.*', 'users.pic')
@@ -33,7 +33,7 @@ class NotificationController extends Controller
     public function notification_status(Request $request){
         try{
             $notifications = Notification::where('notify_to',$request->id)->update([
-                'status' => "seen"
+                'notifications_status' => "seen"
             ]); 
             if ($notifications) {            
                 return response()->json(['status' => true, 'message' => "Notification status changed successfully", 'data' => $notifications], 200);

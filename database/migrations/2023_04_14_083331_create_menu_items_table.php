@@ -17,6 +17,9 @@ return new class extends Migration
             $table->unsignedBigInteger('menu_id')->nullable();
             $table->unsignedBigInteger('dish_id')->nullable();
             $table->string('type',20)->nullable();
+            $table->string('item_name')->nullable();
+            $table->longText('description')->nullable();;
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });
