@@ -17,7 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('notify_to')->nullable();
             $table->longText('description')->nullable();
             $table->enum('type', ['login', 'register','update_profile','forget_password','booking']);
-            $table->enum('status', ['seen', 'unseen'])->default('unseen');
+            $table->enum('notifications_status', ['seen', 'unseen'])->default('unseen');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

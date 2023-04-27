@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('dishes', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->enum('type', ['starter','first_course','main_course','desert'])->default('starter');
+            $table->integer('dish_category_id')->nullable();
+            $table->string('type',20)->nullable();
             $table->string('item_name')->nullable();
             $table->enum('status', ['active','deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\ChefDetail;
 use App\Models\Menu;
 use App\Models\Dishes;
+use App\Models\MenuItems;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ChefDetailController extends Controller
@@ -169,37 +170,49 @@ class ChefDetailController extends Controller
         }
     }
 
-    public function save_chef_dishes(Request $request)
+    public function save_chef_menu_items(Request $request)
     {
         try {
 
-            $dishes = new Dishes();
-            $dishes->menu_id =  $request->menu_id;
-            $dishes->user_id = $request->user_id;
-            $dishes->type =  $request->type;
-            $dishes->item_name =  $request->item_name;
-            $dishes->save();
+           $check_dishes = MenuItems::where('dish_id',$request->dish_id)->where('menu_id',$request->menu_id)->where('status','active')->count();
 
-            if ($dishes->save()) {
+           if($check_dishes <= 0){
 
-                $Dishes = Dishes::where('menu_id', $request->menu_id)->where('user_id', $request->user_id)->where('status', 'active')->orderBy('id', 'desc')->get();
+                $dishes = new MenuItems();
+                $dishes->menu_id =  $request->menu_id;
+                $dishes->user_id = $request->user_id;
+                $dishes->type =  $request->type;
+                $dishes->dish_id =  $request->dish_id;
+                $dishes->save();
 
-                return response()->json(['status' => true, 'message' => 'Dishes data save successfully', 'error' => '', 'dishes' => $Dishes]);
-            } else {
+                if ($dishes->save()) {
 
-                return response()->json(['status' => true, 'message' => 'There has been for saving the dishes', 'error' => '', 'data' => '']);
-            }
+                    $Dishes = MenuItems::Select('menu_items.id as menu_item_id','item_name','menu_items.type')->where('menu_id', $request->menu_id)->where('menu_items.user_id', $request->user_id)->where('menu_items.status', 'active')->orderBy('menu_items.id', 'desc')->join('dishes', 'menu_items.dish_id', '=', 'dishes.id')->get();
+
+                    return response()->json(['status' => true, 'message' => 'Menu items has been save successfully', 'error' => '', 'dishes' => $Dishes]);
+                } else {
+
+                    return response()->json(['status' => false, 'message' => 'There has been for saving the Menu items', 'error' => '', 'data' => '']);
+                }
+
+            }else {
+
+            return response()->json(['status' => false, 'message' => 'Menu item already exits', 'error' => '', 'data' => '']);
+
+           }     
+
+            
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
     }
 
-    public function delete_single_dish(Request $request)
+    public function delete_chef_menu_item(Request $request)
     {
 
         try {
 
-            $Dishes = Dishes::where('id', $request->id)->update([
+            $Dishes = MenuItems::where('id', $request->id)->update([
                 'status' => 'deleted'
             ]);
             if ($Dishes) {

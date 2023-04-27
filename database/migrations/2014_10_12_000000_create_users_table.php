@@ -35,9 +35,9 @@ class CreateUsersTable extends Migration
             $table->string('bank_name')->nullable();
             $table->string('holder_name')->nullable();
             $table->string('bank_address')->nullable();
-            $table->enum('role', ['admin', 'superadmin', 'chef', 'user', 'concierge'])->nullable()->default('user');
+            $table->enum('role', ['admin', 'superadmin', 'chef', 'user', 'concierge'])->default('user');
             $table->boolean('first_login')->default(false)->nullable();
-            $table->enum('status', ['active', 'deactive'])->default('active')->nullable();
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamps();
         });
     }

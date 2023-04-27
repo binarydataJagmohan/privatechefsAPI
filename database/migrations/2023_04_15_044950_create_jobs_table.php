@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('admin_price')->nullable();
             $table->string('menu_item')->nullable();
             $table->enum('approved_by_admin', ['0', '1'])->default('0');
-            $table->enum('status', ['active', 'deleted'])->default('active');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

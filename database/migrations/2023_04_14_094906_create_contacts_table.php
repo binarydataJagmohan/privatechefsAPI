@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('phone_no')->nullable();
             $table->text('message')->nullable();
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

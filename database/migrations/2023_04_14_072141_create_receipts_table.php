@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('payment_details')->nullable();
             $table->date('order_date')->nullable();
             $table->enum('payment_type', ['paypal', 'credit_card', 'bitcoin', 'paymino'])->default('paypal');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

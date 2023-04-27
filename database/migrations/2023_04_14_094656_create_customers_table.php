@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('customer_email')->nullable();
             $table->string('customer_phone_no')->nullable();
             $table->string('customer_full_address')->nullable();
-            $table->enum('status', ['active', 'deleted'])->default('active');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

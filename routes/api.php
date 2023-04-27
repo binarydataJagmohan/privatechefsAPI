@@ -38,6 +38,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/update-chef-menu', [App\Http\Controllers\Api\MenuController::class, 'update_chef_menu']);
     Route::get('/delete-single-menu/{id}', [App\Http\Controllers\Api\MenuController::class, 'delete_single_menu']);
     Route::post('/update-person-price', [App\Http\Controllers\Api\MenuController::class, 'update_person_price']);
+    Route::get('/update-chef-dish-count', [App\Http\Controllers\Api\MenuController::class, 'update_person_price_count']);
 });
 
 
@@ -49,8 +50,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_resume']);
     Route::get('/get-all-chef-menu/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_chef_menu']);
     Route::get('/getAllChefDetails', [App\Http\Controllers\Api\ChefDetailController::class, 'getAllChefDetails']);
-    Route::post('/save-chef-dishes', [App\Http\Controllers\Api\ChefDetailController::class, 'save_chef_dishes']);
-    Route::get('/delete-single-dish/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_single_dish']);
+    Route::post('/save-chef-menu-items', [App\Http\Controllers\Api\ChefDetailController::class, 'save_chef_menu_items']);
+    Route::get('/delete-chef-menu-item/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_chef_menu_item']);
 });
 
 //Allergy or service Edit,update,get Routes
@@ -65,14 +66,15 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/serviceUpdate/{id}',[ServiceChoiceController::class,'serviceUpdate']);
     
     Route::get('/getDishecategory',[DishCategoryController::class,'getDishecategory']);
-    Route::get('/getDishes',[DishesController::class,'getDishes']);
+    Route::get('/get-chef-dishes/{id}',[DishesController::class,'get_chef_dishes']);
     Route::get('/delete-dish/{id}',[DishesController::class,'dish_delete']);
     Route::get('/get-single-dish/{id}',[DishesController::class,'get_single_dish']);
-
+    Route::post('/add-chef-dish',[DishesController::class,'add_chef_dish']);
+    Route::get('/fetch-dish-category-by-id',[DishesController::class,'fetch_dish_category_by_id']);
     
 });
 
-  Route::post('/dishInsert',[DishesController::class,'dishInsert']);
+  
   Route::get('/get-item-by-category/{id}',[DishesController::class,'get_item_by_category']);
 
   

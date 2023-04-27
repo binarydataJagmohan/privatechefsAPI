@@ -16,7 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('receiver_id')->nullable();
             $table->unsignedBigInteger('sender_id')->nullable();
             $table->longText('message')->nullable();
-            $table->enum('status', ['seen', 'unseen'])->default('unseen');
+            $table->enum('message_status', ['seen', 'unseen'])->default('unseen');
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });

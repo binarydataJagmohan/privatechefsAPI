@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Cuisine;
 use App\Models\Menu;
 use App\Models\Dishes;
+use App\Models\MenuItems;
+
 use Symfony\Component\HttpKernel\Exception\HttpException;
 class MenuController extends Controller
 {
@@ -83,8 +85,11 @@ class MenuController extends Controller
         try {
 
             $MenuData = Menu::find($id);
+
+             $Dishes = MenuItems::Select('menu_items.id as menu_item_id','item_name','menu_items.type')->where('menu_id',$id)->where('menu_items.status', 'active')->orderBy('menu_items.id', 'desc')->join('dishes', 'menu_items.dish_id', '=', 'dishes.id')->get();
+
         
-            $Dishes = Dishes::where('status','active')->where('menu_id',$id)->get();
+            // $Dishes = Dishes::where('status','active')->where('menu_id',$id)->get();
 
             if($MenuData){
                 return response()->json(['status'=>true,'message' => "Single menu Data fetch successfully", 'menudata' => $MenuData,'dishes'=>$Dishes,'status'=>true], 200);
@@ -162,7 +167,7 @@ class MenuController extends Controller
             
             if ($menu) {
 
-                $Dishes = Dishes::where('menu_id', $request->id)->update([
+                $Dishes = MenuItems::where('menu_id', $request->id)->update([
                     'status' => 'deleted'
                 ]);
 
@@ -197,6 +202,28 @@ class MenuController extends Controller
              }
 
            
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+
+    }
+
+    public function update_person_price_count(Request $request)
+    {
+    
+        try {
+
+            $menu = Menu::where('id', $request->menu_id)->update([
+                $request->name => $request->dishcount
+            ]);
+
+
+            if($menu){
+                return response()->json(['status'=>true,'message' => "Dish Count has been updated succesfully",'status'=>true], 200);
+            }else {
+                return response()->json(['status'=>false,'message' => "No Single menu data found", 'data' => ""], 200);
+            }
             
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());

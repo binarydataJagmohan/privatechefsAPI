@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::create('menu_items', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('menu_id')->nullable();
-            $table->enum('type', ['starter', 'first_course', 'main_course', 'dessert'])->default('starter');
-            $table->string('item_name')->nullable();
-            $table->longText('description')->nullable();;
-            $table->enum('status', ['active', 'deleted'])->default('active');
+            $table->unsignedBigInteger('dish_id')->nullable();
+            $table->string('type',20)->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });
