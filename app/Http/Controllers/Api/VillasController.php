@@ -133,7 +133,7 @@ class VillasController extends Controller
     {
         try {
             $villas_count = Villas::count();
-            $villas = Villas::select('villas.*', 'villas_img.image')->join('villas_img', 'villas.id', 'villas_img.villa_id')->orderBy('villas.id', 'DESC')->get();
+            $villas = Villas::select('villas.*', 'villas_img.image')->join('villas_img', 'villas.id', 'villas_img.villa_id')->orderBy('villas.id', 'DESC')->where('villas.status','active')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All Villas fetched successfully.',
@@ -183,12 +183,15 @@ class VillasController extends Controller
                     'message' => 'Villa not found'
                 ]);
             }
-            $villa->delete();
-            VillaImages::where('villa_id', $request->id)->delete();
-
+            $villa->status = 'deleted';
+            $villa->save();
+            VillaImages::where('villa_id', $request->id)->update([
+                'status' => 'deleted'
+            ]);
+    
             return response()->json([
                 'status' => true,
-                'message' => 'Villa deleted successfully'
+                'message' => 'Villa status changed to deleted successfully'
             ]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
@@ -198,4 +201,5 @@ class VillasController extends Controller
             ]);
         }
     }
+    
 }
