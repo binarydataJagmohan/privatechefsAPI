@@ -115,11 +115,11 @@ class VillasController extends Controller
             $villa_img->image = implode(',', $names);
             $villa_img->save();
 
-
             return response()->json([
                 'status' => true,
                 'message' => 'Villa updated successfully.',
-                'data' => $villas
+                'data' => $villas,
+                'villa-image' => $villa_img
             ]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());

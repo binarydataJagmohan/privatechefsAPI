@@ -19,6 +19,7 @@ class NotificationController extends Controller
             ->join('users', 'notifications.notify_by', '=', 'users.id')
             ->select('notifications.*', 'users.pic')
             ->where('notifications.notify_to', $request->id)
+            ->orderby('notifications.id','DESC')
             ->get(); 
             if ($notifications) {            
                 return response()->json(['status' => true, 'message' => "Notification fetched successfully", 'data' => $notifications,'count'=>$count], 200);
