@@ -38,8 +38,6 @@ class VillasController extends Controller
             $villa->linkedin_link = $request->input('linkedin_link');
             $villa->youtube_link = $request->input('youtube_link');
             $villa->save();
-
-           
     
             if ($request->hasFile('image')) {
                 foreach ($request->file('image') as $image) {
@@ -50,17 +48,12 @@ class VillasController extends Controller
                      $villa_img->villa_id = $villa->id;
                      $villa_img->image = $imageName;
                      $villa_img->save();
-
                 }
             }
-            
-            
             return response()->json([
                 'status' => true,
                 'message' => 'Villa saved successfully.',
-                'data' => $villa,
-               
-                'villa' => $villa_img
+                'data' => $villa
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -103,7 +96,6 @@ class VillasController extends Controller
 
                 $villa_img = VillaImages::where('villa_id',$request->id)->delete();
 
-
                 foreach ($request->file('image') as $image) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
                     $imageName = $randomNumber . $image->getClientOriginalName();
@@ -133,7 +125,7 @@ class VillasController extends Controller
     {
         try {
             $villas_count = Villas::count();
-            $villas = Villas::select('villas.*', 'villas_img.image')->join('villas_img', 'villas.id', 'villas_img.villa_id')->orderBy('villas.id', 'DESC')->where('villas.status','active')->get();
+            $villas = Villas::orderBy('id', 'DESC')->where('status','active')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All Villas fetched successfully.',
@@ -153,7 +145,6 @@ class VillasController extends Controller
         try {
 
             $villas = Villas::find($request->id);
-
             $villas_img = VillaImages::where('villa_id', $request->id)->orderBy('id', 'DESC')->where('status','active')->get();
 
             if ($villas) {
