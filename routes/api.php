@@ -116,5 +116,6 @@ Route::group(['middleware' => ['api']], function ($router) {
 });
 
 Route::get('/get-User-By-Booking',[App\Http\Controllers\Api\BookingController::class,'get_User_By_Booking']);
+Route::get('/get-User-By-Booking/{id}',[App\Http\Controllers\Api\BookingController::class,'get_User_By_Booking_Id']);
 
 
