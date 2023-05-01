@@ -25,9 +25,9 @@ return new class extends Migration
             $table->string('price_per_day')->nullable();
             $table->string('bedrooms')->nullable();
             $table->string('bathrooms')->nullable();
-            $table->enum('BBQ',['yes','no'])->default('no');
-            $table->enum('type_of_stove',['gas','electric','induction'])->default('gas');
-            $table->enum('equipment',['basic','fully_equipped'])->nullable();
+            $table->enum('BBQ',['yes','no']);
+            $table->enum('type_of_stove',['gas','electric','induction']);
+            $table->enum('equipment',['basic','fully_equipped']);
             $table->string('consierge_phone')->nullable();
             $table->string('website')->nullable();
             $table->string('image')->nullable();
