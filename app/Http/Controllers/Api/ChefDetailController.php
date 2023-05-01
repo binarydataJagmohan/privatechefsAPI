@@ -156,19 +156,26 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-    public function getAllChefDetails()
-    {
-        try {
-            $users = User::where('role', 'chef')->get();
-            return response()->json([
-                'status' => true,
-                'message' => "Chef resume fetched successfully",
-                'data' => $users
-            ], 200);
-        } catch (\Exception $e) {
-            throw new HttpException(500, $e->getMessage());
-        }
+    
+ public function getAllChefDetails()
+{
+    try {
+        $users = User::where('role', 'chef')
+                     ->join('menus', 'users.id', '=', 'menus.user_id')
+                     ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                     ->select('users.*', 'cuisine.name as cuisine_name')
+                     ->get();
+        return response()->json([
+            'status' => true,
+            'message' => "Chef resume fetched successfully",
+            'data' => $users
+        ], 200);
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
     }
+}
+
+
 
     public function save_chef_menu_items(Request $request)
     {
