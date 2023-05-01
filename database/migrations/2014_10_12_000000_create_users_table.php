@@ -35,6 +35,7 @@ class CreateUsersTable extends Migration
             $table->string('bank_name')->nullable();
             $table->string('holder_name')->nullable();
             $table->string('bank_address')->nullable();
+            $table->enum('approved_by_admin', ['yes', 'no'])->default('no');
             $table->enum('role', ['admin', 'superadmin', 'chef', 'user', 'concierge'])->default('user');
             $table->boolean('first_login')->default(false)->nullable();
             $table->enum('status', ['active', 'deactive','deleted'])->default('active');
