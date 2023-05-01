@@ -40,19 +40,20 @@ class VillasController extends Controller
             $villa->save();
 
            
-            $villa_img = new VillaImages();
-            $villa_img->villa_id = $villa->id;
-            $names = []; // initialize the array
+    
             if ($request->hasFile('image')) {
                 foreach ($request->file('image') as $image) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
                     $imageName = $randomNumber . $image->getClientOriginalName();
                     $image->move('images/villas/images', $imageName);
-                    array_push($names, $imageName);
+                     $villa_img = new VillaImages();
+                     $villa_img->villa_id = $villa->id;
+                     $villa_img->image = $imageName;
+                     $villa_img->save();
+
                 }
             }
-            $villa_img->image = implode(',', $names);
-            $villa_img->save();
+            
             
             return response()->json([
                 'status' => true,
@@ -97,30 +98,29 @@ class VillasController extends Controller
             $villas->youtube_link = $request->input('youtube_link');
             $villas->save();
 
-            $villa_img = VillaImages::where('villa_id', $villas->id)->first();
-            if (!$villa_img) {
-                $villa_img = new VillaImages();
-                $villa_img->villa_id = $villas->id;
-            }
 
-            $names = []; // initialize the array
             if ($request->hasFile('image')) {
+
+                $villa_img = VillaImages::where('villa_id',$request->id)->delete();
+
+
                 foreach ($request->file('image') as $image) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
                     $imageName = $randomNumber . $image->getClientOriginalName();
                     $image->move('images/villas/images', $imageName);
-                    array_push($names, $imageName);
+                     $villa_img = new VillaImages();
+                     $villa_img->villa_id = $request->id;
+                     $villa_img->image = $imageName;
+                     $villa_img->save();
+
                 }
             }
-            $villa_img->image = implode(',', $names);
-            $villa_img->save();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Villa updated successfully.',
-                'data' => $villas,
-                'villa-image' => $villa_img
             ]);
+            
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
             return response()->json([
@@ -151,12 +151,17 @@ class VillasController extends Controller
     public function get_single_villas(Request $request)
     {
         try {
-            $villas = Villas::select('villas.*', 'villas_img.image')->join('villas_img', 'villas.id', 'villas_img.villa_id')->where('villas.id', $request->id)->first();
+
+            $villas = Villas::find($request->id);
+
+            $villas_img = VillaImages::where('villa_id', $request->id)->orderBy('id', 'DESC')->where('status','active')->get();
+
             if ($villas) {
                 return response()->json([
                     'status' => true,
                     'message' => 'Single villa data fetched successfully.',
-                    'data' => $villas
+                    'data' => $villas,
+                    'villaImg' =>  $villas_img
                 ]);
             } else {
                 return response()->json([
