@@ -122,4 +122,11 @@ Route::group(['middleware' => ['api']], function ($router) {
 Route::get('/get-User-By-Booking',[App\Http\Controllers\Api\BookingController::class,'get_User_By_Booking']);
 Route::get('/get-User-By-Booking/{id}',[App\Http\Controllers\Api\BookingController::class,'get_User_By_Booking_Id']);
 
+//receipt
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+    Route::get('/get-all-booking',[App\Http\Controllers\Api\BookingController::class,'get_all_booking']);
+    Route::post('/save-receipt',[App\Http\Controllers\Api\ReceiptController::class,'save_receipt']);
+    Route::get('/get-receipt',[App\Http\Controllers\Api\ReceiptController::class,'get_receipt']);
+    Route::get('/get-single-receipt/{id}',[App\Http\Controllers\Api\ReceiptController::class,'get_single_receipt']);
+});
 

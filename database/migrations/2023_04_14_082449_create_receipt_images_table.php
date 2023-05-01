@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('receipt_images', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('receipt_id')->nullable();
-            $table->string('path')->nullable();
+            $table->string('image')->nullable();
             $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
