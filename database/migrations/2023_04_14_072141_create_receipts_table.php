@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('booking_id')->nullable();
             $table->decimal('total_cost')->nullable();
+            $table->longText('description')->nullable();
             $table->string('payment_details')->nullable();
             $table->date('order_date')->nullable();
             $table->enum('payment_type', ['paypal', 'credit_card', 'bitcoin', 'paymino'])->default('paypal');

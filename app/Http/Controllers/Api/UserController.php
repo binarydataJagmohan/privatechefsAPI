@@ -61,7 +61,7 @@ class UserController extends Controller
 
                 $token = JWTAuth::fromUser($user);
 
-                $auth_user = User::select('name','email','role','id','surname','pic')->where('id',$user->id)->first();
+                $auth_user = User::select('name','email','role','id','surname','pic','phone','approved_by_admin')->where('id',$user->id)->first();
 
                 // unset($user->password);
                 // unset($user->view_password);
@@ -153,6 +153,8 @@ class UserController extends Controller
                     'role' => $user->role,
                     'pic' => $user->pic,
                     'surname' => $user->surname,
+                    'phone' => $user->phone,
+                    'approved_by_admin' => $user->approved_by_admin,
                 ],
                 'authorisation' => [
                     'token' => $token,

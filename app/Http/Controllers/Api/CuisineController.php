@@ -34,7 +34,7 @@ class CuisineController extends Controller
 
         $validator = Validator::make($request->all(), [
         'name' => 'required|string|unique:cuisine,name|max:50|',
-        'description' => 'required|string|max:500',
+        'description' => 'required|string',
         //'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
        ]);
 

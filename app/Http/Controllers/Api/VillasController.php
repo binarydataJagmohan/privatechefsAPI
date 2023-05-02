@@ -129,8 +129,7 @@ class VillasController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'All Villas fetched successfully.',
-                'data' => $villas,
-                'villas_count' => $villas_count
+                'data' => $villas
             ]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
