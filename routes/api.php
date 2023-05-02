@@ -52,7 +52,9 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     
     Route::post('/save-chef-menu-items', [App\Http\Controllers\Api\ChefDetailController::class, 'save_chef_menu_items']);
     Route::get('/delete-chef-menu-item/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_chef_menu_item']);
+
 });
+ Route::post('/get_chef_by_filter',[App\Http\Controllers\Api\ChefDetailController::class,'get_chef_by_filter']);
 
 Route::get('/getAllChefDetails', [App\Http\Controllers\Api\ChefDetailController::class, 'getAllChefDetails']);
 
