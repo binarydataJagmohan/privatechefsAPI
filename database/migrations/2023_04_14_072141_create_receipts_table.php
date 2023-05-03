@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('booking_id')->nullable();
+            $table->decimal('amount')->nullable();
             $table->decimal('total_cost')->nullable();
             $table->longText('description')->nullable();
             $table->string('payment_details')->nullable();

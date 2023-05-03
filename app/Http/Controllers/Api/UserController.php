@@ -175,7 +175,7 @@ class UserController extends Controller
             $user->phone = $request->phone;
             $user->birthday =  date('Y-m-d', strtotime($request->birthday));
             $user->address = $request->address;
-            $user->timezone = date('Y-m-d', strtotime($request->timezone));
+            $user->timezone = $request->timezone;
             $user->currency = $request->currency;
             $user->invoice_details = $request->invoice_details;
             $user->company_name = $request->company_name;

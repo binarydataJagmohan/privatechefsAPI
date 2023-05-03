@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Receipt;
 use App\Models\ReceiptImage;
 use App\Models\Booking;
+use DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ReceiptController extends Controller
@@ -14,25 +15,18 @@ class ReceiptController extends Controller
     public function save_receipt(Request $request)
     {
         try {
+            $totalAmount = DB::table('receipts')
+                ->where('booking_id', $request->booking_id)
+                ->sum('amount') + $request->amount;
+            
             $receipt = new Receipt();
             $receipt->user_id = $request->user_id;
             $receipt->booking_id = $request->booking_id;
-            $receipt->total_cost = $request->total_cost;
+            $receipt->amount = $request->amount;
             $receipt->description = $request->description;
             $receipt->order_date = $request->order_date;
             $savedata = $receipt->save();
 
-            if ($request->hasFile('image')) {
-                foreach ($request->file('image') as $image) {
-                    $randomNumber = mt_rand(1000000000, 9999999999);
-                    $imageName = $randomNumber . $image->getClientOriginalName();
-                    $image->move('images/chef/receipt', $imageName);
-                    $receipt_img = new ReceiptImage();
-                    $receipt_img->receipt_id = $receipt->id;
-                    $receipt_img->image = $imageName;
-                    $receipt_img->save();
-                }
-            }
 
             if ($savedata) {
                 return response()->json(['status' => true, 'message' => "Receipt has been stored succesfully", 'data' => $receipt], 200);
@@ -87,8 +81,26 @@ class ReceiptController extends Controller
     public function update_receipt(Request $request)
     {
         try {
+            $receipt = Receipt::find($request->id);
+            $receipt->user_id = $request->user_id;
+            $receipt->booking_id = $request->booking_id;
+            $receipt->amount = $request->amount;
+            $receipt->description = $request->description;
+            $receipt->order_date = $request->order_date;
+            $receipt->save();
+            if ($receipt) {
+                return response()->json(['status' => true, 'message' => "Receipt has been updated succesfully"], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for updating the receipt"], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function update_receipt_images(Request $request)
+    {
+        try {
             if ($request->hasFile('image')) {
-                // $receipt_img = ReceiptImage::where('receipt_id', $request->id)->delete();
                 foreach ($request->file('image') as $image) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
                     $imageName = $randomNumber . $image->getClientOriginalName();
@@ -98,17 +110,8 @@ class ReceiptController extends Controller
                     $receipt_img->image = $imageName;
                     $receipt_img->save();
                 }
-            } else {
-                $receipt = Receipt::find($request->id);
-                $receipt->user_id = $request->user_id;
-                $receipt->booking_id = $request->booking_id;
-                $receipt->total_cost = $request->total_cost;
-                $receipt->description = $request->description;
-                $receipt->order_date = $request->order_date;
-                $receipt->save();
             }
-
-            return response()->json(['status' => true, 'message' => "Receipt has been updated succesfully"], 200);
+            return response()->json(['status' => true, 'message' => "Receipt Images has been updated succesfully"], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
