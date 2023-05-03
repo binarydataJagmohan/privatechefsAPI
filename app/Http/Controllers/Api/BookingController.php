@@ -184,7 +184,7 @@ class BookingController extends Controller
     if (!$user) {
         return response()->json(['message' => 'Booking not found','status'=>true], 404);
     }
-
+}
     public function get_User_By_Booking_Id($id)
     {
         $user = DB::table('users')
@@ -200,6 +200,7 @@ class BookingController extends Controller
 
         return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $user]);
     }
+
     public function get_all_booking()
     {
         try {
