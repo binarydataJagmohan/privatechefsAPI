@@ -9,6 +9,7 @@ use App\Models\ChefDetail;
 use App\Models\Menu;
 use App\Models\Dishes;
 use App\Models\MenuItems;
+use DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ChefDetailController extends Controller
@@ -161,10 +162,13 @@ class ChefDetailController extends Controller
 {
     try {
         $users = User::where('role', 'chef')
-                     ->join('menus', 'users.id', '=', 'menus.user_id')
-                     ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                     ->select('users.*', 'cuisine.name as cuisine_name')
-                     ->get();
+             ->join('menus', 'users.id', '=', 'menus.user_id')
+             ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+             ->select('users.*', 
+                      DB::raw('GROUP_CONCAT(DISTINCT cuisine.name ORDER BY menus.created_at DESC SEPARATOR ", ") AS top_cuisines'))
+             ->groupBy('users.id', 'users.name', 'users.surname', 'users.email', 'users.password', 'users.view_password', 'users.email_verified_at', 'users.email_verified', 'users.phone', 'users.address', 'users.passport_no', 'users.timezone', 'users.currency', 'users.birthday', 'users.login_count', 'users.last_login', 'users.pic', 'users.status', 'users.created_at', 'users.updated_at','users.invoice_details','users.city','users.country','users.business_email','users.business_phoneno','users.company_name','users.vat_no','users.tax_id','users.BIC','users.bank_name','users.holder_name','users.bank_address','users.role','users.first_login','users.post_code','users.IBAN')
+             ->get();
+
         return response()->json([
             'status' => true,
             'message' => "Chef resume fetched successfully",
@@ -178,13 +182,14 @@ class ChefDetailController extends Controller
     public function get_chef_by_filter(Request $request)
 {
     try {
-        $selectedCuisines = $request->input('cuisines', []);
-       // return $selectedCuisines;  
+        $selectedCuisines = $request->input('cuisines');
+        $selectedCuisinesArray = explode(',', $selectedCuisines);
+       //return $selectedCuisines;  
         
         $users = User::where('role', 'chef')
                      ->join('menus', 'users.id', '=', 'menus.user_id')
                      ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                     ->whereIn('cuisine.name', $selectedCuisines)
+                     ->whereIn('cuisine.name', $selectedCuisinesArray)
                      ->select('users.*')
                      ->get();
 
@@ -198,7 +203,7 @@ class ChefDetailController extends Controller
         
         return response()->json([
             'status' => true,
-            'message' => "Chef resume fetched successfully",
+            'message' => "Cuision fetched successfully",
             'data' => $users
         ], 200);
     } catch (\Exception $e) {

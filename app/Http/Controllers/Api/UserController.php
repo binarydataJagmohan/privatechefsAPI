@@ -177,7 +177,11 @@ class UserController extends Controller
             $user->address = $request->address;
             $user->timezone = $request->timezone;
             $user->currency = $request->currency;
-            $user->invoice_details = $request->invoice_details;
+            $user->city = $request->city;
+            $user->country = $request->country;
+            $user->post_code = $request->post_code;
+            $user->business_email = $request->business_email;
+            $user->business_phoneno = $request->business_phoneno;
             $user->company_name = $request->company_name;
             $user->vat_no = $request->vat_no;
             $user->tax_id = $request->tax_id;
