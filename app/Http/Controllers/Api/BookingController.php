@@ -201,6 +201,7 @@ class BookingController extends Controller
 
         return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $user]);
     }
+
     public function get_all_booking()
     {
         try {

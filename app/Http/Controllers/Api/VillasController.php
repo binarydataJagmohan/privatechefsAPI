@@ -94,7 +94,7 @@ class VillasController extends Controller
 
             if ($request->hasFile('image')) {
 
-                $villa_img = VillaImages::where('villa_id',$request->id)->delete();
+                // $villa_img = VillaImages::where('villa_id',$request->id)->delete();
 
                 foreach ($request->file('image') as $image) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
