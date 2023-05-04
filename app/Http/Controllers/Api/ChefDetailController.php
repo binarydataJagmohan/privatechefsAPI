@@ -179,12 +179,23 @@ class ChefDetailController extends Controller
 {
     try {
         $selectedCuisines = $request->input('cuisines', []);
+       // return $selectedCuisines;  
+        
         $users = User::where('role', 'chef')
                      ->join('menus', 'users.id', '=', 'menus.user_id')
                      ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                     ->whereIn('cuisine.id', $selectedCuisines)
-                     ->select('users.*', 'cuisine.name as cuisine_name')
+                     ->whereIn('cuisine.name', $selectedCuisines)
+                     ->select('users.*')
                      ->get();
+
+        //     if ($users->isEmpty()) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => "No chefs found for the selected cuisines.",
+        //         'data' => []
+        //     ], 200);
+        // }
+        
         return response()->json([
             'status' => true,
             'message' => "Chef resume fetched successfully",
