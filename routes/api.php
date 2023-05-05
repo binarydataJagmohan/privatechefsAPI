@@ -135,3 +135,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-single-receipt/{id}',[App\Http\Controllers\Api\ReceiptController::class,'get_single_receipt']);
 });
 
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+    Route::get('/get-cuision',[App\Http\Controllers\Api\ChefDetailController::class,'get_cuision']);
+});

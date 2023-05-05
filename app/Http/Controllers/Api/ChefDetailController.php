@@ -10,6 +10,7 @@ use App\Models\Menu;
 use App\Models\Dishes;
 use App\Models\MenuItems;
 use DB;
+use App\Models\Cuisine;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ChefDetailController extends Controller
@@ -190,7 +191,7 @@ class ChefDetailController extends Controller
                      ->join('menus', 'users.id', '=', 'menus.user_id')
                      ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
                      ->whereIn('cuisine.name', $selectedCuisinesArray)
-                     ->select('users.*')
+                     ->select('users.*','cuisine.name as cuisine_name')
                      ->get();
 
         //     if ($users->isEmpty()) {
@@ -211,7 +212,19 @@ class ChefDetailController extends Controller
     }
 }
 
-
+public function get_cuision(Request $request)
+{
+    try {
+        $user = Cuisine::get();
+        if ($user) {
+            return response()->json(['status' => true, 'message' => "Cuisine fetched succesfully", 'data' => $user], 200);
+        } else {
+            return response()->json(['status' => false, 'message' => "There has been error for fetching the cuisine", 'data' => ""], 400);
+        }
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
+    }
+}
 
     public function save_chef_menu_items(Request $request)
     {
