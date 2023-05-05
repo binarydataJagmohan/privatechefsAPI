@@ -52,7 +52,9 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     
     Route::post('/save-chef-menu-items', [App\Http\Controllers\Api\ChefDetailController::class, 'save_chef_menu_items']);
     Route::get('/delete-chef-menu-item/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_chef_menu_item']);
+
 });
+ Route::get('/get_chef_by_filter',[App\Http\Controllers\Api\ChefDetailController::class,'get_chef_by_filter']);
 
 Route::get('/getAllChefDetails', [App\Http\Controllers\Api\ChefDetailController::class, 'getAllChefDetails']);
 
@@ -126,7 +128,14 @@ Route::get('/get-User-By-Booking/{id}',[App\Http\Controllers\Api\BookingControll
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-all-booking',[App\Http\Controllers\Api\BookingController::class,'get_all_booking']);
     Route::post('/save-receipt',[App\Http\Controllers\Api\ReceiptController::class,'save_receipt']);
+    Route::post('/update-receipt/{id}',[App\Http\Controllers\Api\ReceiptController::class,'update_receipt']);
+    Route::post('/update-receipt-images/{id}',[App\Http\Controllers\Api\ReceiptController::class,'update_receipt_images']);
+    Route::post('/delete-receipt/{id}',[App\Http\Controllers\Api\ReceiptController::class,'deleteReceipt']);
     Route::get('/get-receipt',[App\Http\Controllers\Api\ReceiptController::class,'get_receipt']);
     Route::get('/get-single-receipt/{id}',[App\Http\Controllers\Api\ReceiptController::class,'get_single_receipt']);
 });
 
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+    Route::get('/get-cuision',[App\Http\Controllers\Api\ChefDetailController::class,'get_cuision']);
+});

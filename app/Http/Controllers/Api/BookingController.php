@@ -178,12 +178,13 @@ class BookingController extends Controller
         ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
         ->join('service_choices','service_choices.id','=','bookings.service_id')
         ->select('users.name','users.id','users.surname','users.address','users.email','users.phone','bookings.booking_status','booking_meals.category','booking_meals.date','bookings.adults','bookings.teens','bookings.childrens','booking_meals.created_at','bookings.service_id','service_choices.service_name')
-        //->groupBy('users.id')
         ->get();
         
     if (!$user) {
         return response()->json(['message' => 'Booking not found','status'=>true], 404);
     }
+    return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $user]);
+}
 
     public function get_User_By_Booking_Id($id)
     {
@@ -200,6 +201,7 @@ class BookingController extends Controller
 
         return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $user]);
     }
+
     public function get_all_booking()
     {
         try {

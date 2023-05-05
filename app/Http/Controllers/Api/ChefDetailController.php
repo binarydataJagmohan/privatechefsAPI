@@ -9,6 +9,8 @@ use App\Models\ChefDetail;
 use App\Models\Menu;
 use App\Models\Dishes;
 use App\Models\MenuItems;
+use DB;
+use App\Models\Cuisine;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ChefDetailController extends Controller
@@ -156,15 +158,18 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-    
+
  public function getAllChefDetails()
 {
     try {
         $users = User::where('role', 'chef')
-                     ->join('menus', 'users.id', '=', 'menus.user_id')
-                     ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                     ->select('users.*', 'cuisine.name as cuisine_name')
-                     ->get();
+             ->join('menus', 'users.id', '=', 'menus.user_id')
+             ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+             ->select('users.*', 
+                      DB::raw('GROUP_CONCAT(DISTINCT cuisine.name ORDER BY menus.created_at DESC SEPARATOR ", ") AS top_cuisines'))
+             ->groupBy('users.id', 'users.name', 'users.surname', 'users.email', 'users.password', 'users.view_password', 'users.email_verified_at', 'users.email_verified', 'users.phone', 'users.address', 'users.passport_no', 'users.timezone', 'users.currency', 'users.birthday', 'users.login_count', 'users.last_login', 'users.pic', 'users.status', 'users.created_at', 'users.updated_at','users.invoice_details','users.city','users.country','users.business_email','users.business_phoneno','users.company_name','users.vat_no','users.tax_id','users.BIC','users.bank_name','users.holder_name','users.bank_address','users.role','users.first_login','users.post_code','users.IBAN')
+             ->get();
+
         return response()->json([
             'status' => true,
             'message' => "Chef resume fetched successfully",
@@ -175,7 +180,51 @@ class ChefDetailController extends Controller
     }
 }
 
+    public function get_chef_by_filter(Request $request)
+{
+    try {
+        $selectedCuisines = $request->input('cuisines');
+        $selectedCuisinesArray = explode(',', $selectedCuisines);
+       //return $selectedCuisines;  
+        
+        $users = User::where('role', 'chef')
+                     ->join('menus', 'users.id', '=', 'menus.user_id')
+                     ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                     ->whereIn('cuisine.name', $selectedCuisinesArray)
+                     ->select('users.*','cuisine.name as cuisine_name')
+                     ->get();
 
+        //     if ($users->isEmpty()) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => "No chefs found for the selected cuisines.",
+        //         'data' => []
+        //     ], 200);
+        // }
+        
+        return response()->json([
+            'status' => true,
+            'message' => "Cuision fetched successfully",
+            'data' => $users
+        ], 200);
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
+    }
+}
+
+public function get_cuision(Request $request)
+{
+    try {
+        $user = Cuisine::get();
+        if ($user) {
+            return response()->json(['status' => true, 'message' => "Cuisine fetched succesfully", 'data' => $user], 200);
+        } else {
+            return response()->json(['status' => false, 'message' => "There has been error for fetching the cuisine", 'data' => ""], 400);
+        }
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
+    }
+}
 
     public function save_chef_menu_items(Request $request)
     {
