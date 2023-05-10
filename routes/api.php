@@ -139,7 +139,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
-    // Route::get('/get-User-By-Booking',[App\Http\Controllers\Api\BookingController::class,'get_User_By_Booking']);
+    Route::get('/get-User-By-Booking',[App\Http\Controllers\Api\BookingController::class,'get_User_By_Booking']);
     Route::get('/get-User-By-Booking/{id}',[App\Http\Controllers\Api\BookingController::class,'get_User_By_Booking_Id']);
     Route::get('/get-user-chef-by-booking',[App\Http\Controllers\Api\BookingController::class,'get_user_chef_by_booking']);
      Route::get('/get-user-chef-filter-by-booking/{type}',[App\Http\Controllers\Api\BookingController::class,'get_user_chef_filter_by_booking']);
