@@ -154,6 +154,7 @@ class UserController extends Controller
                     'surname' => $user->surname,
                     'phone' => $user->phone,
                     'approved_by_admin' => $user->approved_by_admin,
+                    'address' => $user->address
                 ],
                 'authorisation' => [
                     'token' => $token,
@@ -184,6 +185,8 @@ class UserController extends Controller
             $user->company_name = $request->company_name;
             $user->vat_no = $request->vat_no;
             $user->tax_id = $request->tax_id;
+            $user->lat = $request->lat;
+            $user->lng = $request->lng;
 
             if ($request->hasFile('image')) {
                 $randomNumber = mt_rand(1000000000, 9999999999);
@@ -359,4 +362,52 @@ class UserController extends Controller
             ]);
         }
     }
+
+    // public function updateAllergyCusine(Request $request,$id)
+    // {
+    //     try {
+    //         $user = User::find($request->id);
+    //         $user->cuisine_id = implode(",", $request->cuisine_id);
+    //         $user->allergy_id = implode(",", $request->allergies_id);
+    //         $user->save();
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Allergies Updated',
+    //             'data' => $user
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         throw new HttpException(500, $e->getMessage());
+    //          return response()->json([
+    //             'status' => false,
+    //              'message' => $e->getMessage()
+    //          ]);
+    //     }
+    // }
+
+    public function updateAllergyCusine(Request $request, $id)
+{
+    try {
+        $user = User::find($id);
+        
+        $cuisineIds = is_array($request->selectedcuisine) ? $request->selectedcuisine : explode(',', $request->selectedcuisine);
+        $allergyIds = is_array($request->selectedallergies) ? $request->selectedallergies : explode(',', $request->selectedallergies);
+// return $request->all();
+        $user->cuisine_id = implode(",", $cuisineIds);
+        $user->allergy_id = implode(",", $allergyIds);
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Allergies Updated',
+            'data' => $user
+        ]);
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+
 }
