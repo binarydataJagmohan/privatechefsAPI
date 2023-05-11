@@ -184,6 +184,8 @@ class UserController extends Controller
             $user->company_name = $request->company_name;
             $user->vat_no = $request->vat_no;
             $user->tax_id = $request->tax_id;
+            $user->lat = $request->lat;
+            $user->lng = $request->lng;
 
             if ($request->hasFile('image')) {
                 $randomNumber = mt_rand(1000000000, 9999999999);

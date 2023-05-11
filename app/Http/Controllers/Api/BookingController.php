@@ -347,4 +347,21 @@ class BookingController extends Controller
             
         }
     }
+    public function get_User_Booking_id(Request $request)
+    {
+
+        $user = DB::table('users')
+            ->join('bookings', 'users.id', '=', 'bookings.user_id')
+            ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
+            ->select('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id')
+            ->groupBy('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id')->orderBy('bookings.id', 'DESC')
+            ->where('users.id', $request->id)
+            ->get();
+
+        if (!$user) {
+            return response()->json(['message' => 'Booking not found', 'status' => true], 404);
+        }
+        return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $user]);
+    }
+
 }
