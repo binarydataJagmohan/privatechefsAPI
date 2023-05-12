@@ -152,5 +152,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::get('/get-user-filter-by-booking/{userid}/{type}',[App\Http\Controllers\Api\BookingController::class,'get_user_filter_by_booking']);
 
+    Route::post('/updated-applied-booking-job/',[App\Http\Controllers\Api\BookingController::class,'updated_applied_booking_job']);
+
 });
+
 Route::post('/updateAllergyCusine/{id}',[App\Http\Controllers\Api\UserController::class,'updateAllergyCusine']);
