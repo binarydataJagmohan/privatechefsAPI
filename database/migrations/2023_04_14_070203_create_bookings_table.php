@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('allergies_id',50)->nullable();
             $table->text('notes')->nullable();
             $table->string('location')->nullable();
+            $table->string('lat',50)->nullable();
+            $table->string('lng',50)->nullable();
             $table->integer('adults')->nullable();
             $table->integer('childrens')->nullable();
             $table->integer('teens')->nullable();

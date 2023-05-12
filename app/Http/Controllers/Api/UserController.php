@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Models\User;
 use App\Models\Notification;
 use App\Models\ChefDetail;
+use App\Models\ChefLocation;
 use App\Models\CoFounder;
 use App\Models\About;
 use App\Models\Contact;
@@ -55,6 +56,11 @@ class UserController extends Controller
                     $detail = new ChefDetail();
                     $detail->user_id = $user->id;
                     $detail->save();
+
+                    $data = new ChefLocation();
+                    $data->user_id = $user->id;
+                    $data->save();
+
                 }
 
 
@@ -154,6 +160,7 @@ class UserController extends Controller
                     'surname' => $user->surname,
                     'phone' => $user->phone,
                     'approved_by_admin' => $user->approved_by_admin,
+                    'profile_status' => $user->profile_status,
                     'address' => $user->address
                 ],
                 'authorisation' => [

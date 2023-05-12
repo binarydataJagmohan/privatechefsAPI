@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\ChefDetail;
+use App\Models\ChefLocation;
 use App\Models\Menu;
 use App\Models\Dishes;
 use App\Models\MenuItems;
 use DB;
 use App\Models\Cuisine;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Facades\Validator;
 
 class ChefDetailController extends Controller
 {
@@ -277,4 +279,75 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+    public function save_chef_location(Request $request)
+    {
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'address' => 'required',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+                $location = new ChefLocation();
+                $location->user_id = $request->user_id;
+                $location->address = $request->address;
+                $location->lat = $request->lat;
+                $location->lng = $request->lng;
+                $savedata = $location->save();
+
+                if ($savedata) {
+                    return response()->json(['status' => true, 'message' => "location has been stored successfully", 'data' => $location], 200);
+                } else {
+                    return response()->json(['status' => false, 'message' => "There was an error storing the location", 'data' => ""], 400);
+                }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function update_chef_location(Request $request)
+    {
+        try {
+            $chef = ChefLocation::where('user_id', $request->id)->first();
+            if ($chef) {
+                $location = ChefLocation::find($chef->id);
+                $location->user_id = $request->user_id;
+                $location->address = $request->address;
+                $location->lat = $request->lat;
+                $location->lng = $request->lng;
+                $savedata = $location->save();
+
+                if ($savedata) {
+                    return response()->json(['status' => true, 'message' => "location has been updated successfully", 'data' => $location], 200);
+                } else {
+                    return response()->json(['status' => false, 'message' => "There was an error updating the location", 'data' => ""], 400);
+                }
+            } else {
+                return response()->json(['status' => false, 'message' => "User not found", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function get_chef_location(Request $request)
+    {
+        try {
+            $user = ChefLocation::where('user_id', $request->id)->where('status','active')->get();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
 }
