@@ -58,6 +58,9 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/update-chef-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_location']);
     Route::post('/save-chef-location', [App\Http\Controllers\Api\ChefDetailController::class, 'save_chef_location']);
     Route::get('/get-chef-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_location']);
+    Route::post('/update-location-status/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_location_status']);
+    Route::get('/get-single-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_single_location']);
+    Route::post('/delete-single-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_single_location']);
 });
  
 

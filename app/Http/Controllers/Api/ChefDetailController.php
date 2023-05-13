@@ -314,9 +314,7 @@ class ChefDetailController extends Controller
     public function update_chef_location(Request $request)
     {
         try {
-            $chef = ChefLocation::where('user_id', $request->id)->first();
-            if ($chef) {
-                $location = ChefLocation::find($chef->id);
+                $location = ChefLocation::find($request->id);
                 $location->user_id = $request->user_id;
                 $location->address = $request->address;
                 $location->lat = $request->lat;
@@ -328,9 +326,6 @@ class ChefDetailController extends Controller
                 } else {
                     return response()->json(['status' => false, 'message' => "There was an error updating the location", 'data' => ""], 400);
                 }
-            } else {
-                return response()->json(['status' => false, 'message' => "User not found", 'data' => ""], 400);
-            }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -349,5 +344,47 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-
+    public function update_location_status(Request $request)
+    {
+        try {
+            $location = ChefLocation::find($request->id);
+            $location->location_status = $request->location_status;
+            $location->save();
+            if ($location) {
+                return response()->json(['status' => true, 'message' => "Chef location status updated succesfully", 'data' => $location], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for updating the chef location status", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_single_location(Request $request)
+    {
+        try {
+            $user = ChefLocation::where('id', $request->id)->where('status','active')->first();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function delete_single_location(Request $request)
+    {
+        try {
+            $user = ChefLocation::find($request->id);
+            $user->status = 'deleted';
+            $user->save();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Single location deleted succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for deleting the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 }
