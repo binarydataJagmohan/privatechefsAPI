@@ -56,6 +56,7 @@ class VillasController extends Controller
                 'data' => $villa
             ]);
         } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()

@@ -527,4 +527,18 @@ class BookingController extends Controller
             
         }
     }
+
+    public function updated_applied_booking_job(Request $request)
+    {
+
+        $updatebooking = AppliedJobs::where('booking_id',$request->booking_id)->where('chef_id',$request->chef_id)->update([
+            'status' => 'hired',
+        ]);;
+       
+        if ($appliedJobs) {
+            return response()->json(['message' => 'Booking has been applied save successfully', 'status' => true]);
+        }else {
+            return response()->json(['status' => true, 'message' => 'There has been error in saving the booking', ]);
+        } 
+    }
 }

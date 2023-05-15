@@ -54,6 +54,13 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/delete-chef-menu-item/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_chef_menu_item']);
     Route::get('/get_chef_by_filter',[App\Http\Controllers\Api\ChefDetailController::class,'get_chef_by_filter']);
     Route::get('/getAllChefDetails', [App\Http\Controllers\Api\ChefDetailController::class, 'getAllChefDetails']);
+
+    Route::post('/update-chef-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_location']);
+    Route::post('/save-chef-location', [App\Http\Controllers\Api\ChefDetailController::class, 'save_chef_location']);
+    Route::get('/get-chef-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_location']);
+    Route::post('/update-location-status/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_location_status']);
+    Route::get('/get-single-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_single_location']);
+    Route::post('/delete-single-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_single_location']);
 });
  
 
@@ -152,5 +159,11 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::get('/get-user-filter-by-booking/{userid}/{type}',[App\Http\Controllers\Api\BookingController::class,'get_user_filter_by_booking']);
 
+    Route::post('/updated-applied-booking-job/',[App\Http\Controllers\Api\BookingController::class,'updated_applied_booking_job']);
+
 });
 Route::post('/updateAllergyCusine/{id}',[App\Http\Controllers\Api\UserController::class,'updateAllergyCusine']);
+
+Route::group(['middleware' => ['api']], function ($router) {
+    Route::post('/save-contact',[App\Http\Controllers\Api\ContactController::class,'save_contact']);
+});
