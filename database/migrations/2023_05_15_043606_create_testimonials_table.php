@@ -13,13 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('applied_jobs', function (Blueprint $table) {
+        Schema::create('testimonials', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('booking_id')->nullable();
-            $table->unsignedInteger('chef_id')->nullable();
-            $table->string('amount')->nullable();
-            $table->string('menu')->nullable();
-            $table->enum('status', ['applied', 'discussion', 'hired', 'rejected'])->default('applied');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->string('name')->nullable();
+            $table->string('description')->nullable();
+            $table->integer('stars')->nullable();
+            $table->string('image')->nullable();
+            $table->enum('status', ['active', 'deactive','deleted'])->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('applied_jobs');
+        Schema::dropIfExists('testimonials');
     }
 };
