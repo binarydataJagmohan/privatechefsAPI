@@ -22,10 +22,47 @@ use App\Models\UserVerify;
 use Illuminate\Support\Str;
 use App\Models\PasswordReset;
 use Helpers;
+use Laravel\Socialite\Facades\Socialite;
 
 
 class UserController extends Controller
 {
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+    public function handleGoogleCallback()
+    {
+        try {
+      
+            $user = Socialite::driver('google')->user();
+       
+            $finduser = User::where('google_id', $user->id)->first();
+       
+            if($finduser){
+       
+                Auth::login($finduser);
+      
+                // return redirect()->intended('dashboard');
+       
+            }else{
+                $newUser = User::create([
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'google_id'=> $user->id,
+                    'password' => encrypt('123456'),
+                    'view_password' =>123456,
+                ]);
+      
+                Auth::login($newUser);
+      
+                // return redirect()->intended('dashboard');
+            }
+      
+        }catch (\Exception $e) {
+            dd($e->getMessage());
+        }
+    }
     public function user_register(Request $request)
     {
         try {
@@ -416,5 +453,64 @@ class UserController extends Controller
         ]);
     }
 }
+public function social_data_save(Request $request)
+{
+    try {
+
+        $user = User::where('email',$request->email)->orwhere('name',$request->name)->first();
+
+        if($user){
+
+            $credentials = $request->only('email', 'password');
+            $token = Auth::attempt($credentials);
+
+            if (!$token) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Please enter correct credentials!.',
+                    //'message' => 'Unauthorized',
+                ], 401);
+            }
+    
+               $user = Auth::user();
+                return response()->json([
+                'status'=>true,
+                'message' => 'user Loggedin successfully',
+                'user' => $user,
+                'authorisation' => [
+                    'token' => $token,
+                    'type' => 'bearer',
+                ]
+            ]);
+               
+
+        }else {
+            $data = $request->all();
+            $data['password'] = Hash::make($request->password);
+            $data['view_password'] = $request->password;
+            $user = new User();
+            $register  = $user->create($data);
+            if ($register) {
+                $token = Auth::login($register);
+                return response()->json([
+                    'status' => true,
+                    'message' => 'User created successfully',
+                    'user' => $register,
+                    'authorisation' => [
+                        'token' => $token,
+                        'type' => 'bearer',
+                    ]
+                ]);
+            } else {
+                return response()->json(['message' => "'There has been error for to register the user"], 404);
+            }
+        }
+       
+        
+    } catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
+    }
+}
+
 
 }

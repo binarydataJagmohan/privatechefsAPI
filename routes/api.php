@@ -28,6 +28,11 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::post('/forget-password', [App\Http\Controllers\Api\UserController::class, 'forget_password']);
     Route::post('/check-user-reset-password-verfication', [App\Http\Controllers\Api\UserController::class, 'check_user_reset_password_verfication']);
     Route::post('/updated-reset-password', [App\Http\Controllers\Api\UserController::class, 'updated_reset_password']);
+
+    Route::get('authorized/google', [App\Http\Controllers\Api\UserController::class, 'redirectToGoogle']);
+    Route::post('authorized/google/callback', [App\Http\Controllers\Api\UserController::class, 'handleGoogleCallback']);
+    Route::post('/social-data-save', [App\Http\Controllers\Api\UserController::class, 'social_data_save']);
+    
 });
 
 
@@ -49,10 +54,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/update-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_resume']);
     Route::get('/get-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_resume']);
     Route::get('/get-all-chef-menu/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_chef_menu']);
-    
+
     Route::post('/save-chef-menu-items', [App\Http\Controllers\Api\ChefDetailController::class, 'save_chef_menu_items']);
     Route::get('/delete-chef-menu-item/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_chef_menu_item']);
-    Route::get('/get_chef_by_filter',[App\Http\Controllers\Api\ChefDetailController::class,'get_chef_by_filter']);
+    Route::get('/get_chef_by_filter', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_by_filter']);
     Route::get('/getAllChefDetails', [App\Http\Controllers\Api\ChefDetailController::class, 'getAllChefDetails']);
 
     Route::post('/update-chef-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_location']);
@@ -62,7 +67,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-single-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_single_location']);
     Route::post('/delete-single-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_single_location']);
 });
- 
+
 
 //Allergy or service Edit,update,get Routes
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -73,18 +78,17 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/getSingleAllergyDetails/{id}', [AllergyController::class, 'getSingleAllergyDetails']);
     Route::post('/updateAllergy/{id}', [AllergyController::class, 'updateAllergy']);
     Route::get('/getSingleServiceDetail/{id}', [ServiceChoiceController::class, 'getSingleServiceDetail']);
-    Route::post('/serviceUpdate/{id}',[ServiceChoiceController::class,'serviceUpdate']);
-    
-    Route::get('/getDishecategory',[DishCategoryController::class,'getDishecategory']);
-    Route::get('/get-chef-dishes/{id}',[DishesController::class,'get_chef_dishes']);
-    Route::get('/delete-dish/{id}',[DishesController::class,'dish_delete']);
-    Route::get('/get-single-dish/{id}',[DishesController::class,'get_single_dish']);
+    Route::post('/serviceUpdate/{id}', [ServiceChoiceController::class, 'serviceUpdate']);
 
-    Route::post('/add-chef-dish',[DishesController::class,'add_chef_dish']);
-    Route::get('/fetch-dish-category-by-id',[DishesController::class,'fetch_dish_category_by_id']);
+    Route::get('/getDishecategory', [DishCategoryController::class, 'getDishecategory']);
+    Route::get('/get-chef-dishes/{id}', [DishesController::class, 'get_chef_dishes']);
+    Route::get('/delete-dish/{id}', [DishesController::class, 'dish_delete']);
+    Route::get('/get-single-dish/{id}', [DishesController::class, 'get_single_dish']);
 
-    Route::get('/get-item-by-category/{id}',[DishesController::class,'get_item_by_category']);
+    Route::post('/add-chef-dish', [DishesController::class, 'add_chef_dish']);
+    Route::get('/fetch-dish-category-by-id', [DishesController::class, 'fetch_dish_category_by_id']);
 
+    Route::get('/get-item-by-category/{id}', [DishesController::class, 'get_item_by_category']);
 });
 //chef edit profile
 //user edit profile
@@ -104,7 +108,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-all-villas', [App\Http\Controllers\Api\VillasController::class, 'get_all_villas']);
     Route::get('/get-single-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'get_single_villas']);
     Route::post('/save-villa', [App\Http\Controllers\Api\VillasController::class, 'save_villa']);
-    
+
     Route::post('/delete-villas/{id}', [App\Http\Controllers\Api\VillasController::class, 'deleteVillas']);
 });
 
@@ -112,7 +116,7 @@ Route::post('/update-villas/{id}', [App\Http\Controllers\Api\VillasController::c
 
 Route::group(['middleware' => ['api']], function ($router) {
     Route::get('/getServiceDetails', [ServiceChoiceController::class, 'getServiceDetails']);
-   
+
     Route::get('/getAllergyDetails', [AllergyController::class, 'getAllergyDetails']);
     Route::post('/save-booking', [App\Http\Controllers\Api\BookingController::class, 'save_booking']);
 });
@@ -124,46 +128,44 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('/cuisine-delete/{id}', [App\Http\Controllers\Api\CuisineController::class, 'cuisine_delete']);
     Route::get('/get-single-cuisine/{id}', [App\Http\Controllers\Api\CuisineController::class, 'get_single_cuisine']);
     Route::post('/update-cuisine/{id}', [App\Http\Controllers\Api\CuisineController::class, 'update_cuisine']);
-
 });
 
 
 //receipt
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
-    Route::get('/get-all-booking',[App\Http\Controllers\Api\BookingController::class,'get_all_booking']);
-    Route::post('/save-receipt',[App\Http\Controllers\Api\ReceiptController::class,'save_receipt']);
-    Route::post('/update-receipt/{id}',[App\Http\Controllers\Api\ReceiptController::class,'update_receipt']);
-    Route::post('/update-receipt-images/{id}',[App\Http\Controllers\Api\ReceiptController::class,'update_receipt_images']);
-    Route::post('/delete-receipt/{id}',[App\Http\Controllers\Api\ReceiptController::class,'deleteReceipt']);
-    Route::get('/get-receipt',[App\Http\Controllers\Api\ReceiptController::class,'get_receipt']);
-    Route::get('/get-single-receipt/{id}',[App\Http\Controllers\Api\ReceiptController::class,'get_single_receipt']);
+    Route::get('/get-all-booking', [App\Http\Controllers\Api\BookingController::class, 'get_all_booking']);
+    Route::post('/save-receipt', [App\Http\Controllers\Api\ReceiptController::class, 'save_receipt']);
+    Route::post('/update-receipt/{id}', [App\Http\Controllers\Api\ReceiptController::class, 'update_receipt']);
+    Route::post('/update-receipt-images/{id}', [App\Http\Controllers\Api\ReceiptController::class, 'update_receipt_images']);
+    Route::post('/delete-receipt/{id}', [App\Http\Controllers\Api\ReceiptController::class, 'deleteReceipt']);
+    Route::get('/get-receipt', [App\Http\Controllers\Api\ReceiptController::class, 'get_receipt']);
+    Route::get('/get-single-receipt/{id}', [App\Http\Controllers\Api\ReceiptController::class, 'get_single_receipt']);
 });
 
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
-    Route::get('/get-cuision',[App\Http\Controllers\Api\ChefDetailController::class,'get_cuision']);
-    Route::get('/get-all-users',[App\Http\Controllers\Api\UserController::class,'get_all_users']);
+    Route::get('/get-cuision', [App\Http\Controllers\Api\ChefDetailController::class, 'get_cuision']);
+    Route::get('/get-all-users', [App\Http\Controllers\Api\UserController::class, 'get_all_users']);
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
-    Route::get('/get-User-By-Booking/{id}',[App\Http\Controllers\Api\BookingController::class,'get_User_By_Booking_Id']);
-    Route::get('/get-user-chef-by-booking/{userid}',[App\Http\Controllers\Api\BookingController::class,'get_user_chef_by_booking']);
-     Route::get('/get-user-chef-filter-by-booking/{userid}/{type}',[App\Http\Controllers\Api\BookingController::class,'get_user_chef_filter_by_booking']);
-     Route::get('/get-User-Booking-id/{id}',[App\Http\Controllers\Api\BookingController::class,'get_User_Booking_id']);
-     Route::post('/save-chef-applied-booking-job',[App\Http\Controllers\Api\BookingController::class,'save_chef_applied_booking_job']);
-     Route::get('/get-chef-applied-booking/{userid}',[App\Http\Controllers\Api\BookingController::class,'get_chef_applied_booking']);
+    Route::get('/get-User-By-Booking/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_User_By_Booking_Id']);
+    Route::get('/get-user-chef-by-booking/{userid}', [App\Http\Controllers\Api\BookingController::class, 'get_user_chef_by_booking']);
+    Route::get('/get-user-chef-filter-by-booking/{userid}/{type}', [App\Http\Controllers\Api\BookingController::class, 'get_user_chef_filter_by_booking']);
+    Route::get('/get-User-Booking-id/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_User_Booking_id']);
+    Route::post('/save-chef-applied-booking-job', [App\Http\Controllers\Api\BookingController::class, 'save_chef_applied_booking_job']);
+    Route::get('/get-chef-applied-booking/{userid}', [App\Http\Controllers\Api\BookingController::class, 'get_chef_applied_booking']);
 
-    Route::get('/get-current-user-by-booking/{userid}',[App\Http\Controllers\Api\BookingController::class,'get_current_user_by_booking']);
+    Route::get('/get-current-user-by-booking/{userid}', [App\Http\Controllers\Api\BookingController::class, 'get_current_user_by_booking']);
 
-     Route::get('/get-chef-applied-filter-by-booking/{userid}/{type}',[App\Http\Controllers\Api\BookingController::class,'get_chef_applied_filter_by_booking']);
+    Route::get('/get-chef-applied-filter-by-booking/{userid}/{type}', [App\Http\Controllers\Api\BookingController::class, 'get_chef_applied_filter_by_booking']);
 
-    Route::get('/get-user-filter-by-booking/{userid}/{type}',[App\Http\Controllers\Api\BookingController::class,'get_user_filter_by_booking']);
+    Route::get('/get-user-filter-by-booking/{userid}/{type}', [App\Http\Controllers\Api\BookingController::class, 'get_user_filter_by_booking']);
 
-    Route::post('/updated-applied-booking-job/',[App\Http\Controllers\Api\BookingController::class,'updated_applied_booking_job']);
-
+    Route::post('/updated-applied-booking-job/', [App\Http\Controllers\Api\BookingController::class, 'updated_applied_booking_job']);
 });
-Route::post('/updateAllergyCusine/{id}',[App\Http\Controllers\Api\UserController::class,'updateAllergyCusine']);
+Route::post('/updateAllergyCusine/{id}', [App\Http\Controllers\Api\UserController::class, 'updateAllergyCusine']);
 
 Route::group(['middleware' => ['api']], function ($router) {
-    Route::post('/save-contact',[App\Http\Controllers\Api\ContactController::class,'save_contact']);
+    Route::post('/save-contact', [App\Http\Controllers\Api\ContactController::class, 'save_contact']);
 });
