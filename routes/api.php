@@ -159,7 +159,21 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::get('/get-user-filter-by-booking/{userid}/{type}',[App\Http\Controllers\Api\BookingController::class,'get_user_filter_by_booking']);
 
-    Route::post('/updated-applied-booking-job/',[App\Http\Controllers\Api\BookingController::class,'updated_applied_booking_job']);
+    Route::get('/get-single-user-assign-booking/{id}',[App\Http\Controllers\Api\BookingController::class,'get_single_user_assign_booking']);
+
+    Route::post('/updated-applied-booking-by-key-value/',[App\Http\Controllers\Api\BookingController::class,'updated_applied_booking_by_key_value']);
+
+    Route::get('/get-admin-chef-by-booking',[App\Http\Controllers\Api\BookingController::class,'get_admin_chef_by_booking']);
+
+    Route::get('/get-admin-chef-filter-by-booking/{type}',[App\Http\Controllers\Api\BookingController::class,'get_admin_chef_filter_by_booking']);
+
+     Route::get('/get-admin-assigned-booking',[App\Http\Controllers\Api\BookingController::class,'get_admin_assigned_booking']);
+
+     Route::get('/get-admin-applied-filter-by-booking/{type}',[App\Http\Controllers\Api\BookingController::class,'get_admin_applied_filter_by_booking']);
+
+      Route::get('/delete-booking/{id}',[App\Http\Controllers\Api\BookingController::class,'delete_booking']);
+
+
 
 });
 Route::post('/updateAllergyCusine/{id}',[App\Http\Controllers\Api\UserController::class,'updateAllergyCusine']);
