@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\AllergyController;
 use App\Http\Controllers\Api\ServiceChoiceController;
 use App\Http\Controllers\Api\DishCategoryController;
 use App\Http\Controllers\Api\DishesController;
+use App\Http\Controllers\Api\TestimonialController;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -127,6 +130,17 @@ Route::group(['middleware' => ['api']], function ($router) {
 
 });
 
+//testimonial
+Route::group(['middleware' => ['api']], function ($router) {
+    Route::post('/save-testimonial', [App\Http\Controllers\Api\TestimonialController::class, 'save_testimonial']);
+Route::get('/get-testnomial', [App\Http\Controllers\Api\TestimonialController::class, 'gettestnomial']);
+Route::get('/get-single-testnomial/{id}', [TestimonialController::class, 'getSingleTestimonial']);
+Route::post('/update-testimonial/{id}', [TestimonialController::class, 'updateTestimonial']);
+Route::get('/testimonial-Delete/{id}', [TestimonialController::class, 'testimonialDelete']);
+});
+
+
+
 
 //receipt
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -167,3 +181,6 @@ Route::post('/updateAllergyCusine/{id}',[App\Http\Controllers\Api\UserController
 Route::group(['middleware' => ['api']], function ($router) {
     Route::post('/save-contact',[App\Http\Controllers\Api\ContactController::class,'save_contact']);
 });
+
+
+Route::get('/instagram-images',[App\Http\Controllers\Api\InstagramController::class,'getImages']);
