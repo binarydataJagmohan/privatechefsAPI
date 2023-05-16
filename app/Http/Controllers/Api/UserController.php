@@ -34,32 +34,31 @@ class UserController extends Controller
     public function handleGoogleCallback()
     {
         try {
-      
+
             $user = Socialite::driver('google')->user();
-       
+
             $finduser = User::where('google_id', $user->id)->first();
-       
-            if($finduser){
-       
+
+            if ($finduser) {
+
                 Auth::login($finduser);
-      
+
                 // return redirect()->intended('dashboard');
-       
-            }else{
+
+            } else {
                 $newUser = User::create([
                     'name' => $user->name,
                     'email' => $user->email,
-                    'google_id'=> $user->id,
+                    'google_id' => $user->id,
                     'password' => encrypt('123456'),
-                    'view_password' =>123456,
+                    'view_password' => 123456,
                 ]);
-      
+
                 Auth::login($newUser);
-      
+
                 // return redirect()->intended('dashboard');
             }
-      
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             dd($e->getMessage());
         }
     }
@@ -97,13 +96,12 @@ class UserController extends Controller
                     $data = new ChefLocation();
                     $data->user_id = $user->id;
                     $data->save();
-
                 }
 
 
                 $token = Auth::fromUser($user);
 
-                $auth_user = User::select('name','email','role','id','surname','pic','phone','approved_by_admin')->where('id',$user->id)->first();
+                $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin')->where('id', $user->id)->first();
 
                 // unset($user->password);
                 // unset($user->view_password);
@@ -115,16 +113,16 @@ class UserController extends Controller
                     'token' => $email_token
                 ]);
 
-                $admin = User::select('id')->where('role', 'admin')->get();   
+                $admin = User::select('id')->where('role', 'admin')->get();
 
                 $notify_by = $user->id;
                 $notify_to =  $admin;
                 $description = 'Thank you for registering. We hope you enjoy using our website.';
-                $description1 = $user->name .' registered on our website. Please review their account.';
+                $description1 = $user->name . ' registered on our website. Please review their account.';
                 $type = 'Register';
 
-                createNotificationForUserAndAdmins($notify_by, $notify_to, $description,$description1, $type);
-                
+                createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
                 // Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
                 //     $message->to($request->email);
                 //     $message->subject('Email Verification Mail');
@@ -145,46 +143,46 @@ class UserController extends Controller
                 'email' => 'required|email',
                 'password' => 'required',
             ]);
-    
+
             $email = $request->input('email');
             $password = $request->input('password');
-    
+
             $user = User::where('email', $email)->first();
-    
+
             if (!$user) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Email does not exist!',
                 ]);
             }
-    
+
             if (!Hash::check($password, $user->password)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Incorrect password!',
                 ]);
             }
-    
+
             $credentials = $request->only(['email', 'password']);
-    
+
             if (!$token = Auth::attempt($credentials)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Invalid email or password!',
                 ]);
             }
-    
+
             $user = Auth::user();
-            $admin = User::select('id')->where('role', 'admin')->get();   
-    
+            $admin = User::select('id')->where('role', 'admin')->get();
+
             $notify_by = $user->id;
             $notify_to =  $admin;
             $description = 'Welcome back! You have successfully logged in to your account.';
             $description1 = 'A user with username "' . $user->name . '" has logged in to their account.';
             $type = 'Login';
-    
+
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'User logged in successfully',
@@ -209,7 +207,7 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-    
+
     public function update_user_profile(Request $request)
     {
         try {
@@ -238,7 +236,7 @@ class UserController extends Controller
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
                 $imagePath->move('public/images/users', $imageName);
                 $user->pic = $imageName;
-            } 
+            }
 
             $admin = User::select('id')->where('role', 'admin')->get();
 
@@ -269,7 +267,7 @@ class UserController extends Controller
             if ($user) {
                 $token = Str::random(40);
                 $domain = env('NEXT_URL');
-                $url = $domain . '/?userid='.$user->id.'&resettoken=' . $token;
+                $url = $domain . '/?userid=' . $user->id . '&resettoken=' . $token;
                 $data['url'] = $url;
                 $data['email'] = $request->email;
                 $data['title'] = "password reset";
@@ -318,8 +316,8 @@ class UserController extends Controller
     }
 
     public function updated_reset_password(Request $request)
-   
-     {
+
+    {
         try {
             $request->validate([
                 'password' => 'required|string|min:8',
@@ -333,15 +331,15 @@ class UserController extends Controller
             $user->update();
             PasswordReset::where('user_id', $request->user_id)->delete();
 
-              $admin = User::select('id')->where('role', 'admin')->get();
+            $admin = User::select('id')->where('role', 'admin')->get();
 
-                $notify_by = $user->id;
-                $notify_to =  $admin;
-                $description = 'Your password has been reset successfully.';
-                $description1 = $user->name . ', has just reset their password.';
-                $type = 'forget_password';
+            $notify_by = $user->id;
+            $notify_to =  $admin;
+            $description = 'Your password has been reset successfully.';
+            $description1 = $user->name . ', has just reset their password.';
+            $type = 'forget_password';
 
-                createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
             return response()->json(['status' => true, 'message' => 'Password reset successful'], 200);
         } catch (\Exception $e) {
@@ -377,22 +375,23 @@ class UserController extends Controller
             return response()->json(['success' => true, 'msg' => 'Password reset failed'], 500);
         }
     }
-    public function get_single_user_profile(Request $request){
-        try{
-          $user = User::where('id',$request->id)->first();
-          if ($user) {            
-            return response()->json(['status' => true, 'message' => "Single profile data fetched successfully", 'data' => $user], 200);
-        } else {
-            return response()->json(['status' => false, 'message' => "There has been error for fetching the single profile", 'data' => ""], 200);
-        }
+    public function get_single_user_profile(Request $request)
+    {
+        try {
+            $user = User::where('id', $request->id)->first();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Single profile data fetched successfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the single profile", 'data' => ""], 200);
+            }
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'msg' => $e->getMessage()]);
         }
     }
-     public function get_all_users()
+    public function get_all_users()
     {
         try {
-            $users = User::orderBy('id', 'DESC')->where('role','user')->where('status','active')->get();
+            $users = User::orderBy('id', 'DESC')->where('role', 'user')->where('status', 'active')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All users fetched successfully.',
@@ -429,88 +428,111 @@ class UserController extends Controller
     // }
 
     public function updateAllergyCusine(Request $request, $id)
-{
-    try {
-        $user = User::find($id);
-        
-        $cuisineIds = is_array($request->selectedcuisine) ? $request->selectedcuisine : explode(',', $request->selectedcuisine);
-        $allergyIds = is_array($request->selectedallergies) ? $request->selectedallergies : explode(',', $request->selectedallergies);
-// return $request->all();
-        $user->cuisine_id = implode(",", $cuisineIds);
-        $user->allergy_id = implode(",", $allergyIds);
-        $user->save();
+    {
+        try {
+            $user = User::find($id);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Allergies Updated',
-            'data' => $user
-        ]);
-    } catch (\Exception $e) {
-        throw new HttpException(500, $e->getMessage());
-        return response()->json([
-            'status' => false,
-            'message' => $e->getMessage()
-        ]);
-    }
-}
-public function social_data_save(Request $request)
-{
-    try {
+            $cuisineIds = is_array($request->selectedcuisine) ? $request->selectedcuisine : explode(',', $request->selectedcuisine);
+            $allergyIds = is_array($request->selectedallergies) ? $request->selectedallergies : explode(',', $request->selectedallergies);
+            // return $request->all();
+            $user->cuisine_id = implode(",", $cuisineIds);
+            $user->allergy_id = implode(",", $allergyIds);
+            $user->save();
 
-        $user = User::where('email',$request->email)->orwhere('name',$request->name)->first();
-
-        if($user){
-
-            $credentials = $request->only('email', 'password');
-            $token = Auth::attempt($credentials);
-
-            if (!$token) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Please enter correct credentials!.',
-                    //'message' => 'Unauthorized',
-                ], 401);
-            }
-    
-               $user = Auth::user();
-                return response()->json([
-                'status'=>true,
-                'message' => 'user Loggedin successfully',
-                'user' => $user,
-                'authorisation' => [
-                    'token' => $token,
-                    'type' => 'bearer',
-                ]
+            return response()->json([
+                'status' => true,
+                'message' => 'Allergies Updated',
+                'data' => $user
             ]);
-               
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    public function social_data_save(Request $request)
+    {
+        try {
 
-        }else {
-            $data = $request->all();
-            $data['password'] = Hash::make($request->password);
-            $data['view_password'] = $request->password;
-            $user = new User();
-            $register  = $user->create($data);
-            if ($register) {
-                $token = Auth::login($register);
+            $user = User::where('email', $request->email)->orwhere('name', $request->name)->first();
+
+            if ($user) {
+
+                $credentials = $request->only('email', 'password');
+                $token = Auth::attempt($credentials);
+
+                if (!$token) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Please enter correct credentials!.',
+                        //'message' => 'Unauthorized',
+                    ], 401);
+                }
+
+                $user = Auth::user();
                 return response()->json([
                     'status' => true,
-                    'message' => 'User created successfully',
-                    'user' => $register,
+                    'message' => 'user Loggedin successfully',
+                    'user' => $user,
                     'authorisation' => [
                         'token' => $token,
                         'type' => 'bearer',
                     ]
                 ]);
             } else {
-                return response()->json(['message' => "'There has been error for to register the user"], 404);
+                $data = $request->all();
+                $data['password'] = Hash::make($request->password);
+                $data['view_password'] = $request->password;
+                $user = new User();
+                $register  = $user->create($data);
+                return $register;
+                if ($register) {
+                    $token = Auth::login($register);
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'User created successfully',
+                        'user' => $register,
+                        'authorisation' => [
+                            'token' => $token,
+                            'type' => 'bearer',
+                        ]
+                    ]);
+                } else {
+                    return response()->json(['message' => "'There has been error for to register the user"], 404);
+                }
             }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
         }
-       
-        
-    } catch (\Exception $e) {
-        throw new HttpException(500, $e->getMessage());
     }
-}
-
-
+    public function select_role(Request $request)
+    {
+        try {
+            $user = User::find($request->id);
+            $user->role = $request->role;
+            $user->save();
+            if ($user) {
+                return response()->json(['status'=>true,'message' => "role selected successsfully"], 200);
+            } else {
+                return response()->json(['status'=>false,'message' => "There has been error for to selected role"], 404);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_email_data($email)
+    {
+        try {
+            $user = User::where('email',$email)->first();
+            if ($user) {
+                return response()->json(['status'=>true,'message' => "role selected successsfully",'data'=>$user], 200);
+            } else {
+                return response()->json(['status'=>false,'message' => "There has been error for to selected role"], 404);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 }

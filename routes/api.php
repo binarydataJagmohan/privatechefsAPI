@@ -32,7 +32,8 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('authorized/google', [App\Http\Controllers\Api\UserController::class, 'redirectToGoogle']);
     Route::post('authorized/google/callback', [App\Http\Controllers\Api\UserController::class, 'handleGoogleCallback']);
     Route::post('/social-data-save', [App\Http\Controllers\Api\UserController::class, 'social_data_save']);
-    
+    Route::post('/select-role/{id}', [App\Http\Controllers\Api\UserController::class, 'select_role']);
+    Route::get('/get-email-data/{email}', [App\Http\Controllers\Api\UserController::class, 'get_email_data']);
 });
 
 
