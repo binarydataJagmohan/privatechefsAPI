@@ -166,11 +166,19 @@ class ChefDetailController extends Controller
     {
         try {
 
+            // $users = User::where('users.role', 'chef')
+            // ->where('users.status', 'active')
+            // ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
+            // ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+            // ->select('users.id', 'users.name', 'users.address','cuisine.name')
+            // ->groupBy('users.id', 'users.name', 'users.address')
+            // ->get();
             $users = User::where('users.role', 'chef')
             ->where('users.status', 'active')
             ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
             ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-            ->select('users.id', 'users.name', 'users.address', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name'))
+            ->select('users.id', 'users.name', 'users.address')
+            ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
             ->groupBy('users.id', 'users.name', 'users.address')
             ->get();
 
