@@ -202,4 +202,4 @@ Route::group(['middleware' => ['api']], function ($router) {
 });
 
 
-Route::get('/instagram-images',[App\Http\Controllers\Api\InstagramController::class,'getImages']);
+Route::get('/get-instagram-images',[App\Http\Controllers\Api\InstagramController::class,'getInstagramImages']);
