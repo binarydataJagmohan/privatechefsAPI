@@ -47,14 +47,6 @@ class ChefDetailController extends Controller
             $user->bank_address = $request->bank_address;
             $user->profile_status = 'completed';
 
-            if ($request->hasFile('image')) {
-                $randomNumber = mt_rand(1000000000, 9999999999);
-                $imagePath = $request->file('image');
-                $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef/users', $imageName);
-                $user->pic = $imageName;
-            }
-
             $admin = User::select('id')->where('role', 'admin')->get();
 
             $notify_by = $user->id;
@@ -75,6 +67,32 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+    public function update_chef_image(Request $request)
+    {
+        try {
+            $user = User::find($request->id);
+
+            if ($request->hasFile('image')) {
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imagePath = $request->file('image');
+                $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                $imagePath->move('images/chef/users', $imageName);
+                $user->pic = $imageName;
+            }
+
+
+            $savedata = $user->save();
+            if ($savedata) {
+                return response()->json(['status' => true, 'message' => "Profile has been updated succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for updating the profile", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
     public function update_chef_resume(Request $request)
     {
         try {
