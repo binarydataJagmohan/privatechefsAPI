@@ -191,9 +191,11 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
       Route::get('/delete-booking/{id}',[App\Http\Controllers\Api\BookingController::class,'delete_booking']);
 
+      Route::post('/updated-applied-booking-job/', [App\Http\Controllers\Api\BookingController::class, 'updated_applied_booking_job']);
 
-
-    Route::post('/updated-applied-booking-job/', [App\Http\Controllers\Api\BookingController::class, 'updated_applied_booking_job']);
+      Route::get('/get-edit-booking-data/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_edit_booking_data']);
+       Route::post('/update-booking', [App\Http\Controllers\Api\BookingController::class, 'update_booking']);
+      
 });
 Route::post('/updateAllergyCusine/{id}', [App\Http\Controllers\Api\UserController::class, 'updateAllergyCusine']);
 
