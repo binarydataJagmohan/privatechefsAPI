@@ -55,6 +55,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-chef-detail/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_detail']);
     Route::post('/update-chef-profile/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_profile']);
+    Route::post('/update-chef-image/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_image']);
     Route::post('/update-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_chef_resume']);
     Route::get('/get-chef-resume/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_resume']);
     Route::get('/get-all-chef-menu/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_chef_menu']);
@@ -99,6 +100,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-single-user-profile/{id}', [App\Http\Controllers\Api\UserController::class, 'get_single_user_profile']);
     Route::post('/update-user-profile/{id}', [App\Http\Controllers\Api\UserController::class, 'update_user_profile']);
+    Route::post('/update-users-image/{id}', [App\Http\Controllers\Api\UserController::class, 'update_users_image']);
 });
 
 //notification
@@ -204,4 +206,4 @@ Route::group(['middleware' => ['api']], function ($router) {
 });
 
 
-Route::get('/instagram-images',[App\Http\Controllers\Api\InstagramController::class,'getImages']);
+Route::get('/get-instagram-images',[App\Http\Controllers\Api\InstagramController::class,'getInstagramImages']);

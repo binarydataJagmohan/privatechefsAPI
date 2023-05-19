@@ -36,7 +36,7 @@ class TestimonialController extends Controller
             if ($testimonial->save()) {
                 $getalltestimonial = Testimonial::where('status', 'active')->orderBy('id', 'desc')->get();
 
-                return response()->json(['status' => true, 'message' => 'testimonial details has been save successfully', 'data' => $getalltestimonial]);
+                return response()->json(['status' => true, 'message' => 'testimonial details has been saved successfully', 'data' => $getalltestimonial]);
             } else {
                 return response()->json(['status' => false, 'message' => 'Menu name already exit please choose different name', 'error' => '', 'data' => '']);
             }

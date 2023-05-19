@@ -229,12 +229,13 @@ class UserController extends Controller
             $user->tax_id = $request->tax_id;
             $user->lat = $request->lat;
             $user->lng = $request->lng;
+            $user->profile_status = 'completed';
 
             if ($request->hasFile('image')) {
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('public/images/users', $imageName);
+                $imagePath->move('images/users', $imageName);
                 $user->pic = $imageName;
             }
 
@@ -247,6 +248,30 @@ class UserController extends Controller
             $type = 'update_profile';
 
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
+            $savedata = $user->save();
+            if ($savedata) {
+                return response()->json(['status' => true, 'message' => "User profile has been updated succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for updating the profile", 'data' => ""], 200);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function update_users_image(Request $request)
+    {
+        try {
+            $user = User::find($request->id);
+
+            if ($request->hasFile('image')) {
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imagePath = $request->file('image');
+                $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                $imagePath->move('images/users', $imageName);
+                $user->pic = $imageName;
+            }
 
             $savedata = $user->save();
             if ($savedata) {
