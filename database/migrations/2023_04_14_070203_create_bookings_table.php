@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('service_id',20)->nullable();
             $table->string('cuisine_id',50)->nullable();
             $table->string('allergies_id',50)->nullable();
+            $table->string('name')->nullable();
+            $table->string('surname')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
             $table->text('notes')->nullable();
             $table->string('location')->nullable();
             $table->string('lat',50)->nullable();

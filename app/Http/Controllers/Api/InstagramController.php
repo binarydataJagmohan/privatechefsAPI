@@ -9,15 +9,12 @@ class InstagramController extends Controller
     public function getInstagramImages()
     {
         try {
-            $accessToken = 'IGQVJWbUp2SnpEZA2wxS21LZA2hIY3ZADYlU5elpSUDBGeDJ2eVZAjZAEZAWNFlyXzFpb0FYNXJlWW1TSkxUSmNwbE5FRi0ta3B2eGFNMW5pX0NVZAWh4VW11TnpKaTRRdl9ORWRpVlBuZA3lsdUk0YWUyUFRURQZDZD';
-            // $userId = '30906308797';
+            $access_token = 'IGQVJWdHlfOE1Oc0FDclpvaXNoeXo2T0x0UUVzTmc4V3dPRnpmbmt0alVKbFlxYmQxbkd3Q1M2THRBRjM1amUydE1BUERUWnQyal9kcFQ2UlpnTVFvaUc5bDVHdWZAoRzdhRVhka3hn';
             $fields = 'id,caption,media_type,media_url,thumbnail_url';
-            $secret_id = '3032c979a515e79dcd31c71d2336f30e0';
 
            // $client = new Client();
-           $url = "https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret={$secret_id}&access_token={$accessToken}";
+           $url = "https://graph.instagram.com/me/media?fields={$fields}&access_token={$access_token}";
 
-            $url = "https://graph.instagram.com/me/media?fields={$fields}&access_token={$accessToken}";
 
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
