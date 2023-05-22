@@ -10,7 +10,7 @@ use App\Models\ChefLocation;
 use App\Models\Menu;
 use App\Models\Dishes;
 use App\Models\MenuItems;
-use DB;
+use Illuminate\Support\Facades\DB;
 use App\Models\Cuisine;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Support\Facades\Validator;
@@ -195,7 +195,7 @@ class ChefDetailController extends Controller
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                ->select('users.id', 'users.name', 'users.address')
+                ->select('users.id', 'users.name', 'users.address','users.pic')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->get();

@@ -11,7 +11,8 @@ use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use DB;
+use Illuminate\Support\Facades\DB;
+use Mail;
 
 class BookingController extends Controller
 {
@@ -162,6 +163,18 @@ class BookingController extends Controller
                                 }
                             }
                         }
+
+                        $data = [
+                            'name'   => $user->name ,
+                            'password' => $password,
+                            'email'   => $user->email,
+                        ];
+                        
+                        Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                            $message->from('dev3.bdpl@gmail.com', "Share Ride");
+                            $message->subject(' Your Account Password for Private Chef');
+                            $message->to($data['email']);
+                        });
 
                         return response()->json(['status' => true, 'message' => "booking done successfully", 'bookingid' => $booking->id], 200);
                     }
@@ -379,13 +392,8 @@ class BookingController extends Controller
         ->join('bookings', 'users.id', '=', 'bookings.user_id')
         ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
         ->join('service_choices', 'service_choices.id', '=', 'bookings.service_id')
-        ->leftJoin('applied_jobs', function($join) use ($id) {
-            $join->on('bookings.id', '=', 'applied_jobs.booking_id')
-            ->where('applied_jobs.chef_id', '=', $id);
-        })
-        
-        ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id','applied_jobs.status as applied_jobs_status','chef_id')
-        ->groupBy('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id','applied_jobs.status')->where('bookings.status', '=', 'active')
+        ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id')
+        ->groupBy('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id')->where('bookings.status', '=', 'active')
         ->orderBy('bookings.id', 'DESC')
         ->where('users.id',$id)
         ->get();
@@ -863,6 +871,19 @@ class BookingController extends Controller
                     return response()->json(['status' => false, 'message' => "Email already exits", 'data' => ""], 200);
                 }
             
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_completed_booking(Request $request){
+        try{
+            $currentDate = Carbon::now()->toDateString();
+            $booking = Booking::whereDate('created_at', $currentDate)->count();
+            if($booking){
+            return response()->json(['status' => true ,'message' => 'All booking data','count' =>  $booking ],200);
+            }else{
+                return response()->json(['status' => false ,'message' => 'All booking'],400);
+            }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }

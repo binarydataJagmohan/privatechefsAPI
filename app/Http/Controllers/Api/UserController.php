@@ -231,14 +231,6 @@ class UserController extends Controller
             $user->lng = $request->lng;
             $user->profile_status = 'completed';
 
-            if ($request->hasFile('image')) {
-                $randomNumber = mt_rand(1000000000, 9999999999);
-                $imagePath = $request->file('image');
-                $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/users', $imageName);
-                $user->pic = $imageName;
-            }
-
             $admin = User::select('id')->where('role', 'admin')->get();
 
             $notify_by = $user->id;
@@ -269,7 +261,7 @@ class UserController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/users', $imageName);
+                $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
             }
 
