@@ -373,21 +373,27 @@ class BookingController extends Controller
             
         }
     }
-    public function get_User_Booking_id(Request $request)
+    public function get_User_Booking_id($id)
     {
-
         $user = DB::table('users')
-            ->join('bookings', 'users.id', '=', 'bookings.user_id')
-            ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
-            ->select('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id')
-            ->groupBy('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id')->orderBy('bookings.id', 'DESC')
-            ->where('users.id', $request->id)
-            ->get();
+        ->join('bookings', 'users.id', '=', 'bookings.user_id')
+        ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
+        ->join('service_choices', 'service_choices.id', '=', 'bookings.service_id')
+        ->leftJoin('applied_jobs', function($join) use ($id) {
+            $join->on('bookings.id', '=', 'applied_jobs.booking_id')
+            ->where('applied_jobs.chef_id', '=', $id);
+        })
+        
+        ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id','applied_jobs.status as applied_jobs_status','chef_id')
+        ->groupBy('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id','applied_jobs.status')->where('bookings.status', '=', 'active')
+        ->orderBy('bookings.id', 'DESC')
+        ->where('users.id',$id)
+        ->get();
 
         if (!$user) {
             return response()->json(['message' => 'Booking not found', 'status' => true], 404);
         }
-        return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $user]);
+        return response()->json(['status' => true, 'message' => 'Booking fetched', 'data' => $user]);
     }
 
     public function save_chef_applied_booking_job(Request $request)
