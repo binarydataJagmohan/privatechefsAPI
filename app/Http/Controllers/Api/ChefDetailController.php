@@ -9,6 +9,7 @@ use App\Models\ChefDetail;
 use App\Models\ChefLocation;
 use App\Models\Menu;
 use App\Models\Dishes;
+use App\Models\Notification;
 use App\Models\MenuItems;
 use Illuminate\Support\Facades\DB;
 use App\Models\Cuisine;
@@ -195,7 +196,7 @@ class ChefDetailController extends Controller
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                ->select('users.id', 'users.name', 'users.address','users.pic')
+                ->select('users.id', 'users.name', 'users.address','users.pic','users.approved_by_admin')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->get();
@@ -409,6 +410,60 @@ class ChefDetailController extends Controller
                 return response()->json(['status' => true, 'message' => "Single location deleted succesfully", 'data' => $user], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "There has been error for deleting the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function approve_chef_profile(Request $request)
+    {
+        try {
+            $user = User::find($request->id);
+            $user->approved_by_admin = $request->approved_by_admin;
+            $user->save();
+            
+            if($user){
+            $notification = new Notification();
+            $notification->notify_to = $user->id;
+            $notification->description = "Attention, Chef! Your profile has been approved. Unlock all tabs to unleash your culinary prowess and delight food enthusiasts!";
+            $notification->type = 'approve_status';
+            $notification->save();
+            }
+
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Profile Approved successfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for approving the chef profile", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_chef_approval(Request $request)
+    {
+        try {
+            $user = User::select('id','approved_by_admin')->where('id',$request->id)->first();
+
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Profile Approved fetched successfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the record", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function approval_msg(Request $request)
+    {
+        try {
+            $user = User::find($request->id);
+            $user->approval_msg = "no";
+            $user->save();
+
+            if ($user) {
+                return response()->json(['status' => true, 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'data' => ""], 400);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());

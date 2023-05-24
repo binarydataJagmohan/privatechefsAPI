@@ -9,12 +9,13 @@ class InstagramController extends Controller
     public function getInstagramImages()
     {
         try {
-            $access_token = 'IGQVJWdHlfOE1Oc0FDclpvaXNoeXo2T0x0UUVzTmc4V3dPRnpmbmt0alVKbFlxYmQxbkd3Q1M2THRBRjM1amUydE1BUERUWnQyal9kcFQ2UlpnTVFvaUc5bDVHdWZAoRzdhRVhka3hn';
+            // $access_token = 'IGQVJWdHlfOE1Oc0FDclpvaXNoeXo2T0x0UUVzTmc4V3dPRnpmbmt0alVKbFlxYmQxbkd3Q1M2THRBRjM1amUydE1BUERUWnQyal9kcFQ2UlpnTVFvaUc5bDVHdWZAoRzdhRVhka3hn';
+            $access_token = 
             $fields = 'id,caption,media_type,media_url,thumbnail_url';
 
            // $client = new Client();
-           $url = "https://graph.instagram.com/me/media?fields={$fields}&access_token={$access_token}";
-
+        //    $url = "https://graph.instagram.com/me/media?fields={$fields}&access_token={$access_token}";
+$url  = "https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=055ced48abb1a82c9ad93b2cf22af4cc&redirect_uri=http://localhost:3000/auth/&access_token=IGQVJXaGtoSzVpbld1YzE3QzJwUURZARWs1SkhfUE0xMW5uT29rNGtZAeTVENWsxNmhGTU9PQVFCVVA3Vmxib1NKWkhkNG5MR3AwRDc0WVdralh3X1hmOGlKQmpHU081eFdlNlpzSzRkQlVZAZAEUxc2hLNgZDZD";
 
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -30,7 +31,7 @@ class InstagramController extends Controller
             curl_close($ch);
 
             $decodedResponse = json_decode($response, true);
-
+return $decodedResponse;
             if (isset($decodedResponse['error'])) {
                 // Error response from Instagram API
                 return response()->json(['error' => 'Failed to retrieve images', 'message' => $decodedResponse['error']['message']], 500);
