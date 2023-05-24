@@ -164,17 +164,17 @@ class BookingController extends Controller
                             }
                         }
 
-                        // $data = [
-                        //     'name'   => $user->name ,
-                        //     'password' => $password,
-                        //     'email'   => $user->email,
-                        // ];
+                        $data = [
+                            'name'   => $user->name ,
+                            'password' => $password,
+                            'email'   => $user->email,
+                        ];
                         
-                        // Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
-                        //     $message->from('dev3.bdpl@gmail.com', "Share Ride");
-                        //     $message->subject(' Your Account Password for Private Chef');
-                        //     $message->to($data['email']);
-                        // });
+                        Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                            $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                            $message->subject(' Your Account Password for Private Chef');
+                            $message->to($data['email']);
+                        });
 
                         return response()->json(['status' => true, 'message' => "booking done successfully", 'bookingid' => $booking->id], 200);
                     }

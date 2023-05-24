@@ -16,9 +16,9 @@ class NotificationController extends Controller
         try{
             $count = Notification::where('notify_to',$request->id)->where('notifications_status','unseen')->count(); 
             $notifications = DB::table('notifications')
-            ->join('users', 'notifications.notify_by', '=', 'users.id')
+            ->join('users', 'notifications.notify_to', '=', 'users.id')
             ->select('notifications.*', 'users.pic')
-            ->where('notifications.notify_to', $request->id)
+            ->where('users.id', $request->id)
             ->orderby('notifications.id','DESC')
             ->get(); 
             if ($notifications) {            
