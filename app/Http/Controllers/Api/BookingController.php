@@ -861,4 +861,31 @@ class BookingController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+    public function get_user_chef_offer($id)
+    {
+      
+
+        $chefoffer = DB::table('bookings')
+            ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+            ->leftJoin('menus', function($join) {
+                $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
+            })
+            ->where('bookings.id', $id)
+            ->where('applied_jobs.status', 'applied')
+            ->select('bookings.id as booking_id','bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount','applied_jobs.chef_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
+            ->groupBy('bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id','bookings.id')
+            ->orderBy('applied_jobs.id', 'DESC')
+            ->get();
+
+
+
+        if ($chefoffer) {
+            return response()->json(['status' => true, 'message' => 'Booking Data fetched','chefoffer'=>$chefoffer]);
+        }else {
+            return response()->json(['status' => false, 'message' => 'There has been for saving the menu', 'error' => '', 'data' => '']);
+        }   
+        
+    }
+
 }

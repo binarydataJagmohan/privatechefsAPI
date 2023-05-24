@@ -197,6 +197,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
       Route::get('/get-edit-booking-data/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_edit_booking_data']);
        Route::post('/update-booking', [App\Http\Controllers\Api\BookingController::class, 'update_booking']);
+
+        Route::get('/get-user-chef-offer/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_user_chef_offer']);
+
+
       
 });
 Route::post('/updateAllergyCusine/{id}', [App\Http\Controllers\Api\UserController::class, 'updateAllergyCusine']);
@@ -207,3 +211,19 @@ Route::group(['middleware' => ['api']], function ($router) {
 
 
 Route::get('/get-instagram-images',[App\Http\Controllers\Api\InstagramController::class,'getInstagramImages']);
+
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+   Route::post('/get-user-message-data/', [App\Http\Controllers\Api\UserChatController::class, 'get_user_message_data']);
+   Route::post('/contact-chef-by-user/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user']);
+
+   Route::post('/get-click-user-chef-chat-data/', [App\Http\Controllers\Api\UserChatController::class, 'get_click_user_chef_chat_data']);
+});
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+   Route::post('/get-chef-message-data/', [App\Http\Controllers\Api\ChefChatController::class, 'get_chef_message_data']);
+   Route::post('/contact-user-by-chef/', [App\Http\Controllers\Api\ChefChatController::class, 'contact_user_by_chef']);
+
+   Route::post('/get-click-chef-user-chat-data/', [App\Http\Controllers\Api\ChefChatController::class, 'get_click_chef_user_chat_data']);
+});
+
