@@ -68,12 +68,8 @@ class ChefChatController extends Controller
             $messgae->sender_id =  $request->sender_id;
             $messgae->booking_id =  $request->booking_id;
             $messgae->receiver_id =  $request->receiver_id;
-            if($request->message){
-                $messgae->message =  $request->message;
-            }else {
-                $messgae->message =  "hi chef";
-            }
-            
+           
+            $messgae->message =  $request->message;
 
             $messgae->save();
 
