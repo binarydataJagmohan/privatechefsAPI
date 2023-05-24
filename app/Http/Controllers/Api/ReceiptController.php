@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Receipt;
 use App\Models\ReceiptImage;
 use App\Models\Booking;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ReceiptController extends Controller

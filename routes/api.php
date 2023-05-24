@@ -71,6 +71,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/update-location-status/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'update_location_status']);
     Route::get('/get-single-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_single_location']);
     Route::post('/delete-single-location/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'delete_single_location']);
+
+    Route::post('/approve-chef-profile/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'approve_chef_profile']);
+    Route::get('/get-chef-approval/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_approval']);
+    Route::post('/approval-msg/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'approval_msg']);
 });
 
 
@@ -201,6 +205,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
         Route::get('/get-user-chef-offer/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_user_chef_offer']);
 
 
+       Route::get('/get-completed-booking', [App\Http\Controllers\Api\BookingController::class, 'get_completed_booking']);
       
 });
 Route::post('/updateAllergyCusine/{id}', [App\Http\Controllers\Api\UserController::class, 'updateAllergyCusine']);

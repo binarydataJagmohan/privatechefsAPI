@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Notification;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
