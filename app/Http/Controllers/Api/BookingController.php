@@ -415,7 +415,7 @@ class BookingController extends Controller
         $appliedJobs  = $booking->save();
 
         if ($appliedJobs) {
-            return response()->json(['message' => 'Booking has been applied save successfully', 'status' => true]);
+            return response()->json(['message' => 'Booking has been applied successfully', 'status' => true]);
         }else {
             return response()->json(['status' => true, 'message' => 'There has been error in saving the booking', ]);
         } 
