@@ -880,17 +880,17 @@ class BookingController extends Controller
     {
       
 
-        $chefoffer = DB::table('bookings')
-            ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
-            ->leftJoin('menus', function($join) {
-                $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
-            })
-            ->where('bookings.id', $id)
-            ->where('applied_jobs.status', 'applied')
-            ->select('bookings.id as booking_id','bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount','applied_jobs.chef_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
-            ->groupBy('bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id','bookings.id')
-            ->orderBy('applied_jobs.id', 'DESC')
-            ->get();
+       $chefoffer = DB::table('users')
+        ->join('applied_jobs', 'users.id', '=', 'applied_jobs.chef_id')
+        ->leftJoin('menus', function($join) {
+            $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
+        })
+        ->where('applied_jobs.booking_id', $id)
+        ->where('applied_jobs.status', 'applied')
+        ->select('applied_jobs.booking_id', 'applied_jobs.amount', 'applied_jobs.chef_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'), 'name','address','surname')
+        ->groupBy('applied_jobs.booking_id', 'applied_jobs.amount', 'applied_jobs.chef_id', 'users.name')
+        ->orderBy('applied_jobs.id', 'DESC')
+        ->get();
 
 
 

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Chat_group;
 use App\Models\Chat_group_member;
 use App\Models\Chat_message;
+use DB;
 
 class UserChatController extends Controller
 {
@@ -16,15 +17,15 @@ class UserChatController extends Controller
         try {
             $userId = $request->id;
 
-            $userSideMessages = Chat_message::select('chat_messages.booking_id', 'chat_messages.sender_id', 'chat_messages.receiver_id', 'users.name', 'users.pic')
+            $userSideMessages = Chat_message::select('chat_messages.booking_id', 'chat_messages.sender_id', 'chat_messages.receiver_id', 'users.name', 'users.pic', DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = users.id) as unreadcount'))
+              
                 ->join('users', function ($join) use ($userId) {
                     $join->on('chat_messages.receiver_id', '=', 'users.id')
                         ->where('chat_messages.sender_id', $userId);
                 })
-                ->groupBy('chat_messages.booking_id', 'users.name', 'users.pic')
-                ->orderBy('chat_messages.id', 'desc') // Add the order by clause here, assuming 'booking_id' is the appropriate column
+                ->groupBy('chat_messages.booking_id', 'users.name', 'users.pic','users.name', 'users.pic')
+                ->orderBy('chat_messages.id', 'desc')
                 ->get();
-
 
             $senderId = $request->id;
             $receiverId = $userSideMessages[0]->receiver_id;
@@ -67,12 +68,7 @@ class UserChatController extends Controller
             $messgae->sender_id =  $request->sender_id;
             $messgae->booking_id =  $request->booking_id;
             $messgae->receiver_id =  $request->receiver_id;
-            if($request->message){
-                $messgae->message =  $request->message;
-            }else {
-                $messgae->message =  "hi chef";
-            }
-            
+            $messgae->message =  $request->message;
 
             $messgae->save();
 
@@ -118,6 +114,20 @@ class UserChatController extends Controller
             $receiverId = $request->receiver_id;
             $bookingId = $request->booking_id;
 
+             $Chat_message = Chat_message::where('sender_id', $receiverId)
+            ->where('booking_id', $bookingId)
+            ->update(['message_status' => 'read']);
+
+            $userSideMessages = Chat_message::select('chat_messages.booking_id', 'chat_messages.sender_id', 'chat_messages.receiver_id', 'users.name', 'users.pic', DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$senderId.' AND chat_messages.sender_id = users.id) as unreadcount'))
+              
+                ->join('users', function ($join) use ($senderId) {
+                    $join->on('chat_messages.receiver_id', '=', 'users.id')
+                        ->where('chat_messages.sender_id', $senderId);
+                })
+                ->groupBy('chat_messages.booking_id', 'users.name', 'users.pic','users.name', 'users.pic')
+                ->orderBy('chat_messages.id', 'desc')
+                ->get();
+
             $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
@@ -137,7 +147,7 @@ class UserChatController extends Controller
 
             if($userCountChatMessages > 0){
 
-                 return response()->json(['status' => true, 'message' => 'Mesage has been updated successfully','userchatdata' => $userChatMessages->get()]);
+                 return response()->json(['status' => true, 'message' => 'Mesage has been updated successfully','userchatdata' => $userChatMessages->get(),'userchatsider' => $userSideMessages]);
              }else {
 
                  return response()->json(['status' => false, 'message' => 'There has been for sending the mesage']);
