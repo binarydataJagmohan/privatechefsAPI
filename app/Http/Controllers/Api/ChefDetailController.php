@@ -48,6 +48,15 @@ class ChefDetailController extends Controller
             $user->bank_address = $request->bank_address;
             $user->profile_status = 'completed';
 
+            if ($request->hasFile('image')) {
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imagePath = $request->file('image');
+                $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                $imagePath->move('images/chef/users', $imageName);
+                $user->pic = $imageName;
+            }            
+
+
             $admin = User::select('id')->where('role', 'admin')->get();
 
             $notify_by = $user->id;
@@ -80,8 +89,7 @@ class ChefDetailController extends Controller
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
                 $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
-            }
-
+            }            
 
             $savedata = $user->save();
             if ($savedata) {
@@ -196,9 +204,10 @@ class ChefDetailController extends Controller
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                ->select('users.id', 'users.name', 'users.address','users.pic','users.approved_by_admin')
+                ->select('users.id', 'users.name','users.profile_status', 'users.address','users.pic','users.approved_by_admin')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
+                ->orderby('users.id','desc')
                 ->get();
 
             return response()->json([
