@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingMeals;
 use App\Models\User;
 use App\Models\AppliedJobs;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -47,6 +48,42 @@ class BookingController extends Controller
 
                 if ($savebookingdata) {
 
+                    $earthRadius = 3959;
+                    $radius = 60;
+
+                    $chefs = DB::table('users')
+                        ->join('chef_location', 'users.id', '=', 'chef_location.user_id')
+                        ->select('users.email', 'users.name', 'chef_location.lat', 'chef_location.user_id','chef_location.lng', 'chef_location.address')
+                        ->selectRaw(
+                            "($earthRadius * ACOS(
+            COS(RADIANS($request->lat)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS($request->lng)) +
+            SIN(RADIANS($request->lat)) * SIN(RADIANS(chef_location.lat))
+        )) AS distance"
+                        )
+                        ->where('chef_location.status', 'active')
+                        ->having('distance', '<=', $radius)
+                        ->orderBy('distance')
+                        ->get();
+                    //return $chefs;
+
+                    foreach ($chefs as $chef) {
+                        $data = [
+                            'name'   => $chef->name,
+                            'email'   => $chef->email,
+                        ];
+                        Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
+                            $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                            $message->subject('Location Notification');
+                            $message->to($data['email']);
+                        });
+
+                        $notification = new Notification();
+                        $notification->notify_to = $chef->user_id;
+                        $notification->description = "A  $request->name has just made a booking within your area. Please make necessary arrangements and ensure a seamless experience for them. Thank you for your prompt attention.";
+                        $notification->type = 'location_notification';
+                        $notification->save();
+                    }
+
                     if ($request->category == 'onetime') {
 
                         $dateString = $request->date;
@@ -78,39 +115,6 @@ class BookingController extends Controller
                             $bookingmeals->category = $request->category;
                             $savebookingmeals  = $bookingmeals->save();
                         }
-                    }
-                }
-
-                if ($request->role === "user") {
-
-                    $userLatitude = 37.7749; 
-                    $userLongitude = -122.4194; 
-                    $radius = 60;
-
-                    $matchingChefs = [];
-
-                    $chefs = DB::table('chef_location')->select('id', 'latitude', 'longitude')->where('user_id',$request->id)->get();
-
-                    foreach ($chefs as $chef) {
-                        // Calculate the distance between the user and each chef's location
-                        $distance = DB::select("
-        SELECT (6371 * acos(cos(radians($userLatitude)) * cos(radians($chef->lat)) * cos(radians($chef->lng) - radians($userLongitude)) + sin(radians($userLatitude)) * sin(radians($chef->lat))))) AS distance
-    ");
-
-                        if ($distance[0]->distance <= $radius) {
-                            // Chef's location is within the radius, add them to the matching chefs array
-                            $matchingChefs[] = $chef;
-                        }
-                    }
-
-                    if (!empty($matchingChefs)) {
-                        // Send email with the list of matching chefs
-                        $emailData = [
-                            'user' => $user, // User details or any other relevant data
-                            'matchingChefs' => $matchingChefs
-                        ];
-
-                        Mail::to($user->email)->send(new MatchingChefsEmail($emailData));
                     }
                 }
 
@@ -161,6 +165,44 @@ class BookingController extends Controller
 
                         if ($savebookingdata) {
 
+                            $earthRadius = 3959;
+                            $radius = 60;
+
+                            $chefs = DB::table('users')
+                                ->join('chef_location', 'users.id', '=', 'chef_location.user_id')
+                                ->select('users.email', 'users.name','chef_location.user_id','chef_location.lat', 'chef_location.lng', 'chef_location.address')
+                                ->selectRaw(
+                                    "($earthRadius * ACOS(
+            COS(RADIANS($request->lat)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS($request->lng)) +
+            SIN(RADIANS($request->lat)) * SIN(RADIANS(chef_location.lat))
+        )) AS distance"
+                                )
+                                ->where('chef_location.status', 'active')
+                                ->having('distance', '<=', $radius)
+                                ->orderBy('distance')
+                                ->get();
+
+                            //return $chefs;
+
+                            foreach ($chefs as $chef) {
+                                $data = [
+                                    'name'   => $chef->name,
+                                    'email'   => $chef->email,
+                                ];
+                                Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
+                                    $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                                    $message->subject('Location Notification');
+                                    $message->to($data['email']);
+                                });
+
+                                $notification = new Notification();
+                                $notification->notify_to = $chef->user_id;
+                                $notification->description = "A $request->name has just made a booking within your area. Please make necessary arrangements and ensure a seamless experience for them. Thank you for your prompt attention.";
+                                $notification->type = 'location_notification';
+                                $notification->save();
+                            }
+
+
                             if ($request->category == 'onetime') {
 
                                 $dateString = $request->date;
@@ -206,9 +248,6 @@ class BookingController extends Controller
                             $message->subject(' Your Account Password for Private Chef');
                             $message->to($data['email']);
                         });
-
-                        if ($request->role === "user") {
-                        }
 
                         return response()->json(['status' => true, 'message' => "booking done successfully", 'bookingid' => $booking->id], 200);
                     }
@@ -936,8 +975,6 @@ class BookingController extends Controller
     public function get_user_chef_offer($id)
     {
 
-
-<<<<<<< HEAD
         $chefoffer = DB::table('bookings')
             ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
             ->leftJoin('menus', function ($join) {
@@ -945,25 +982,10 @@ class BookingController extends Controller
             })
             ->where('bookings.id', $id)
             ->where('applied_jobs.status', 'applied')
-            ->select('bookings.id as booking_id', 'bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
+            ->select('bookings.id as booking_id', 'bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id','menus.id as menu_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
             ->groupBy('bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', 'bookings.id')
             ->orderBy('applied_jobs.id', 'DESC')
             ->get();
-=======
-       $chefoffer = DB::table('users')
-        ->join('applied_jobs', 'users.id', '=', 'applied_jobs.chef_id')
-        ->leftJoin('menus', function($join) {
-            $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
-        })
-        ->where('applied_jobs.booking_id', $id)
-        ->where('applied_jobs.status', 'applied')
-        ->select('applied_jobs.booking_id', 'applied_jobs.amount', 'applied_jobs.chef_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'), 'name','address','surname')
-        ->groupBy('applied_jobs.booking_id', 'applied_jobs.amount', 'applied_jobs.chef_id', 'users.name')
-        ->orderBy('applied_jobs.id', 'DESC')
-        ->get();
->>>>>>> refs/remotes/origin/main
-
-
 
         if ($chefoffer) {
             return response()->json(['status' => true, 'message' => 'Booking Data fetched', 'chefoffer' => $chefoffer]);

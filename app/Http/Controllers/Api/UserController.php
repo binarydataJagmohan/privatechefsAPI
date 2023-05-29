@@ -93,9 +93,9 @@ class UserController extends Controller
                     $detail->user_id = $user->id;
                     $detail->save();
 
-                    $data = new ChefLocation();
-                    $data->user_id = $user->id;
-                    $data->save();
+                    // $data = new ChefLocation();
+                    // $data->user_id = $user->id;
+                    // $data->save();
                 }
 
 
