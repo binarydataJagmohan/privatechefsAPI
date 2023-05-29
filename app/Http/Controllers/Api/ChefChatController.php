@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\Chat_group;
 use App\Models\Chat_group_member;
 use App\Models\Chat_message;
-
+use DB;
 class ChefChatController extends Controller
 {
     public function get_chef_message_data(Request $request)
@@ -16,7 +16,7 @@ class ChefChatController extends Controller
         
             $userId = $request->id;
 
-            $userSideMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id')
+            $userSideMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'))
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->where(function ($query) use ($userId) {
                     $query->where('chat_messages.sender_id', $userId)
@@ -115,6 +115,23 @@ class ChefChatController extends Controller
             $receiverId = $request->receiver_id;
             $bookingId = $request->booking_id;
 
+
+            $Chat_message = Chat_message::where('receiver_id', $senderId)
+            ->where('booking_id', $bookingId)
+            ->update(['message_status' => 'read']);
+
+
+            $userSideMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$senderId.' AND chat_messages.sender_id = sender.id) as unreadcount'))
+                ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
+                ->where(function ($query) use ($senderId) {
+                    $query->where('chat_messages.sender_id', $senderId)
+                          ->orWhere('chat_messages.receiver_id', $senderId);
+                })
+               ->groupBy('chat_messages.booking_id')
+                ->orderBy('chat_messages.id', 'desc')
+                ->get();
+
+
             $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
@@ -134,7 +151,7 @@ class ChefChatController extends Controller
 
             if($userCountChatMessages > 0){
 
-                 return response()->json(['status' => true, 'message' => 'Mesage has been updated successfully','userchatdata' => $userChatMessages->get()]);
+                 return response()->json(['status' => true, 'message' => 'Mesage has been updated successfully','userchatdata' => $userChatMessages->get(), 'userchatsider' => $userSideMessages,]);
              }else {
 
                  return response()->json(['status' => false, 'message' => 'There has been for sending the mesage']);
