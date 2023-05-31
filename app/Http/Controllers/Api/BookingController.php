@@ -53,7 +53,7 @@ class BookingController extends Controller
 
                     $chefs = DB::table('users')
                         ->join('chef_location', 'users.id', '=', 'chef_location.user_id')
-                        ->select('users.email', 'users.name', 'chef_location.lat', 'chef_location.user_id','chef_location.lng', 'chef_location.address')
+                        ->select('users.email', 'users.name', 'chef_location.lat', 'chef_location.user_id', 'chef_location.lng', 'chef_location.address')
                         ->selectRaw(
                             "($earthRadius * ACOS(
             COS(RADIANS($request->lat)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS($request->lng)) +
@@ -170,7 +170,7 @@ class BookingController extends Controller
 
                             $chefs = DB::table('users')
                                 ->join('chef_location', 'users.id', '=', 'chef_location.user_id')
-                                ->select('users.email', 'users.name','chef_location.user_id','chef_location.lat', 'chef_location.lng', 'chef_location.address')
+                                ->select('users.email', 'users.name', 'chef_location.user_id', 'chef_location.lat', 'chef_location.lng', 'chef_location.address')
                                 ->selectRaw(
                                     "($earthRadius * ACOS(
             COS(RADIANS($request->lat)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS($request->lng)) +
@@ -679,7 +679,8 @@ class BookingController extends Controller
                     'b.id',
                     'aj.booking_id',
                     'aj.status',
-                    'aj.chef_id'
+                    'aj.chef_id',
+                    'b.status'
                 )
                 ->select(
                     'b.name',
@@ -693,8 +694,10 @@ class BookingController extends Controller
                     DB::raw('MAX(bm.created_at) AS latest_created_at'),
                     'b.id AS booking_id',
                     'aj.status AS applied_jobs_status',
-                    'aj.chef_id'
+                    'aj.chef_id',
+                    'b.status'
                 )
+                ->where('b.status','!=','deleted')
                 ->orderBy('b.id', 'DESC')
                 ->get();
 
@@ -735,7 +738,8 @@ class BookingController extends Controller
                     'b.id',
                     'aj.booking_id',
                     'aj.status',
-                    'aj.chef_id'
+                    'aj.chef_id',
+                    'b.status'
                 )
                 ->select(
                     'b.name',
@@ -749,8 +753,10 @@ class BookingController extends Controller
                     DB::raw('MAX(bm.created_at) AS latest_created_at'),
                     'b.id AS booking_id',
                     'aj.status AS applied_jobs_status',
-                    'aj.chef_id'
+                    'aj.chef_id',
+                    'b.status'
                 )
+                ->where('b.status','!=','deleted')
                 ->orderBy('b.id', 'DESC')
                 ->get();
 
@@ -787,7 +793,7 @@ class BookingController extends Controller
                     'bookings.booking_status',
                     'booking_meals.category',
                     'bookings.id',
-                )->where('bookings.status', '=', 'active')->where('bookings.status', '=', 'active')->where('applied_jobs.status', 'hired')
+                )->where('bookings.status', '=', 'active')->where('applied_jobs.status', 'hired')
                 ->orderBy('applied_jobs.id', 'DESC')
                 ->get();
 
@@ -982,7 +988,7 @@ class BookingController extends Controller
             })
             ->where('bookings.id', $id)
             ->where('applied_jobs.status', 'applied')
-            ->select('bookings.id as booking_id', 'bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id','menus.id as menu_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
+            ->select('bookings.id as booking_id', 'bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', 'menus.id as menu_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
             ->groupBy('bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', 'bookings.id')
             ->orderBy('applied_jobs.id', 'DESC')
             ->get();
@@ -994,15 +1000,99 @@ class BookingController extends Controller
         }
     }
 
-    public function get_completed_booking(Request $request)
+    public function get_all_bookings(Request $request)
     {
         try {
             $currentDate = Carbon::now()->toDateString();
-            $booking = Booking::whereDate('created_at', $currentDate)->count();
-            if ($booking) {
-                return response()->json(['status' => true, 'message' => 'All booking data', 'count' =>  $booking], 200);
+            $todayBookings = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')->where('bookings.booking_status', 'completed')->whereDate('applied_jobs.created_at', $currentDate)->count();
+            $totalChef = AppliedJobs::join('users', 'applied_jobs.chef_id', 'users.id')
+            ->join('bookings','applied_jobs.booking_id','bookings.id')
+            ->where('bookings.booking_status','completed')
+            ->where('users.role','chef')
+            ->distinct('users.id')
+            ->count();        
+            $totalamount = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')->where('bookings.booking_status', 'completed')->whereIn('applied_jobs.status', ['applied', 'hired'])->whereDate('applied_jobs.created_at', $currentDate)->sum('applied_jobs.amount');
+            $pendingBooking = Booking::select('applied_jobs.created_at as orderDate', 'applied_jobs.amount', 'bookings.id as bookingId')
+                ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                ->where('bookings.booking_status', 'pending')
+                ->where('bookings.status', 'active')
+                ->whereIn('applied_jobs.status', ['applied', 'hired'])
+                ->orderby('bookings.id', 'desc')
+                ->get();
+            $completedBooking = Booking::select('bookings.id as bookingId', 'users.address', 'users.name', 'applied_jobs.created_at as ordertime')
+                ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                ->join('users', 'applied_jobs.chef_id', '=', 'users.id')
+                ->where('bookings.status', 'active')
+                ->where('bookings.booking_status', 'completed')
+                ->whereIn('applied_jobs.status', ['applied', 'hired'])
+                ->whereDate('applied_jobs.created_at', $currentDate)
+                ->orderby('bookings.id', 'desc')
+                ->get();
+            $startDate = Carbon::now()->subDays(7)->startOfDay();
+            $endDate = Carbon::now()->endOfDay();
+            $weeklyUsers = Booking::join('users', 'bookings.user_id', 'users.id')->where('users.role', 'user')->whereBetween('bookings.created_at', [$startDate, $endDate])->groupBy('users.id')->count();
+            $weeklyBooking = Booking::whereBetween('created_at', [$startDate, $endDate])->count();
+            if ($completedBooking) {
+                return response()->json(['status' => true, 'message' => 'All booking data', 'totalChef' => $totalChef, 'pendingBooking' => $pendingBooking, 'completedBooking' => $completedBooking, 'weeklyUsers' => $weeklyUsers, 'weeklyBooking' => $weeklyBooking, 'todayBookings' => $todayBookings, 'totalChef' => $totalChef, 'totalamount' => $totalamount], 200);
             } else {
                 return response()->json(['status' => false, 'message' => 'All booking'], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_chef_bookings(Request $request)
+    {
+        try {
+            $currentDate = Carbon::now()->toDateString();
+            $todayBookings = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')->where('bookings.booking_status', 'completed')->where('applied_jobs.chef_id', $request->id)->whereDate('applied_jobs.created_at', $currentDate)->count();
+            $pendingBookingCount = Booking::select('applied_jobs.created_at as orderDate', 'applied_jobs.amount', 'bookings.id as bookingId')
+                ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                ->where('bookings.booking_status', 'pending')
+                ->where('bookings.status', 'active')
+                ->whereIn('applied_jobs.status', ['applied', 'hired'])
+                ->where('applied_jobs.chef_id', $request->id)
+                ->orderby('bookings.id', 'desc')
+                ->whereDate('applied_jobs.created_at', $currentDate)
+                ->count();
+            $totalamount = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')->where('bookings.booking_status', 'completed')->whereIn('applied_jobs.status', ['applied', 'hired'])->where('applied_jobs.chef_id', $request->id)->whereDate('applied_jobs.created_at', $currentDate)->sum('applied_jobs.amount');
+            $pendingBooking = Booking::select('applied_jobs.created_at as orderDate', 'applied_jobs.amount', 'bookings.id as bookingId')
+                ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                ->where('bookings.booking_status', 'pending')
+                ->where('bookings.status', 'active')
+                ->whereIn('applied_jobs.status', ['applied', 'hired'])
+                ->where('applied_jobs.chef_id', $request->id)
+                ->orderby('bookings.id', 'desc')
+                ->get();
+            $completedBooking = Booking::select('bookings.id as bookingId', 'users.address', 'users.name', 'applied_jobs.created_at as ordertime')
+                ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                ->join('users', 'applied_jobs.chef_id', '=', 'users.id')
+                ->where('bookings.status', 'active')
+                ->where('bookings.booking_status', 'completed')
+                ->whereIn('applied_jobs.status', ['applied', 'hired'])
+                ->whereDate('applied_jobs.created_at', $currentDate)
+                ->where('applied_jobs.chef_id', $request->id)
+                ->orderby('applied_jobs.id', 'desc')
+                ->get();
+            $startDate = Carbon::now()->subDays(7)->startOfDay();
+            $endDate = Carbon::now()->endOfDay();
+            $weeklyBooking = Booking::join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')->where('applied_jobs.chef_id', $request->id)->whereBetween('applied_jobs.created_at', [$startDate, $endDate])->count();
+            return response()->json(['status' => true, 'message' => 'All booking data', 'todayBookings' => $todayBookings, 'totalamount' => $totalamount, 'pendingBookingCount' => $pendingBookingCount, 'pendingBooking' => $pendingBooking, 'weeklyBooking' => $weeklyBooking, 'completedBooking' => $completedBooking], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function change_booking_status(Request $request)
+    {
+        try {
+            $user = Booking::find($request->id);
+            $user->booking_status = $request->booking_status;
+            $user->save();
+            
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "booking status changed", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for changing the booking status", 'data' => ""], 400);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
