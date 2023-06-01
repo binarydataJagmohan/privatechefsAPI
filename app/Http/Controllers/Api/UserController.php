@@ -93,9 +93,9 @@ class UserController extends Controller
                     $detail->user_id = $user->id;
                     $detail->save();
 
-                    $data = new ChefLocation();
-                    $data->user_id = $user->id;
-                    $data->save();
+                    // $data = new ChefLocation();
+                    // $data->user_id = $user->id;
+                    // $data->save();
                 }
 
 
@@ -236,13 +236,13 @@ class UserController extends Controller
             $user->lng = $request->lng;
             $user->profile_status = 'completed';
 
-            if ($request->hasFile('image')) {
-                $randomNumber = mt_rand(1000000000, 9999999999);
-                $imagePath = $request->file('image');
-                $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef/users', $imageName);
-                $user->pic = $imageName;
-            } 
+            // if ($request->hasFile('image')) {
+            //     $randomNumber = mt_rand(1000000000, 9999999999);
+            //     $imagePath = $request->file('image');
+            //     $imageName = $randomNumber . $imagePath->getClientOriginalName();
+            //     $imagePath->move('images/chef/users', $imageName);
+            //     $user->pic = $imageName;
+            // } 
 
             $admin = User::select('id')->where('role', 'admin')->get();
 
@@ -274,7 +274,7 @@ class UserController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef/users', $imageName);
+                $imagePath->move('public/images/chef/users', $imageName);
                 $user->pic = $imageName;
             }
 
@@ -408,7 +408,7 @@ class UserController extends Controller
     public function get_single_user_profile(Request $request)
     {
         try {
-            $user = User::select('id','approved_by_admin')->where('id', $request->id)->first();
+            $user = User::where('id', $request->id)->first();
             if ($user) {
                 return response()->json(['status' => true, 'message' => "Single profile data fetched successfully", 'data' => $user], 200);
             } else {

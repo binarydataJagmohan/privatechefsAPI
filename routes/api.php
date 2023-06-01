@@ -129,6 +129,7 @@ Route::group(['middleware' => ['api']], function ($router) {
 
     Route::get('/getAllergyDetails', [AllergyController::class, 'getAllergyDetails']);
     Route::post('/save-booking', [App\Http\Controllers\Api\BookingController::class, 'save_booking']);
+    Route::post('/change-booking-status/{id}', [App\Http\Controllers\Api\BookingController::class, 'change_booking_status']);
 });
 //cuisine
 Route::group(['middleware' => ['api']], function ($router) {
@@ -204,8 +205,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
         Route::get('/get-user-chef-offer/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_user_chef_offer']);
 
-
-       Route::get('/get-completed-booking', [App\Http\Controllers\Api\BookingController::class, 'get_completed_booking']);
+       Route::get('/get-all-bookings', [App\Http\Controllers\Api\BookingController::class, 'get_all_bookings']);
+       Route::get('/get-chef-bookings/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_chef_bookings']);
       
 });
 Route::post('/updateAllergyCusine/{id}', [App\Http\Controllers\Api\UserController::class, 'updateAllergyCusine']);
