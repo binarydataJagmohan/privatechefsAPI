@@ -175,6 +175,11 @@ class UserController extends Controller
             $user = Auth::user();
             $admin = User::select('id')->where('role', 'admin')->get();
 
+            $online_status_user = User::find($user->id);
+            $online_status_user->is_online = 'yes';
+            $online_status_user->last_activity = Carbon::now()->format('Y-m-d H:i:s');
+            $online_status_user->save();
+
             $notify_by = $user->id;
             $notify_to =  $admin;
             $description = 'Welcome back! You have successfully logged in to your account.';
@@ -555,6 +560,24 @@ class UserController extends Controller
                 return response()->json(['status'=>true,'message' => "role selected successsfully",'data'=>$user], 200);
             } else {
                 return response()->json(['status'=>false,'message' => "There has been error for to selected role"], 404);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function update_user_to_offline($id)
+    {
+        try {
+
+            $online_status_user = User::find($id);
+            $online_status_user->is_online = 'no';
+            $online_status_user->save();
+
+            if ($online_status_user->save()) {
+                return response()->json(['status'=>true,'message' => "user offline successfully"], 200);
+            } else {
+                return response()->json(['status'=>false,'message' => "There has been error"]);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());

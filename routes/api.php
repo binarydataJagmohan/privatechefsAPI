@@ -223,6 +223,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
    Route::post('/contact-chef-by-user/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user']);
 
    Route::post('/get-click-user-chef-chat-data/', [App\Http\Controllers\Api\UserChatController::class, 'get_click_user_chef_chat_data']);
+   Route::post('/contact-chef-by-user-with-share-file/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user_with_share_file']);
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -230,5 +231,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
    Route::post('/contact-user-by-chef/', [App\Http\Controllers\Api\ChefChatController::class, 'contact_user_by_chef']);
 
    Route::post('/get-click-chef-user-chat-data/', [App\Http\Controllers\Api\ChefChatController::class, 'get_click_chef_user_chat_data']);
+   Route::post('/contact-user-by-chef-with-share-file/', [App\Http\Controllers\Api\ChefChatController::class, 'contact_user_by_chef_with_share_file']);
 });
 
+
+Route::group(['middleware' => ['api']], function ($router) {
+   Route::get('/update-user-to-offline/{id}', [App\Http\Controllers\Api\UserController::class, 'update_user_to_offline']);
+});
