@@ -983,13 +983,14 @@ class BookingController extends Controller
 
         $chefoffer = DB::table('bookings')
             ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+            ->join('users', 'users.id', '=', 'applied_jobs.chef_id')
             ->leftJoin('menus', function ($join) {
                 $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
             })
             ->where('bookings.id', $id)
             ->where('applied_jobs.status', 'applied')
-            ->select('bookings.id as booking_id', 'bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', 'menus.id as menu_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
-            ->groupBy('bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', 'bookings.id')
+            ->select('bookings.id as booking_id', 'bookings.name', 'bookings.location', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'users.name as userName','users.surname as userSurname','applied_jobs.chef_id', 'menus.id as menu_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
+            ->groupBy('bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', 'bookings.id','bookings.location')
             ->orderBy('applied_jobs.id', 'DESC')
             ->get();
 
@@ -1010,7 +1011,8 @@ class BookingController extends Controller
             ->where('bookings.booking_status','completed')
             ->where('users.role','chef')
             ->distinct('users.id')
-            ->count();        
+            ->whereDate('applied_jobs.created_at', $currentDate)
+            ->count();    
             $totalamount = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')->where('bookings.booking_status', 'completed')->whereIn('applied_jobs.status', ['applied', 'hired'])->whereDate('applied_jobs.created_at', $currentDate)->sum('applied_jobs.amount');
             $pendingBooking = Booking::select('applied_jobs.created_at as orderDate', 'applied_jobs.amount', 'bookings.id as bookingId')
                 ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')

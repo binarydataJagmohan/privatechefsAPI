@@ -50,6 +50,19 @@ class ReceiptController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+    public function get_chef_receipt(Request $request)
+    {
+        try {
+            $receipt = Receipt::join('bookings', 'receipts.booking_id', 'bookings.id')->select('bookings.created_at as booking_date', 'receipts.*')->where('receipts.user_id',$request->id)->where('receipts.status', 'active')->get();
+            if ($receipt) {
+                return response()->json(['status' => true, 'message' => "All receipt fetched successfully", 'data' => $receipt], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the receipt", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
     public function get_single_receipt(Request $request)
     {
         try {

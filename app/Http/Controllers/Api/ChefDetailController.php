@@ -87,7 +87,7 @@ class ChefDetailController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef/users', $imageName);
+                $imagePath->move('public/images/chef/users', $imageName);
                 $user->pic = $imageName;
             }            
 
@@ -126,14 +126,14 @@ class ChefDetailController extends Controller
                 $resume->youtube_link = $request->youtube_link;
                 $savedata = $resume->save();
 
-                $resume = User::find($request->id);
-                if ($request->hasFile('image')) {
-                    $randomNumber = mt_rand(1000000000, 9999999999);
-                    $imagePath = $request->file('image');
-                    $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                    $imagePath->move('images/chef/users', $imageName);
-                    $resume->pic = $imageName;
-                }
+                // $resume = User::find($request->id);
+                // if ($request->hasFile('image')) {
+                //     $randomNumber = mt_rand(1000000000, 9999999999);
+                //     $imagePath = $request->file('image');
+                //     $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                //     $imagePath->move('images/chef/users', $imageName);
+                //     $resume->pic = $imageName;
+                // }
 
                 $admin = User::select('id')->where('role', 'admin')->get();
 
@@ -381,6 +381,21 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+    public function get_current_location(Request $request)
+    {
+        try {
+            $user = User::where('id', $request->id)->select('id','address')->where('status', 'active')->first();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
     public function update_location_status(Request $request)
     {
         try {

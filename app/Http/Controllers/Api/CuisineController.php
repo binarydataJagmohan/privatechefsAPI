@@ -54,7 +54,7 @@ class CuisineController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef/cuisine', $imageName);
+                $imagePath->move('public/images/chef/cuisine', $imageName);
                 $cuisine->image = $imageName;
             } 
 
@@ -120,7 +120,7 @@ class CuisineController extends Controller
         $randomNumber = mt_rand(1000000000, 9999999999);
         $imagePath = $request->file('image');
         $imageName = $randomNumber . $imagePath->getClientOriginalName();
-        $imagePath->move('images/chef/cuisine', $imageName);
+        $imagePath->move('public/images/chef/cuisine', $imageName);
         $cuisine->image = $imageName;
     } 
     $cuisine->save();
