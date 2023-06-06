@@ -1100,4 +1100,22 @@ class BookingController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+    public function get_chef_booking(Request $request)
+    {
+        try {
+            $bookings =  Booking::select('bookings.id','applied_jobs.booking_id','applied_jobs.status as applystatus','applied_jobs.created_at as applydate')->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')->where('applied_jobs.jobs_status', 'active')->where('applied_jobs.chef_id', $request->id)->get();
+            return response()->json([
+                'status' => true,
+                'message' => 'All Bookings fetched successfully.',
+                'data' => $bookings
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => 'Booking not found',
+                'data' => ''
+            ], 404);
+        }
+    }
 }

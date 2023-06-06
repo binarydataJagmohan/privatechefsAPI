@@ -76,6 +76,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/approve-chef-profile/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'approve_chef_profile']);
     Route::get('/get-chef-approval/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_approval']);
     Route::post('/approval-msg/{id}', [App\Http\Controllers\Api\ChefDetailController::class, 'approval_msg']);
+
+    Route::get('/get-chef-booking/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_chef_booking']);
 });
 
 
@@ -237,7 +239,21 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
    Route::post('/contact-user-by-chef-with-share-file/', [App\Http\Controllers\Api\ChefChatController::class, 'contact_user_by_chef_with_share_file']);
 });
 
-
 Route::group(['middleware' => ['api']], function ($router) {
    Route::get('/update-user-to-offline/{id}', [App\Http\Controllers\Api\UserController::class, 'update_user_to_offline']);
 });
+
+//invoice
+Route::group(['middleware' => ['api']], function ($router) {
+    Route::post('/save-invoice', [App\Http\Controllers\Api\InvoiceController::class, 'save_invoice']);
+    Route::get('/get-chef-invoice/{id}', [App\Http\Controllers\Api\InvoiceController::class, 'get_chef_invoice']);
+    Route::post('/update-invoice/{id}', [App\Http\Controllers\Api\InvoiceController::class, 'update_invoice']);
+    Route::get('/get-single-invoice/{id}', [App\Http\Controllers\Api\InvoiceController::class, 'get_single_invoice']);
+    Route::post('/delete-invoice/{id}', [App\Http\Controllers\Api\InvoiceController::class, 'delete_invoice']);
+    Route::get('/get-all-invoice', [App\Http\Controllers\Api\InvoiceController::class, 'get_all_invoice']);
+    Route::get('/single-invoice/{id}', [App\Http\Controllers\Api\InvoiceController::class, 'single_invoice']);
+ });
+
+ // concierge
+
+ Route::get('/get-assigned-chef', [App\Http\Controllers\Api\ChefDetailController::class, 'getAssignedChefDetails']);
