@@ -40,7 +40,13 @@ class ReceiptController extends Controller
     public function get_receipt(Request $request)
     {
         try {
-            $receipt = Receipt::join('bookings', 'receipts.booking_id', 'bookings.id')->select('bookings.created_at as booking_date', 'receipts.*')->where('receipts.status', 'active')->get();
+            $receipt = Receipt::join('bookings', 'receipts.booking_id', 'bookings.id')
+            ->join('users as u1','receipts.user_id','u1.id')
+            ->join('users as u2','bookings.user_id','u2.id')
+            ->select('bookings.created_at as booking_date', 'receipts.*','u1.name as chefname','u2.name as username')
+            ->where('receipts.status', 'active')
+            ->orderBy('receipts.id','DESC')
+            ->get();
             if ($receipt) {
                 return response()->json(['status' => true, 'message' => "All receipt fetched successfully", 'data' => $receipt], 200);
             } else {
@@ -154,6 +160,44 @@ class ReceiptController extends Controller
                 'status' => false,
                 'message' => $e->getMessage()
             ]);
+        }
+    }
+    public function get_single_receipt_admin(Request $request)
+    {
+        try {
+            $receipt = Receipt::select('u1.name as chefname','u1.surname as chefsurname','u1.pic as chefpic','u1.phone as chefphone','u1.email as chefemail','u2.email as useremail','u1.address as chefaddress','u2.name as username','u2.surname as usersurname','u2.phone as userphone','u2.address as useraddress','receipts.id','receipts.order_date as orderdate')
+            ->join('users as u1','receipts.user_id','u1.id')
+            ->join('bookings','receipts.booking_id','bookings.id')
+            ->join('users as u2','bookings.user_id','u2.id')
+            ->where('receipts.id',$request->id)
+            ->first();
+            if ($receipt) {
+                return response()->json(['status' => true, 'message' => "All receipt fetched successfully", 'data' => $receipt], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the receipt", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_concierge_receipt(Request $request)
+    {
+        try {
+            $receipt = Receipt::join('bookings', 'receipts.booking_id', 'bookings.id')
+            ->join('users as u1','receipts.user_id','u1.id')
+            ->join('users as u2','bookings.user_id','u2.id')
+            ->select('bookings.created_at as booking_date', 'receipts.*','u1.name as chefname','u2.name as username')
+            ->where('receipts.status', 'active')
+            ->orderBy('receipts.id','DESC')
+            ->where('u1.created_by',$request->id)
+            ->get();
+            if ($receipt) {
+                return response()->json(['status' => true, 'message' => "All receipt fetched successfully", 'data' => $receipt], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the receipt", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
         }
     }
 }

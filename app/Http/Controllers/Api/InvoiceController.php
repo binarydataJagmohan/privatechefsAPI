@@ -102,7 +102,7 @@ class InvoiceController extends Controller
     public function get_all_invoice(Request $request)
     {
         try {
-            $invoices = Invoice::select('u2.name as username', 'u2.surname as usersurname', 'u1.name as chefname', 'u1.surname as chefsurname', 'invoices.date', 'invoices.booking_id', 'invoices.id as invoiceID', 'invoices.invoice_no', 'invoices.amount as invoiceAmount', 'u1.phone as chefphoneno')
+            $invoices = Invoice::select('u2.name as username', 'u2.surname as usersurname', 'u1.name as chefname', 'u1.surname as chefsurname', 'invoices.date', 'invoices.booking_id', 'invoices.id as invoiceID', 'invoices.invoice_no', 'invoices.amount as invoiceAmount', 'u1.phone as chefphoneno','invoices.id')
                 ->join('users as u1', 'invoices.user_id', '=', 'u1.id')
                 ->join('bookings', 'bookings.id', '=', 'invoices.booking_id')
                 ->join('users as u2', 'bookings.user_id', '=', 'u2.id')

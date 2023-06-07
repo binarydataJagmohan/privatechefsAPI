@@ -544,9 +544,9 @@ class UserController extends Controller
             $user->role = $request->role;
             $user->save();
             if ($user) {
-                return response()->json(['status'=>true,'message' => "role selected successsfully"], 200);
+                return response()->json(['status' => true, 'message' => "role selected successsfully"], 200);
             } else {
-                return response()->json(['status'=>false,'message' => "There has been error for to selected role"], 404);
+                return response()->json(['status' => false, 'message' => "There has been error for to selected role"], 404);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
@@ -555,11 +555,11 @@ class UserController extends Controller
     public function get_email_data($email)
     {
         try {
-            $user = User::where('email',$email)->first();
+            $user = User::where('email', $email)->first();
             if ($user) {
-                return response()->json(['status'=>true,'message' => "role selected successsfully",'data'=>$user], 200);
+                return response()->json(['status' => true, 'message' => "role selected successsfully", 'data' => $user], 200);
             } else {
-                return response()->json(['status'=>false,'message' => "There has been error for to selected role"], 404);
+                return response()->json(['status' => false, 'message' => "There has been error for to selected role"], 404);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
@@ -575,12 +575,168 @@ class UserController extends Controller
             $online_status_user->save();
 
             if ($online_status_user->save()) {
-                return response()->json(['status'=>true,'message' => "user offline successfully"], 200);
+                return response()->json(['status' => true, 'message' => "user offline successfully"], 200);
             } else {
-                return response()->json(['status'=>false,'message' => "There has been error"]);
+                return response()->json(['status' => false, 'message' => "There has been error"]);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function create_user(Request $request)
+    {
+        try {
+            $checkemail = User::where('email', $request->email)->count();
+
+            if ($checkemail <= 0) {
+                $password = Str::random(10);
+                $user = new User();
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->password = Hash::make($password);
+                $user->view_password = $password;
+                $user->created_by = $request->created_by;
+                $user->role = 'user';
+                $savedata = $user->save();
+
+                $data = [
+                    'name'   => $user->name,
+                    'password' => $password,
+                    'email'   => $user->email,
+                ];
+
+                Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                    $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                    $message->subject(' Your Account Password for Private Chef');
+                    $message->to($data['email']);
+                });
+
+                return response()->json(['status' => true, 'message' => "User created successfully",'data'=> $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function delete_user(Request $request)
+    {
+        try {
+            $invoice = User::find($request->id);
+            if (!$invoice) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found'
+                ]);
+            }
+            $invoice->status = 'deleted';
+            $invoice->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    public function get_all_concierge_users(Request $request)
+    {
+        try {
+            $users = User::where('created_by',$request->id)->orderBy('id', 'DESC')->where('role', 'user')->where('status', 'active')->get();
+            return response()->json([
+                'status' => true,
+                'message' => 'All users fetched successfully.',
+                'data' => $users
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    public function create_chef(Request $request)
+    {
+        try {
+            $checkemail = User::where('email', $request->email)->count();
+
+            if ($checkemail <= 0) {
+                $password = Str::random(10);
+                $user = new User();
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->password = Hash::make($password);
+                $user->view_password = $password;
+                $user->created_by = $request->created_by;
+                $user->role = 'chef';
+                $savedata = $user->save();
+
+                $data = [
+                    'name'   => $user->name,
+                    'password' => $password,
+                    'email'   => $user->email,
+                ];
+
+                Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                    $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                    $message->subject(' Your Account Password for Private Chef');
+                    $message->to($data['email']);
+                });
+
+                return response()->json(['status' => true, 'message' => "User created successfully",'data'=> $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function delete_chef(Request $request)
+    {
+        try {
+            $invoice = User::find($request->id);
+            if (!$invoice) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found'
+                ]);
+            }
+            $invoice->status = 'deleted';
+            $invoice->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    public function get_all_concierge_chef(Request $request)
+    {
+        try {
+            $users = User::where('created_by',$request->id)->orderBy('id', 'DESC')->where('role', 'chef')->where('status', 'active')->get();
+            return response()->json([
+                'status' => true,
+                'message' => 'All chef fetched successfully.',
+                'data' => $users
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 }

@@ -495,36 +495,4 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-    public function getAssignedChefDetails(Request $request)
-    {
-        try {
-
-            // $users = User::where('users.role', 'chef')
-            // ->where('users.status', 'active')
-            // ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
-            // ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-            // ->select('users.id', 'users.name', 'users.address','cuisine.name')
-            // ->groupBy('users.id', 'users.name', 'users.address')
-            // ->get();
-            $users = User::join('applied_jobs','users.id','applied_jobs.chef_id')
-                ->whereIn('applied_jobs.status', ['applied', 'hired'])
-                ->where('users.role', 'chef')
-                ->where('users.status', 'active')
-                ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
-                ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                ->select('users.id', 'users.name','users.profile_status', 'users.address','users.pic','users.approved_by_admin','applied_jobs.status as appliedstatus')
-                ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
-                ->groupBy('users.id', 'users.name', 'users.address')
-                ->orderby('users.id','desc')
-                ->get();
-
-            return response()->json([
-                'status' => true,
-                'message' => "Chef resume fetched successfully",
-                'data' => $users
-            ], 200);
-        } catch (\Exception $e) {
-            throw new HttpException(500, $e->getMessage());
-        }
-    }
 }
