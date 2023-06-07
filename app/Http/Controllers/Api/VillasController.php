@@ -70,7 +70,6 @@ class VillasController extends Controller
         try {
             $villas = Villas::find($request->id);
             $villas->name = $request->input('name');
-            $villas->user_id = $request->input('user_id');
             $villas->email = $request->input('email');
             $villas->phone = $request->input('phone');
             $villas->address = $request->input('address');
@@ -201,7 +200,7 @@ class VillasController extends Controller
     public function get_concierge_villas(Request $request)
     {
         try {
-            $villas = Villas::where('user_id',$request->id)->orderBy('id', 'DESC')->where('status','active')->get();
+            $villas = Villas::where('user_id',$request->id)->orderBy('id', 'DESC')->where('status','!=','deleted')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All Villas fetched successfully.',

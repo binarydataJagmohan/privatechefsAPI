@@ -189,6 +189,7 @@ class ReceiptController extends Controller
             ->select('bookings.created_at as booking_date', 'receipts.*','u1.name as chefname','u2.name as username')
             ->where('receipts.status', 'active')
             ->orderBy('receipts.id','DESC')
+            ->where('u1.status','!=','deleted')
             ->where('u1.created_by',$request->id)
             ->get();
             if ($receipt) {

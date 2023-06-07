@@ -647,7 +647,7 @@ class UserController extends Controller
     public function get_all_concierge_users(Request $request)
     {
         try {
-            $users = User::where('created_by',$request->id)->orderBy('id', 'DESC')->where('role', 'user')->where('status', 'active')->get();
+            $users = User::where('created_by',$request->id)->orderBy('id', 'DESC')->where('status','!=','deleted')->where('role', 'user')->where('status', 'active')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All users fetched successfully.',
@@ -725,7 +725,7 @@ class UserController extends Controller
     public function get_all_concierge_chef(Request $request)
     {
         try {
-            $users = User::where('created_by',$request->id)->orderBy('id', 'DESC')->where('role', 'chef')->where('status', 'active')->get();
+            $users = User::where('created_by',$request->id)->orderBy('id', 'DESC')->where('role', 'chef')->where('status','!=','deleted')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All chef fetched successfully.',

@@ -7,6 +7,8 @@ use App\Models\Invoice;
 use App\Models\User;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use DB;
+use App\Models\Menu;
+use App\Models\MenuItems;
 
 class InvoiceController extends Controller
 {
@@ -102,7 +104,7 @@ class InvoiceController extends Controller
     public function get_all_invoice(Request $request)
     {
         try {
-            $invoices = Invoice::select('u2.name as username', 'u2.surname as usersurname', 'u1.name as chefname', 'u1.surname as chefsurname', 'invoices.date', 'invoices.booking_id', 'invoices.id as invoiceID', 'invoices.invoice_no', 'invoices.amount as invoiceAmount', 'u1.phone as chefphoneno','invoices.id')
+            $invoices = Invoice::select('u2.name as username', 'u2.surname as usersurname', 'u1.name as chefname', 'u1.surname as chefsurname', 'invoices.date', 'invoices.booking_id', 'invoices.id as invoiceID', 'invoices.invoice_no', 'invoices.amount as invoiceAmount', 'u1.phone as chefphoneno', 'invoices.id')
                 ->join('users as u1', 'invoices.user_id', '=', 'u1.id')
                 ->join('bookings', 'bookings.id', '=', 'invoices.booking_id')
                 ->join('users as u2', 'bookings.user_id', '=', 'u2.id')
@@ -116,27 +118,112 @@ class InvoiceController extends Controller
     public function single_invoice(Request $request)
     {
         try {
-
             $invoice = Invoice::select(
-                'invoices.booking_id as invoiceBooking',
-                'applied_jobs.booking_id as appliedBooking',
-                'applied_jobs.chef_id as chefname',
+                'invoices.id',
+                'invoices.booking_id',
+                'dishes.id',
+                'dish_categories.id as dish_category_id',
                 'menus.menu_name',
-                'cuisine.name',
-                DB::raw('GROUP_CONCAT(dishes.item_name) as dish_names')
+                'a1.amount',
+                'menus.id',
+                'u1.name as chefname',
+                'u1.surname as chefsurname',
+                'u1.email as chefemail',
+                'u1.address as chefaddress',
+                'u1.phone as chefphone',
+                'u2.name as username',
+                'u2.surname as usersurname',
+                'u2.email as useremail',
+                'u2.address as useraddress',
+                'u2.phone as userphone'
             )
-            ->join('applied_jobs', 'invoices.booking_id', '=', 'applied_jobs.booking_id')
-            ->join('users', 'applied_jobs.chef_id', '=', 'users.id')
-            ->join('menus', 'applied_jobs.menu', '=', 'menus.id')
-            ->join('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-            ->leftJoin('dishes', function ($join) {
-                $join->on('applied_jobs.chef_id', '=', 'dishes.user_id');
-            })
-            ->where('invoices.id', $request->id)
-            ->groupBy('invoices.booking_id')
-            ->first();
-        
-            return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice], 200);
+                ->join('bookings', 'invoices.booking_id', '=', 'bookings.id')
+                ->join('applied_jobs as a1', 'bookings.id', '=', 'a1.booking_id')
+                ->join('menus', 'a1.menu', '=', 'menus.id')
+                ->join('menu_items', 'menus.id', '=', 'menu_items.menu_id')
+                ->join('dishes', function ($join) {
+                    $join->on('menu_items.user_id', '=', 'dishes.user_id');
+                })
+                ->join('dish_categories', function ($join) {
+                    $join->on('dishes.dish_category_id', '=', 'dish_categories.id');
+                })
+                ->join('users as u1', 'invoices.user_id', '=', 'u1.id')
+                ->join('users as u2', 'bookings.user_id', '=', 'u2.id')
+                ->where('invoices.id', $request->id)
+                ->first();
+
+            $dishNames = DB::table('dishes')
+                ->select('dishes.item_name', 'dishes.type')
+                ->join('menu_items', 'dishes.user_id', '=', 'menu_items.user_id')
+                ->join('menus', 'menu_items.menu_id', '=', 'menus.id')
+                ->join('applied_jobs', 'menus.id', '=', 'applied_jobs.menu')
+                ->join('bookings', 'applied_jobs.booking_id', '=', 'bookings.id')
+                ->join('invoices', 'bookings.id', '=', 'invoices.booking_id')
+                ->where('invoices.id', $request->id)
+                ->distinct()
+                ->get();
+
+            $dishNames = $dishNames->pluck('item_name', 'type')->toArray();
+
+
+            return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice, 'dishNames' => $dishNames], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function single_concierge_invoice(Request $request)
+    {
+        try {
+            $invoice = Invoice::select(
+                'invoices.id',
+                'invoices.booking_id',
+                'dishes.id',
+                'dish_categories.id as dish_category_id',
+                'menus.menu_name',
+                'a1.amount',
+                'menus.id',
+                'u1.name as chefname',
+                'u1.surname as chefsurname',
+                'u1.email as chefemail',
+                'u1.address as chefaddress',
+                'u1.phone as chefphone',
+                'u2.name as username',
+                'u2.surname as usersurname',
+                'u2.email as useremail',
+                'u2.address as useraddress',
+                'u2.phone as userphone'
+            )
+                ->join('bookings', 'invoices.booking_id', '=', 'bookings.id')
+                ->join('applied_jobs as a1', 'bookings.id', '=', 'a1.booking_id')
+                ->join('menus', 'a1.menu', '=', 'menus.id')
+                ->join('menu_items', 'menus.id', '=', 'menu_items.menu_id')
+                ->join('dishes', function ($join) {
+                    $join->on('menu_items.user_id', '=', 'dishes.user_id');
+                })
+                ->join('dish_categories', function ($join) {
+                    $join->on('dishes.dish_category_id', '=', 'dish_categories.id');
+                })
+                ->join('users as u1', 'invoices.user_id', '=', 'u1.id')
+                ->join('users as u2', 'bookings.user_id', '=', 'u2.id')
+                ->where('u1.status','!=','deleted')
+                ->where('invoices.id', $request->id)
+                ->first();
+
+            $dishNames = DB::table('dishes')
+                ->select('dishes.item_name', 'dishes.type')
+                ->join('menu_items', 'dishes.user_id', '=', 'menu_items.user_id')
+                ->join('menus', 'menu_items.menu_id', '=', 'menus.id')
+                ->join('applied_jobs', 'menus.id', '=', 'applied_jobs.menu')
+                ->join('bookings', 'applied_jobs.booking_id', '=', 'bookings.id')
+                ->join('invoices', 'bookings.id', '=', 'invoices.booking_id')
+                ->where('invoices.id', $request->id)
+                ->distinct()
+                ->get();
+
+            $dishNames = $dishNames->pluck('item_name', 'type')->toArray();
+
+
+            return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice, 'dishNames' => $dishNames], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
