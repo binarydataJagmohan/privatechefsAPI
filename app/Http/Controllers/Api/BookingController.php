@@ -480,6 +480,11 @@ class BookingController extends Controller
         $booking->amount = $request->amount;
         $booking->menu = $request->menu;
         $appliedJobs  = $booking->save();
+       
+        $user = User::where('id',$request->chef_id)->first();
+        return $user;
+        $admin = User::select('id')->where('role', 'admin')->get();
+        $concierge = User::select('id')->where('created_by', $request->id)->where('role', 'concierge')->first();
 
         if ($appliedJobs) {
             return response()->json(['message' => 'Booking has been applied successfully', 'status' => true]);
@@ -1315,7 +1320,8 @@ class BookingController extends Controller
                 ->where('users.status', '!=', 'deleted')
                 ->sum('aj1.amount');
 
-            $pendingBooking = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
+            $pendingBooking = User::select('aj1.created_at as orderDate', 'aj1.amount', 'bookings.id as bookingId')
+                ->join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->where('bookings.booking_status', 'pending')
                 ->whereIn('aj1.status', ['applied', 'hired'])

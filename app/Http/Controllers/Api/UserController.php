@@ -181,12 +181,13 @@ class UserController extends Controller
             $online_status_user->save();
 
             $notify_by = $user->id;
-            $notify_to =  $admin;
+            $notify_to = $admin;
             $description = 'Welcome back! You have successfully logged in to your account.';
-            $description1 = 'A user with username "' . $user->name . '" has logged in to their account.';
+            $description2 = $user->name . ' has logged in to their account.';
             $type = 'Login';
 
-            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description2, $type);
+            
 
             return response()->json([
                 'status' => true,
@@ -245,6 +246,7 @@ class UserController extends Controller
             // } 
 
             $admin = User::select('id')->where('role', 'admin')->get();
+            $concierge = User::select('id')->where('id',$request->id)->where('created_by', $request->id)->where('role', 'concierge')->first();
 
             $notify_by = $user->id;
             $notify_to =  $admin;
@@ -316,6 +318,7 @@ class UserController extends Controller
                 );
 
                 $admin = User::select('id')->where('role', 'admin')->get();
+                $concierge = User::select('id')->where('created_by', $request->id)->where('role', 'concierge')->first();
 
                 $notify_by = $user->id;
                 $notify_to =  $admin;
@@ -362,6 +365,7 @@ class UserController extends Controller
             PasswordReset::where('user_id', $request->user_id)->delete();
 
             $admin = User::select('id')->where('role', 'admin')->get();
+            $concierge = User::select('id')->where('created_by', $request->id)->where('role', 'concierge')->first();
 
             $notify_by = $user->id;
             $notify_to =  $admin;
@@ -611,7 +615,7 @@ class UserController extends Controller
                     $message->to($data['email']);
                 });
 
-                return response()->json(['status' => true, 'message' => "User created successfully",'data'=> $user], 200);
+                return response()->json(['status' => true, 'message' => "User created successfully", 'data' => $user], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
             }
@@ -647,7 +651,7 @@ class UserController extends Controller
     public function get_all_concierge_users(Request $request)
     {
         try {
-            $users = User::where('created_by',$request->id)->orderBy('id', 'DESC')->where('status','!=','deleted')->where('role', 'user')->where('status', 'active')->get();
+            $users = User::where('created_by', $request->id)->orderBy('id', 'DESC')->where('status', '!=', 'deleted')->where('role', 'user')->where('status', 'active')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All users fetched successfully.',
@@ -689,7 +693,7 @@ class UserController extends Controller
                     $message->to($data['email']);
                 });
 
-                return response()->json(['status' => true, 'message' => "User created successfully",'data'=> $user], 200);
+                return response()->json(['status' => true, 'message' => "User created successfully", 'data' => $user], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
             }
@@ -725,7 +729,7 @@ class UserController extends Controller
     public function get_all_concierge_chef(Request $request)
     {
         try {
-            $users = User::where('created_by',$request->id)->orderBy('id', 'DESC')->where('role', 'chef')->where('status','!=','deleted')->get();
+            $users = User::where('created_by', $request->id)->orderBy('id', 'DESC')->where('role', 'chef')->where('status', '!=', 'deleted')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All chef fetched successfully.',

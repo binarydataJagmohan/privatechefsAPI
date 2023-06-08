@@ -46,6 +46,8 @@ class ChefDetailController extends Controller
             $user->bank_name = $request->bank_name;
             $user->holder_name = $request->holder_name;
             $user->bank_address = $request->bank_address;
+            $user->lat = $request->lat;
+            $user->lng = $request->lng;
             $user->profile_status = 'completed';
 
             if ($request->hasFile('image')) {
@@ -54,7 +56,7 @@ class ChefDetailController extends Controller
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
                 $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
-            }            
+            }
 
 
             $admin = User::select('id')->where('role', 'admin')->get();
@@ -64,6 +66,7 @@ class ChefDetailController extends Controller
             $description = 'Your profile has been successfully updated.';
             $description1 = $user->name . ', has just updated their profile.';
             $type = 'update_profile';
+
 
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
@@ -89,7 +92,7 @@ class ChefDetailController extends Controller
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
                 $imagePath->move('public/images/chef/users', $imageName);
                 $user->pic = $imageName;
-            }            
+            }
 
             $savedata = $user->save();
             if ($savedata) {
@@ -204,10 +207,10 @@ class ChefDetailController extends Controller
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                ->select('users.id', 'users.name','users.profile_status', 'users.address','users.pic','users.approved_by_admin')
+                ->select('users.id', 'users.name', 'users.profile_status', 'users.address', 'users.pic', 'users.approved_by_admin')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
-                ->orderby('users.id','desc')
+                ->orderby('users.id', 'desc')
                 ->get();
 
             return response()->json([
@@ -227,14 +230,14 @@ class ChefDetailController extends Controller
             $selectedCuisinesArray = explode(',', $selectedCuisines);
             //return $selectedCuisines;  
 
-            $users = User::join('applied_jobs','users.id','applied_jobs.chef_id')
+            $users = User::join('applied_jobs', 'users.id', 'applied_jobs.chef_id')
                 ->whereIn('applied_jobs.status', ['applied', 'hired'])
                 ->where('users.role', 'chef')
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
                 ->whereIn('cuisine.name', $selectedCuisinesArray)
-                ->select('users.id', 'users.name', 'users.address', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name','applied_jobs.status as appliedstatus'))
+                ->select('users.id', 'users.name', 'users.address', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->get();
 
@@ -314,23 +317,14 @@ class ChefDetailController extends Controller
         }
     }
     public function save_chef_location(Request $request)
-{
-    try {
-        $validator = Validator::make($request->all(), [
-            'address' => 'required',
-        ]);
+    {
+        try {
+            $locationCount = ChefLocation::where('user_id', $request->user_id)->count();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+            if ($locationCount >= 10) {
+                return response()->json(['status' => false, 'message' => 'You have reached the maximum limit of locations', 'data' => null], 400);
+            }
 
-        $locationCount = ChefLocation::where('user_id', $request->user_id)->count();
-
-        if ($locationCount < 10) {
             $location = new ChefLocation();
             $location->user_id = $request->user_id;
             $location->address = $request->address;
@@ -343,13 +337,10 @@ class ChefDetailController extends Controller
             } else {
                 return response()->json(['status' => false, 'message' => 'There was an error storing the location', 'data' => null], 400);
             }
-        } else {
-            return response()->json(['status' => false, 'message' => 'Maximum limit of locations reached'], 400);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
         }
-    } catch (\Exception $e) {
-        throw new HttpException(500, $e->getMessage());
     }
-}
 
     public function update_chef_location(Request $request)
     {
@@ -373,7 +364,7 @@ class ChefDetailController extends Controller
     public function get_chef_location(Request $request)
     {
         try {
-            $user = ChefLocation::where('user_id', $request->id)->where('status', 'active')->orderby('id','DESC')->get();
+            $user = ChefLocation::where('user_id', $request->id)->where('status', 'active')->orderby('id', 'DESC')->get();
             if ($user) {
                 return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
             } else {
@@ -387,7 +378,7 @@ class ChefDetailController extends Controller
     public function get_current_location(Request $request)
     {
         try {
-            $user = User::where('id', $request->id)->select('id','address')->where('status', 'active')->first();
+            $user = User::where('id', $request->id)->select('id', 'address', 'lat', 'lng')->where('status', 'active')->first();
             if ($user) {
                 return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
             } else {
@@ -447,13 +438,13 @@ class ChefDetailController extends Controller
             $user = User::find($request->id);
             $user->approved_by_admin = $request->approved_by_admin;
             $user->save();
-            
-            if($user){
-            $notification = new Notification();
-            $notification->notify_to = $user->id;
-            $notification->description = "Attention, Chef! Your profile has been approved. Unlock all tabs to unleash your culinary prowess and delight food enthusiasts!";
-            $notification->type = 'approve_status';
-            $notification->save();
+
+            if ($user) {
+                $notification = new Notification();
+                $notification->notify_to = $user->id;
+                $notification->description = "Attention, Chef! Your profile has been approved. Unlock all tabs to unleash your culinary prowess and delight food enthusiasts!";
+                $notification->type = 'approve_status';
+                $notification->save();
             }
 
             if ($user) {
@@ -468,7 +459,7 @@ class ChefDetailController extends Controller
     public function get_chef_approval(Request $request)
     {
         try {
-            $user = User::select('id','approved_by_admin')->where('id',$request->id)->first();
+            $user = User::select('id', 'approved_by_admin')->where('id', $request->id)->first();
 
             if ($user) {
                 return response()->json(['status' => true, 'message' => "Profile Approved fetched successfully", 'data' => $user], 200);

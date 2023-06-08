@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Models\AppliedJobs;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use DB;
 use App\Models\Menu;
@@ -119,7 +120,7 @@ class InvoiceController extends Controller
     {
         try {
             $invoice = Invoice::select(
-                'invoices.id',
+                'invoices.id as invoice_id',
                 'invoices.booking_id',
                 'dishes.id',
                 'dish_categories.id as dish_category_id',
@@ -135,7 +136,9 @@ class InvoiceController extends Controller
                 'u2.surname as usersurname',
                 'u2.email as useremail',
                 'u2.address as useraddress',
-                'u2.phone as userphone'
+                'u2.phone as userphone',
+                DB::raw('GROUP_CONCAT(DISTINCT dishes.item_name) as dish_names'),
+                DB::raw('GROUP_CONCAT(DISTINCT dish_categories.dish_category) as dish_category')
             )
                 ->join('bookings', 'invoices.booking_id', '=', 'bookings.id')
                 ->join('applied_jobs as a1', 'bookings.id', '=', 'a1.booking_id')
@@ -152,7 +155,7 @@ class InvoiceController extends Controller
                 ->where('invoices.id', $request->id)
                 ->first();
 
-            $dishNames = DB::table('dishes')
+                $dishNames = DB::table('dishes')
                 ->select('dishes.item_name', 'dishes.type')
                 ->join('menu_items', 'dishes.user_id', '=', 'menu_items.user_id')
                 ->join('menus', 'menu_items.menu_id', '=', 'menus.id')
@@ -160,13 +163,10 @@ class InvoiceController extends Controller
                 ->join('bookings', 'applied_jobs.booking_id', '=', 'bookings.id')
                 ->join('invoices', 'bookings.id', '=', 'invoices.booking_id')
                 ->where('invoices.id', $request->id)
-                ->distinct()
+                // ->distinct()
                 ->get();
 
-            $dishNames = $dishNames->pluck('item_name', 'type')->toArray();
-
-
-            return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice, 'dishNames' => $dishNames], 200);
+            return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice,'dishNames'=>$dishNames], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -205,7 +205,7 @@ class InvoiceController extends Controller
                 })
                 ->join('users as u1', 'invoices.user_id', '=', 'u1.id')
                 ->join('users as u2', 'bookings.user_id', '=', 'u2.id')
-                ->where('u1.status','!=','deleted')
+                ->where('u1.status', '!=', 'deleted')
                 ->where('invoices.id', $request->id)
                 ->first();
 
@@ -217,10 +217,10 @@ class InvoiceController extends Controller
                 ->join('bookings', 'applied_jobs.booking_id', '=', 'bookings.id')
                 ->join('invoices', 'bookings.id', '=', 'invoices.booking_id')
                 ->where('invoices.id', $request->id)
-                ->distinct()
+                // ->distinct()
                 ->get();
 
-            $dishNames = $dishNames->pluck('item_name', 'type')->toArray();
+            // $dishNames = $dishNames->pluck('item_name', 'type')->toArray();
 
 
             return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice, 'dishNames' => $dishNames], 200);
