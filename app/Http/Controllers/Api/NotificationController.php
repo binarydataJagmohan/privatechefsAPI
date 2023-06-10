@@ -46,5 +46,25 @@ class NotificationController extends Controller
             return response()->json(['status' => false, 'message' => "There has been error for changing the notification status", 'data' => ""], 400);
         }
     }
+
+    public function get_notification_concierge(Request $request)
+    {
+        try{
+            $count = Notification::where('notify_to',$request->id)->where('notifications_status','unseen')->count(); 
+            $notifications = DB::table('notifications')
+            ->join('users', 'notifications.notify_by', '=', 'users.id')
+            ->select('notifications.*', 'users.pic')
+            ->where('users.id', $request->id)
+            ->orderby('notifications.id','DESC')
+            ->get(); 
+            if ($notifications) {            
+                return response()->json(['status' => true, 'message' => "Notification fetched successfully", 'data' => $notifications,'count'=>$count], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the notification", 'data' => ""], 400);
+            }
+        }catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
     
 }

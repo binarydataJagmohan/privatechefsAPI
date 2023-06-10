@@ -16,6 +16,7 @@ class VillasController extends Controller
         try {
             $villa = new Villas();
             $villa->name = $request->input('name');
+            $villa->user_id = $request->input('user_id');
             $villa->email = $request->input('email');
             $villa->phone = $request->input('phone');
             $villa->address = $request->input('address');
@@ -125,7 +126,6 @@ class VillasController extends Controller
     public function get_all_villas()
     {
         try {
-            $villas_count = Villas::count();
             $villas = Villas::orderBy('id', 'DESC')->where('status','active')->get();
             return response()->json([
                 'status' => true,
@@ -197,5 +197,21 @@ class VillasController extends Controller
             ]);
         }
     }
-    
+    public function get_concierge_villas(Request $request)
+    {
+        try {
+            $villas = Villas::where('user_id',$request->id)->orderBy('id', 'DESC')->where('status','!=','deleted')->get();
+            return response()->json([
+                'status' => true,
+                'message' => 'All Villas fetched successfully.',
+                'data' => $villas
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
 }

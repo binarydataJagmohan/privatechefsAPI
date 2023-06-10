@@ -23,5 +23,15 @@ function createNotificationForUserAndAdmins($notify_by, $notify_to, $description
     }
 }
 
+function createNotificationForConcierge($notify_by1, $notify_to1, $description1,$type1) 
+{
+        $notification = new Notification();
+        $notification->notify_by = $notify_by1;
+        $notification->notify_to = $notify_to1;
+        $notification->type = $type1;
+        $notification->description = $description1;
+        $notification->save();
+}
+
 
 ?>
