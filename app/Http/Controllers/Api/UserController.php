@@ -570,6 +570,7 @@ class UserController extends Controller
     {
         try {
 
+
             $online_status_user = User::find($id);
             $online_status_user->is_online = 'no';
             $online_status_user->save();
