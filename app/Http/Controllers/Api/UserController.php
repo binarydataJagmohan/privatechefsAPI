@@ -187,7 +187,7 @@ class UserController extends Controller
             $type = 'Login';
 
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description2, $type);
-            
+
 
             return response()->json([
                 'status' => true,
@@ -237,24 +237,25 @@ class UserController extends Controller
             $user->lng = $request->lng;
             $user->profile_status = 'completed';
 
-            // if ($request->hasFile('image')) {
-            //     $randomNumber = mt_rand(1000000000, 9999999999);
-            //     $imagePath = $request->file('image');
-            //     $imageName = $randomNumber . $imagePath->getClientOriginalName();
-            //     $imagePath->move('images/chef/users', $imageName);
-            //     $user->pic = $imageName;
-            // } 
-
             $admin = User::select('id')->where('role', 'admin')->get();
-            $concierge = User::select('id')->where('id',$request->id)->where('created_by', $request->id)->where('role', 'concierge')->first();
+            $concierge = User::select('id', 'created_by')->where('id', $request->id)->first();
 
             $notify_by = $user->id;
             $notify_to =  $admin;
             $description = 'Your profile has been successfully updated.';
-            $description1 = $user->name . ', has just updated their profile.';
+            $description1 = $user->name . ' has just updated their profile.';
             $type = 'update_profile';
 
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
+            if ($concierge->created_by) {
+                $notify_by1 = $concierge->id;
+                $notify_to1 =  $concierge->created_by;
+                $description1 = $user->name . ' has just updated their profile.';
+                $type1 = 'update_profile';
+
+                createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
+            }
 
             $savedata = $user->save();
             if ($savedata) {
@@ -318,7 +319,16 @@ class UserController extends Controller
                 );
 
                 $admin = User::select('id')->where('role', 'admin')->get();
-                $concierge = User::select('id')->where('created_by', $request->id)->where('role', 'concierge')->first();
+                $concierge = User::select('id', 'created_by')->where('id', $request->id)->first();
+
+                if ($concierge->created_by) {
+                    $notify_by1 = $concierge->id;
+                    $notify_to1 =  $concierge->created_by;
+                    $description1 = $user->name . ', has just requested to reset their password.';
+                    $type1 = 'forget_password';
+
+                    createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
+                }
 
                 $notify_by = $user->id;
                 $notify_to =  $admin;
@@ -365,12 +375,21 @@ class UserController extends Controller
             PasswordReset::where('user_id', $request->user_id)->delete();
 
             $admin = User::select('id')->where('role', 'admin')->get();
-            $concierge = User::select('id')->where('created_by', $request->id)->where('role', 'concierge')->first();
+            $concierge = User::select('id', 'created_by')->where('id', $request->id)->first();
+
+            if ($concierge->created_by) {
+                $notify_by1 = $concierge->id;
+                $notify_to1 =  $concierge->created_by;
+                $description1 = $user->name . ' has just reset their password.';
+                $type1 = 'forget_password';
+
+                createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
+            }
 
             $notify_by = $user->id;
             $notify_to =  $admin;
             $description = 'Your password has been reset successfully.';
-            $description1 = $user->name . ', has just reset their password.';
+            $description1 = $user->name . ' has just reset their password.';
             $type = 'forget_password';
 
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);

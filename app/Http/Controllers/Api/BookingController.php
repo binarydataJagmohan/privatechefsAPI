@@ -26,11 +26,11 @@ class BookingController extends Controller
                 $booking = new Booking();
                 $booking->user_id = $request->user_id;
                 $booking->service_id = $request->service_id;
-                $booking->cuisine_id = implode(",", $request->cuisine_id);
+                // $booking->cuisine_id = implode(",", $request->cuisine_id);
 
-                if ($request->allergies_id) {
-                    $booking->allergies_id = implode(",", $request->allergies_id);
-                }
+                // if ($request->allergies_id) {
+                //     $booking->allergies_id = implode(",", $request->allergies_id);
+                // }
 
                 $booking->name = $request->name;
                 $booking->surname = $request->surname;
@@ -116,6 +116,25 @@ class BookingController extends Controller
                             $savebookingmeals  = $bookingmeals->save();
                         }
                     }
+                    $admin = User::select('id')->where('role', 'admin')->get();
+                    $concierge = User::select('id', 'created_by')->where('id', $request->user_id)->first();
+
+                    if ($concierge->created_by) {
+                        $notify_by1 = $concierge->id;
+                        $notify_to1 =  $concierge->created_by;
+                        $description1 = $booking->name . ' has successfully done booking with booking id ' . '#' . $booking->id;
+                        $type1 = 'booking';
+
+                        createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
+                    }
+
+                    $notify_by = Null;
+                    $notify_to =  $admin;
+                    $description = Null;
+                    $description1 = $booking->name . ' has successfully done booking with booking id ' . '#' . $booking->id;
+                    $type = 'booking';
+
+                    createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
                 }
 
                 return response()->json(['status' => true, 'message' => "booking done successfully", 'bookingid' => $booking->id], 200);
@@ -235,19 +254,28 @@ class BookingController extends Controller
                                     $savebookingmeals  = $bookingmeals->save();
                                 }
                             }
+                            $admin = User::select('id')->where('role', 'admin')->get();
+
+                            $notify_by = Null;
+                            $notify_to =  $admin;
+                            $description = Null;
+                            $description1 = $booking->name . ' has successfully done booking with booking id ' . '#' . $booking->id;
+                            $type = 'booking';
+
+                            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
+                            $data = [
+                                'name'   => $user->name,
+                                'password' => $password,
+                                'email'   => $user->email,
+                            ];
+
+                            Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                                $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                                $message->subject(' Your Account Password for Private Chef');
+                                $message->to($data['email']);
+                            });
                         }
-
-                        $data = [
-                            'name'   => $user->name,
-                            'password' => $password,
-                            'email'   => $user->email,
-                        ];
-
-                        Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
-                            $message->from('dev3.bdpl@gmail.com', "Private Chef");
-                            $message->subject(' Your Account Password for Private Chef');
-                            $message->to($data['email']);
-                        });
 
                         return response()->json(['status' => true, 'message' => "booking done successfully", 'bookingid' => $booking->id], 200);
                     }
@@ -480,11 +508,27 @@ class BookingController extends Controller
         $booking->amount = $request->amount;
         $booking->menu = $request->menu;
         $appliedJobs  = $booking->save();
-       
-        $user = User::where('id',$request->chef_id)->first();
-        return $user;
+
         $admin = User::select('id')->where('role', 'admin')->get();
-        $concierge = User::select('id')->where('created_by', $request->id)->where('role', 'concierge')->first();
+
+        $concierge = User::select('id', 'created_by', 'name')->where('id', $request->chef_id)->first();
+
+        if ($concierge->created_by) {
+            $notify_by1 = $concierge->id;
+            $notify_to1 =  $concierge->created_by;
+            $description1 = $concierge->name . ' has successfully applied on booking id ' . '#' . $request->booking_id;
+            $type1 = 'booking';
+
+            createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
+        }
+
+        $notify_by = Null;
+        $notify_to =  $admin;
+        $description = Null;
+        $description1 = $concierge->name . ' has successfully applied on booking id ' . '#' . $request->booking_id;
+        $type = 'booking';
+
+        createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
         if ($appliedJobs) {
             return response()->json(['message' => 'Booking has been applied successfully', 'status' => true]);
@@ -632,7 +676,6 @@ class BookingController extends Controller
     public function updated_applied_booking_by_key_value(Request $request)
     {
 
-
         if ($request->booking_id) {
 
             AppliedJobs::where('booking_id', $request->booking_id)->update([
@@ -652,6 +695,16 @@ class BookingController extends Controller
         if ($updatebooking && $request->message == 'data') {
             return response()->json(['status' => true, 'message' => 'Data has been updated successfully']);
         } elseif ($updatebooking && $request->message == 'assign') {
+
+            $user = AppliedJobs::select('id', 'chef_id')->where('id', $request->id)->first();
+
+            $notify_by1 = Null;
+            $notify_to1 =  $user->chef_id;
+            $description1 = 'Congratulations!You are hired in our team.Start expressing your rewarding talent with Privatechefworld.';
+            $type1 = 'booking';
+
+            createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
+
             return response()->json(['status' => true, 'message' => 'Booking has been successfully assign to user.',]);
         } else {
             return response()->json(['status' => false, 'message' => 'There has been error in saving the booking',]);

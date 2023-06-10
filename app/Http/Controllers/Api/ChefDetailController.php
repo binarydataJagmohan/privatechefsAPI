@@ -61,10 +61,21 @@ class ChefDetailController extends Controller
 
             $admin = User::select('id')->where('role', 'admin')->get();
 
+            $concierge = User::select('id', 'created_by')->where('id', $request->id)->first();
+
+            if ($concierge->created_by) {
+                $notify_by1 = $concierge->id;
+                $notify_to1 =  $concierge->created_by;
+                $description1 = $user->name . ' has just updated their profile.';
+                $type1 = 'update_profile';
+
+                createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
+            }
+
             $notify_by = $user->id;
             $notify_to =  $admin;
             $description = 'Your profile has been successfully updated.';
-            $description1 = $user->name . ', has just updated their profile.';
+            $description1 = $user->name . ' has just updated their profile.';
             $type = 'update_profile';
 
 
@@ -137,16 +148,6 @@ class ChefDetailController extends Controller
                 //     $imagePath->move('images/chef/users', $imageName);
                 //     $resume->pic = $imageName;
                 // }
-
-                $admin = User::select('id')->where('role', 'admin')->get();
-
-                $notify_by = $chef->id;
-                $notify_to =  $admin;
-                $description = 'Your resume has been successfully updated.';
-                $description1 = $chef->name . ', has just updated their resume.';
-                $type = 'update_profile';
-
-                createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
                 $resume->save();
 
@@ -269,30 +270,44 @@ class ChefDetailController extends Controller
     public function save_chef_menu_items(Request $request)
     {
         try {
+            $check_dishes = MenuItems::where('dish_id', $request->dish_id)
+                ->where('menu_id', $request->menu_id)
+                ->where('status', 'active')
+                ->count();
 
-            $check_dishes = MenuItems::where('dish_id', $request->dish_id)->where('menu_id', $request->menu_id)->where('status', 'active')->count();
+            $count = $request->input('count');
 
             if ($check_dishes <= 0) {
-
-                $dishes = new MenuItems();
-                $dishes->menu_id =  $request->menu_id;
-                $dishes->user_id = $request->user_id;
-                $dishes->type =  $request->type;
-                $dishes->dish_id =  $request->dish_id;
-                $dishes->save();
-
-                if ($dishes->save()) {
-
-                    $Dishes = MenuItems::Select('menu_items.id as menu_item_id', 'item_name', 'menu_items.type')->where('menu_id', $request->menu_id)->where('menu_items.user_id', $request->user_id)->where('menu_items.status', 'active')->orderBy('menu_items.id', 'desc')->join('dishes', 'menu_items.dish_id', '=', 'dishes.id')->get();
-
-                    return response()->json(['status' => true, 'message' => 'Menu items has been save successfully', 'error' => '', 'dishes' => $Dishes]);
-                } else {
-
-                    return response()->json(['status' => false, 'message' => 'There has been for saving the Menu items', 'error' => '', 'data' => '']);
+                for ($i = 0; $i < $count; $i++) {
+                    $dishes = new MenuItems();
+                    $dishes->menu_id = $request->menu_id;
+                    $dishes->user_id = $request->user_id;
+                    $dishes->type = $request->type;
+                    $dishes->dish_id = $request->dish_id;
+                    $dishes->save();
                 }
-            } else {
 
-                return response()->json(['status' => false, 'message' => 'Menu item already exits', 'error' => '', 'data' => '']);
+                $Dishes = MenuItems::select('menu_items.id as menu_item_id', 'item_name', 'menu_items.type')
+                    ->where('menu_id', $request->menu_id)
+                    ->where('menu_items.user_id', $request->user_id)
+                    ->where('menu_items.status', 'active')
+                    ->orderBy('menu_items.id', 'desc')
+                    ->join('dishes', 'menu_items.dish_id', '=', 'dishes.id')
+                    ->get();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Menu items have been saved successfully',
+                    'error' => '',
+                    'dishes' => $Dishes
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Menu item already exists',
+                    'error' => '',
+                    'data' => ''
+                ]);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
