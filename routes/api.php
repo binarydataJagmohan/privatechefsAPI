@@ -228,16 +228,20 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/get-user-message-data/', [App\Http\Controllers\Api\UserChatController::class, 'get_user_message_data']);
     Route::post('/contact-chef-by-user/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user']);
 
-    Route::post('/get-click-user-chef-chat-data/', [App\Http\Controllers\Api\UserChatController::class, 'get_click_user_chef_chat_data']);
-    Route::post('/contact-chef-by-user-with-share-file/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user_with_share_file']);
+   Route::post('/get-click-user-chef-chat-data/', [App\Http\Controllers\Api\UserChatController::class, 'get_click_user_chef_chat_data']);
+   Route::post('/contact-chef-by-user-with-share-file/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user_with_share_file']);
+
+  Route::post('/contact-chef-by-user-with-single-booking/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user_with_single_booking']);
+
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/get-chef-message-data/', [App\Http\Controllers\Api\ChefChatController::class, 'get_chef_message_data']);
     Route::post('/contact-user-by-chef/', [App\Http\Controllers\Api\ChefChatController::class, 'contact_user_by_chef']);
 
-    Route::post('/get-click-chef-user-chat-data/', [App\Http\Controllers\Api\ChefChatController::class, 'get_click_chef_user_chat_data']);
-    Route::post('/contact-user-by-chef-with-share-file/', [App\Http\Controllers\Api\ChefChatController::class, 'contact_user_by_chef_with_share_file']);
+   Route::post('/get-click-chef-user-chat-data/', [App\Http\Controllers\Api\ChefChatController::class, 'get_click_chef_user_chat_data']);
+   Route::post('/contact-user-by-chef-with-share-file/', [App\Http\Controllers\Api\ChefChatController::class, 'contact_user_by_chef_with_share_file']);
+   Route::get('/get-admin-data', [App\Http\Controllers\Api\ChefChatController::class, 'get_admin_data']);
 });
 
 Route::group(['middleware' => ['api']], function ($router) {
@@ -270,4 +274,17 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-all-concierge-bookings/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_all_concierge_bookings']);
     Route::get('/single-concierge-invoice/{id}', [App\Http\Controllers\Api\InvoiceController::class, 'single_concierge_invoice']);
     Route::get('/get-notification-concierge/{id}', [App\Http\Controllers\Api\NotificationController::class, 'get_notification_concierge']);
+});
+
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+   Route::post('/get-admin-message-data/', [App\Http\Controllers\Api\AdminChatController::class, 'get_admin_message_data']);
+   Route::post('/contact-by-admin-to-user-and-chef/', [App\Http\Controllers\Api\AdminChatController::class, 'contact_by_admin_to_user_and_chef']);
+
+   Route::post('/get-click-admin-chef-user-chat-data/', [App\Http\Controllers\Api\AdminChatController::class, 'get_click_admin_chef_user_chat_data']);
+   Route::post('/contact-by-admin-to-user-and-chef-with-share-file/', [App\Http\Controllers\Api\AdminChatController::class, 'contact_by_admin_to_user_and_chef_with_share_file']);
+   Route::get('get-all-user-data', [App\Http\Controllers\Api\AdminChatController::class, 'get_all_user_data']);
+   Route::post('/send-message-to-user-by-admin/', [App\Http\Controllers\Api\AdminChatController::class, 'send_message_to_user_by_admin']);
+
+   Route::post('/create-group-by-admin', [App\Http\Controllers\Api\AdminChatController::class, 'create_group_by_admin']);
 });
