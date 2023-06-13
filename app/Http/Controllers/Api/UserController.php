@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
 use App\Models\PasswordReset;
 use Helpers;
 use Laravel\Socialite\Facades\Socialite;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 
 class UserController extends Controller
@@ -172,6 +173,9 @@ class UserController extends Controller
                 ]);
             }
 
+            $payload = Auth::getPayload($token);
+            $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
+
             $user = Auth::user();
             $admin = User::select('id')->where('role', 'admin')->get();
 
@@ -207,6 +211,7 @@ class UserController extends Controller
                 'authorisation' => [
                     'token' => $token,
                     'type' => 'bearer',
+                    'expiration' => $expirationTime,
                 ]
             ]);
         } catch (\Exception $e) {

@@ -509,6 +509,8 @@ class BookingController extends Controller
         $booking->menu = $request->menu;
         $appliedJobs  = $booking->save();
 
+        if($appliedJobs){
+
         $admin = User::select('id')->where('role', 'admin')->get();
 
         $concierge = User::select('id', 'created_by', 'name')->where('id', $request->chef_id)->first();
@@ -529,6 +531,27 @@ class BookingController extends Controller
         $type = 'booking';
 
         createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
+        $booking = Booking::select('id','user_id')->where('id',$request->booking_id)->first();
+        $user = User::select('id','email','name')->where('id',$booking->user_id)->first();
+        $chef = User::select('id','email','name','phone')->where('id',$request->chef_id)->first();
+
+        $data = [
+          'name' =>  $user->name,
+          'email' =>  $user->email,
+          'booking_id' => $booking->id,
+          'chef_name' =>  $chef->name,
+          'chef_email' =>  $chef->email,
+          'chef_phone' =>  $chef->phone,
+        ];
+
+        Mail::send('emails.emailVerificationEmail', ['data' => $data], function ($message) use ($data) {
+            $message->from('dev3.bdpl@gmail.com', "Chef Application for Booking");
+            $message->to($data['email']);
+            $message->subject('Email Verification Mail');
+        });
+        
+    }
 
         if ($appliedJobs) {
             return response()->json(['message' => 'Booking has been applied successfully', 'status' => true]);
@@ -695,15 +718,6 @@ class BookingController extends Controller
         if ($updatebooking && $request->message == 'data') {
             return response()->json(['status' => true, 'message' => 'Data has been updated successfully']);
         } elseif ($updatebooking && $request->message == 'assign') {
-
-            $user = AppliedJobs::select('id', 'chef_id')->where('id', $request->id)->first();
-
-            $notify_by1 = Null;
-            $notify_to1 =  $user->chef_id;
-            $description1 = 'Congratulations!You are hired in our team.Start expressing your rewarding talent with Privatechefworld.';
-            $type1 = 'booking';
-
-            createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
 
             return response()->json(['status' => true, 'message' => 'Booking has been successfully assign to user.',]);
         } else {
@@ -1113,11 +1127,51 @@ class BookingController extends Controller
             $startDate = Carbon::now()->subDays(7)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
 
+            $currentDate = Carbon::now();
+            $previousWeekDate = Carbon::now()->copy()->subWeek();
+            $previousWeekDate1 = $previousWeekDate->copy()->subWeek();
+
+            $currentbookings = User::select('aj1.created_at')
+                ->join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
+                ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
+                ->where('users.status', '!=', 'deleted')
+                ->whereIn('aj1.status', ['applied', 'hired'])
+                ->whereDate('aj1.created_at', '>=', $previousWeekDate)
+                ->whereDate('aj1.created_at', '<=', $currentDate)
+                ->count();
+
+            $previousbookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
+                ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
+                ->where('users.status', '!=', 'deleted')
+                ->whereIn('aj1.status', ['applied', 'hired'])
+                ->whereDate('aj1.created_at', '>=', $previousWeekDate1)
+                ->whereDate('aj1.created_at', '<=', $previousWeekDate)
+                ->count();
+
+            $bookingprecentage = (($currentbookings + $previousbookings) / 2) * 100;
+
+            $currentusers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
+                ->join('users', 'bookings.user_id', 'users.id')
+                ->where('users.role', 'user')
+                ->where('users.status', '!=', 'deleted')
+                ->whereDate('applied_jobs.created_at', '>=', $previousWeekDate1)
+                ->whereDate('applied_jobs.created_at', '<=', $previousWeekDate)
+                ->count();
+
+            $previoususers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
+                ->join('users', 'bookings.user_id', 'users.id')
+                ->where('users.role', 'user')
+                ->where('users.status', '!=', 'deleted')
+                ->whereDate('applied_jobs.created_at', '>=', $previousWeekDate1)
+                ->whereDate('applied_jobs.created_at', '<=', $previousWeekDate)
+                ->count();
+
+            $usersprecentage = (($currentusers + $previoususers) / 2) * 100;
+
             $weeklyUsers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->join('users', 'bookings.user_id', 'users.id')
                 ->where('users.role', 'user')
                 ->where('users.status', '!=', 'deleted')
-                ->where('applied_jobs.status', ['applied', 'hired'])
                 ->whereBetween('applied_jobs.created_at', [$startDate, $endDate])
                 ->count();
 
@@ -1129,7 +1183,7 @@ class BookingController extends Controller
                 ->count();
 
             if ($completedBooking) {
-                return response()->json(['status' => true, 'message' => 'All booking data', 'totalChef' => $totalChef, 'pendingBooking' => $pendingBooking, 'completedBooking' => $completedBooking, 'weeklyUsers' => $weeklyUsers, 'weeklyBooking' => $weeklyBooking, 'todayBookings' => $todayBookings, 'totalChef' => $totalChef, 'totalamount' => $totalamount], 200);
+                return response()->json(['status' => true, 'message' => 'All booking data', 'totalChef' => $totalChef, 'pendingBooking' => $pendingBooking, 'completedBooking' => $completedBooking, 'weeklyUsers' => $weeklyUsers, 'weeklyBooking' => $weeklyBooking, 'todayBookings' => $todayBookings, 'totalChef' => $totalChef, 'totalamount' => $totalamount, 'currentbookings' => $currentbookings, 'previousbookings' => $previousbookings, 'bookingprecentage' => $bookingprecentage, 'currentusers' => $currentusers, 'previoususers' => $previoususers, 'usersprecentage' => $usersprecentage], 200);
             } else {
                 return response()->json(['status' => false, 'message' => 'All booking'], 400);
             }
@@ -1196,15 +1250,42 @@ class BookingController extends Controller
             $startDate = Carbon::now()->subDays(7)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
 
+            $currentDate = Carbon::now();
+            $previousWeekDate = Carbon::now()->copy()->subWeek();
+            $previousWeekDate1 = $previousWeekDate->copy()->subWeek();
+
+            $currentbookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
+                ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
+                ->where('aj1.chef_id', $request->id)
+                ->where('users.status', '!=', 'deleted')
+                ->where('bookings.status', 'active')
+                ->where('aj1.status', ['applied', 'hired'])
+                ->whereDate('aj1.created_at', '>=', $previousWeekDate)
+                ->whereDate('aj1.created_at', '<=', $currentDate)
+                ->count();
+
+            $previousbookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
+                ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
+                ->where('aj1.chef_id', $request->id)
+                ->where('users.status', '!=', 'deleted')
+                ->where('bookings.status', 'active')
+                ->where('aj1.status', ['applied', 'hired'])
+                ->whereDate('aj1.created_at', '>=', $previousWeekDate1)
+                ->whereDate('aj1.created_at', '<=', $previousWeekDate)
+                ->count();
+
+            $bookingprecentage = (($currentbookings + $previousbookings) / 2) * 100;
+
             $weeklyBooking = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->where('aj1.chef_id', $request->id)
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', 'active')
+                ->where('aj1.status', ['applied', 'hired'])
                 ->whereBetween('aj1.created_at', [$startDate, $endDate])
                 ->count();
 
-            return response()->json(['status' => true, 'message' => 'All booking data', 'todayBookings' => $todayBookings, 'totalamount' => $totalamount, 'pendingBookingCount' => $pendingBookingCount, 'pendingBooking' => $pendingBooking, 'weeklyBooking' => $weeklyBooking, 'completedBooking' => $completedBooking], 200);
+            return response()->json(['status' => true, 'message' => 'All booking data', 'todayBookings' => $todayBookings, 'totalamount' => $totalamount, 'pendingBookingCount' => $pendingBookingCount, 'pendingBooking' => $pendingBooking, 'weeklyBooking' => $weeklyBooking, 'completedBooking' => $completedBooking, 'currentbookings' => $currentbookings, 'previousbookings' => $previousbookings, 'bookingprecentage' => $bookingprecentage], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -1415,13 +1496,59 @@ class BookingController extends Controller
                 ->whereBetween('aj1.created_at', [$startDate, $endDate])
                 ->count();
 
+                $currentDate = Carbon::now();
+            $previousWeekDate = Carbon::now()->copy()->subWeek();
+            $previousWeekDate1 = $previousWeekDate->copy()->subWeek();
+
+            $currentbookings = User::select('aj1.created_at')
+                ->join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
+                ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
+                ->where('users.status', '!=', 'deleted')
+                ->where('users.created_by', $request->id)
+                ->whereIn('aj1.status', ['applied', 'hired'])
+                ->whereDate('aj1.created_at', '>=', $previousWeekDate)
+                ->whereDate('aj1.created_at', '<=', $currentDate)
+                ->count();
+
+            $previousbookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
+                ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
+                ->where('users.status', '!=', 'deleted')
+                ->where('users.created_by', $request->id)
+                ->whereIn('aj1.status', ['applied', 'hired'])
+                ->whereDate('aj1.created_at', '>=', $previousWeekDate1)
+                ->whereDate('aj1.created_at', '<=', $previousWeekDate)
+                ->count();
+
+            $bookingprecentage = (($currentbookings + $previousbookings) / 2) * 100;
+
+            $currentusers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
+                ->join('users', 'bookings.user_id', 'users.id')
+                ->where('users.role', 'user')
+                ->where('users.status', '!=', 'deleted')
+                ->where('users.created_by', $request->id)
+                ->whereDate('applied_jobs.created_at', '>=', $previousWeekDate1)
+                ->whereDate('applied_jobs.created_at', '<=', $previousWeekDate)
+                ->count();
+
+            $previoususers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
+                ->join('users', 'bookings.user_id', 'users.id')
+                ->where('users.role', 'user')
+                ->where('users.status', '!=', 'deleted')
+                ->where('users.created_by', $request->id)
+                ->whereDate('applied_jobs.created_at', '>=', $previousWeekDate1)
+                ->whereDate('applied_jobs.created_at', '<=', $previousWeekDate)
+                ->count();
+
+            $usersprecentage = (($currentusers + $previoususers) / 2) * 100;
+
+
 
             // $weeklyBooking = Booking::whereBetween('created_at', [$startDate, $endDate])
             // ->where('users.created_by',$request->id)
             // ->count();
 
             if ($completedBooking) {
-                return response()->json(['status' => true, 'message' => 'All booking data', 'totalChef' => $totalChef, 'pendingBooking' => $pendingBooking, 'completedBooking' => $completedBooking, 'weeklyUsers' => $weeklyUsers, 'weeklyBooking' => $weeklyBooking, 'todayBookings' => $todayBookings, 'totalChef' => $totalChef, 'totalamount' => $totalamount], 200);
+                return response()->json(['status' => true, 'message' => 'All booking data', 'totalChef' => $totalChef, 'pendingBooking' => $pendingBooking, 'completedBooking' => $completedBooking, 'weeklyUsers' => $weeklyUsers, 'weeklyBooking' => $weeklyBooking, 'todayBookings' => $todayBookings, 'totalChef' => $totalChef, 'totalamount' => $totalamount,'currentbookings' => $currentbookings, 'previousbookings' => $previousbookings, 'bookingprecentage' => $bookingprecentage, 'currentusers' => $currentusers, 'previoususers' => $previoususers, 'usersprecentage' => $usersprecentage], 200);
             } else {
                 return response()->json(['status' => false, 'message' => 'All booking'], 400);
             }
