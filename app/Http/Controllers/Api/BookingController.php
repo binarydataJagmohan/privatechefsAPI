@@ -26,11 +26,11 @@ class BookingController extends Controller
                 $booking = new Booking();
                 $booking->user_id = $request->user_id;
                 $booking->service_id = $request->service_id;
-                // $booking->cuisine_id = implode(",", $request->cuisine_id);
+                $booking->cuisine_id = implode(",", $request->cuisine_id);
 
-                // if ($request->allergies_id) {
-                //     $booking->allergies_id = implode(",", $request->allergies_id);
-                // }
+                if ($request->allergies_id) {
+                    $booking->allergies_id = implode(",", $request->allergies_id);
+                }
 
                 $booking->name = $request->name;
                 $booking->surname = $request->surname;

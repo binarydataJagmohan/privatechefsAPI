@@ -100,7 +100,7 @@ class UserController extends Controller
                 }
 
 
-                $token = Auth::fromUser($user);
+                $token = Auth::login($user);
 
                 $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin')->where('id', $user->id)->first();
 
@@ -128,8 +128,10 @@ class UserController extends Controller
                 //     $message->to($request->email);
                 //     $message->subject('Email Verification Mail');
                 // });
+                $payload = Auth::getPayload($token);
+                $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
 
-                return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $auth_user, 'token' => $token]], 200);
+                return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $auth_user, 'token' => $token,'expiration' => $expirationTime]], 200);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
@@ -211,7 +213,7 @@ class UserController extends Controller
                 'authorisation' => [
                     'token' => $token,
                     'type' => 'bearer',
-                    'expiration' => $expirationTime,
+                    'expiration' => $expirationTime
                 ]
             ]);
         } catch (\Exception $e) {
@@ -529,6 +531,10 @@ class UserController extends Controller
                     ], 401);
                 }
 
+                $payload = Auth::getPayload($token);
+                $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
+
+
                 $user = Auth::user();
                 return response()->json([
                     'status' => true,
@@ -537,6 +543,7 @@ class UserController extends Controller
                     'authorisation' => [
                         'token' => $token,
                         'type' => 'bearer',
+                        'expiration' => $expirationTime
                     ]
                 ]);
             } else {
@@ -545,16 +552,20 @@ class UserController extends Controller
                 $data['view_password'] = $request->password;
                 $user = new User();
                 $register  = $user->create($data);
-                return $register;
+                //return $register
+
                 if ($register) {
                     $token = Auth::login($register);
+                    $payload = Auth::getPayload($token);
+                    $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
                     return response()->json([
                         'status' => true,
                         'message' => 'User created successfully',
-                        'user' => $register,
+                        'user' => $data,
                         'authorisation' => [
                             'token' => $token,
                             'type' => 'bearer',
+                            'expiration' => $expirationTime
                         ]
                     ]);
                 } else {
