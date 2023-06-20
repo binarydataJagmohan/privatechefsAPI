@@ -635,10 +635,11 @@ class BookingController extends Controller
             $userbookings = DB::table('users')
                 ->join('bookings', 'users.id', '=', 'bookings.user_id')
                 ->leftJoin('applied_jobs', 'applied_jobs.booking_id', '=', 'bookings.id')
+                ->leftJoin('users as u1', 'u1.id', '=', 'applied_jobs.chef_id')
                 ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
                 ->join('service_choices', 'service_choices.id', '=', 'bookings.service_id')
 
-                ->select('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id','applied_jobs.booking_id as appliedId')
+                ->select('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id','applied_jobs.booking_id as appliedId','u1.id as userId','applied_jobs.chef_id as chefId')
                 ->groupBy('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id')->where('bookings.status', '=', 'active')->where('bookings.user_id', $id)
                 ->orderBy('bookings.id', 'DESC')
                 ->get();
@@ -972,9 +973,9 @@ class BookingController extends Controller
     {
         try {
 
-            $checkemail  = User::where('email', $request->email)->count();
+            // $checkemail  = User::where('email', $request->email)->count();
 
-            if ($checkemail <= 0) {
+            // if ($checkemail <= 0) {
 
                 $booking =  Booking::find($request->bookingid);
 
@@ -1042,10 +1043,10 @@ class BookingController extends Controller
                 }
 
                 return response()->json(['status' => true, 'message' => "Booking has been update successfully"], 200);
-            } else {
+            // } else {
 
-                return response()->json(['status' => false, 'message' => "Email already exits", 'data' => ""], 200);
-            }
+            //     return response()->json(['status' => false, 'message' => "Email already exits", 'data' => ""], 200);
+            // }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
