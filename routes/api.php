@@ -80,6 +80,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-chef-booking/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_chef_booking']);
 
     Route::get('/get-single-receipt-admin/{id}', [App\Http\Controllers\Api\ReceiptController::class, 'get_single_receipt_admin']);
+
 });
 
 

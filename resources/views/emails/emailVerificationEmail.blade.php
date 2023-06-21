@@ -51,7 +51,7 @@
                                 <tr>
                                     <td style="text-align: center">
                                       
-                                        <a href="#" style="display: block;margin-bottom: 10px;"> <img src="{{asset('/images/logo.png')}}" height="50" alt="logo"/></a> <br/>
+                                        <a href="#" style="display: block;margin-bottom: 10px;"> <img src="{{url('public/images/logo.png')}}" height="50" alt="logo"/></a> <br/>
 
                                     </td>
                                 </tr>

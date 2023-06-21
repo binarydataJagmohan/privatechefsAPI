@@ -102,7 +102,7 @@ class UserController extends Controller
 
                 $token = Auth::login($user);
 
-                $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin')->where('id', $user->id)->first();
+                $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin','created_by')->where('id', $user->id)->first();
 
                 // unset($user->password);
                 // unset($user->view_password);
@@ -208,7 +208,8 @@ class UserController extends Controller
                     'phone' => $user->phone,
                     'approved_by_admin' => $user->approved_by_admin,
                     'profile_status' => $user->profile_status,
-                    'address' => $user->address
+                    'address' => $user->address,
+                    'created_by'=>$user->created_by
                 ],
                 'authorisation' => [
                     'token' => $token,
@@ -317,8 +318,9 @@ class UserController extends Controller
                 });
                 $datetime = Carbon::now()->format('Y-m-d H:i:s');
                 PasswordReset::updateOrCreate(
-                    ['user_id' => $user->id],
+                    ['email' => $user->email],
                     [
+                        'email' => $user->email,
                         'user_id' => $user->id,
                         'token' => $token,
                         'created_at' => $datetime,
@@ -366,46 +368,49 @@ class UserController extends Controller
     }
 
     public function updated_reset_password(Request $request)
-
     {
         try {
             $request->validate([
                 'password' => 'required|string|min:8',
             ]);
+    
             $user = User::find($request->user_id);
             if (!$user) {
                 return response()->json(['status' => false, 'msg' => 'User not found'], 404);
             }
+    
             $user->password = Hash::make($request->password);
             $user->view_password = $request->password;
-            $user->update();
+            $user->save();
+    
             PasswordReset::where('user_id', $request->user_id)->delete();
-
-            $admin = User::select('id')->where('role', 'admin')->get();
-            $concierge = User::select('id', 'created_by')->where('id', $request->id)->first();
-
-            if ($concierge->created_by) {
+    
+            $admin = User::where('role', 'admin')->get();
+            $concierge = User::find($request->id);
+    
+            if ($concierge && $concierge->created_by) {
                 $notify_by1 = $concierge->id;
-                $notify_to1 =  $concierge->created_by;
+                $notify_to1 = $concierge->created_by;
                 $description1 = $user->name . ' has just reset their password.';
                 $type1 = 'forget_password';
-
+    
                 createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
             }
-
+    
             $notify_by = $user->id;
-            $notify_to =  $admin;
+            $notify_to = $admin;
             $description = 'Your password has been reset successfully.';
             $description1 = $user->name . ' has just reset their password.';
             $type = 'forget_password';
-
+    
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
-
+    
             return response()->json(['status' => true, 'message' => 'Password reset successful'], 200);
         } catch (\Exception $e) {
-            return response()->json(['success' => true, 'message' => 'Password reset failed'], 500);
+            return response()->json(['status' => false, 'message' => 'Password reset failed'], 500);
         }
     }
+    
 
     public function check_user_email_verfication(Request $request)
     {
@@ -645,7 +650,7 @@ class UserController extends Controller
                     'email'   => $user->email,
                 ];
 
-                Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
                     $message->from('dev3.bdpl@gmail.com', "Private Chef");
                     $message->subject(' Your Account Password for Private Chef');
                     $message->to($data['email']);
@@ -723,11 +728,11 @@ class UserController extends Controller
                     'email'   => $user->email,
                 ];
 
-                Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
-                    $message->from('dev3.bdpl@gmail.com', "Private Chef");
-                    $message->subject(' Your Account Password for Private Chef');
-                    $message->to($data['email']);
-                });
+                // Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
+                //     $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                //     $message->subject(' Your Account Password for Private Chef');
+                //     $message->to($data['email']);
+                // });
 
                 return response()->json(['status' => true, 'message' => "User created successfully", 'data' => $user], 200);
             } else {
