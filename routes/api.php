@@ -289,3 +289,9 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
    Route::post('/create-group-by-admin', [App\Http\Controllers\Api\AdminChatController::class, 'create_group_by_admin']);
 });
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+    Route::get('get-booking-count', [App\Http\Controllers\Api\BookingController::class, 'get_bookings_count']);
+    Route::get('get-applied-bookings-count/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_applied_chef_bookings_count']);
+    Route::get('concierge-bookings-count/{id}', [App\Http\Controllers\Api\BookingController::class, 'concierge_bookings_count']);
+});
