@@ -1123,6 +1123,7 @@ class BookingController extends Controller
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status','!=','deleted')
                 ->orderby('bookings.id', 'desc')
+                ->groupBy('bookings.id') // Group by user ID
                 ->get();
 
             $completedBooking = Booking::select('bookings.id as bookingId', 'users.address', 'users.name', 'applied_jobs.created_at as ordertime')
@@ -1265,6 +1266,7 @@ class BookingController extends Controller
                 ->where('bookings.status','!=','deleted')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->where('aj1.chef_id', $request->id)
+                ->groupBy('bookings.id') // Group by user ID
                 ->orderby('bookings.id', 'desc')
                 ->get();
 
@@ -1507,6 +1509,7 @@ class BookingController extends Controller
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->orderby('bookings.id', 'desc')
+                ->groupBy('bookings.id') // Group by user ID
                 ->get();
 
             $completedBooking = Booking::select('bookings.id as bookingId', 'users.address', 'users.name', 'applied_jobs.created_at as ordertime')
