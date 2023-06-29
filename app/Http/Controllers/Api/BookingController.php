@@ -1132,10 +1132,11 @@ class BookingController extends Controller
                 ->join('users', 'applied_jobs.chef_id', '=', 'users.id')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status','!=','deleted')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.booking_status','upcoming')
                 ->whereIn('applied_jobs.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 ->orderby('bookings.id', 'desc')
+                ->groupBy('bookings.id')
                 ->get();
 
             $startDate = Carbon::now()->subDays(7)->startOfDay();
@@ -1281,6 +1282,7 @@ class BookingController extends Controller
                 ->whereDate('booking_meals.date', $currentDate)
                 ->where('applied_jobs.chef_id', $request->id)
                 ->orderby('applied_jobs.id', 'desc')
+                ->groupBy('bookings.id')
                 ->get();
 
             $startDate = Carbon::now()->subDays(7)->startOfDay();
@@ -1517,13 +1519,14 @@ class BookingController extends Controller
                 ->join('users', 'applied_jobs.chef_id', '=', 'users.id')
                 ->join('booking_meals','applied_jobs.booking_id','bookings.id')
                 ->where('bookings.status', 'active')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.booking_status', 'upcoming')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->whereIn('applied_jobs.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 ->where('users.created_by', $request->id)
                 ->orderby('bookings.id', 'desc')
+                ->groupBy('bookings.id')
                 ->get();
 
             $startDate = Carbon::now()->subDays(7)->startOfDay();

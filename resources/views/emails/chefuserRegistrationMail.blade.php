@@ -59,7 +59,7 @@
                               <td
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Your Account Password for Private Chef
+                                        Your Account Password for Private Chefs
                                     </td>
                                     </tr>
 
@@ -109,7 +109,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Thank you for choosing Private Chef, and we look forward to serving you again soon.
+                                        Thank you for choosing Private Chefs, and we look forward to serving you again soon.
                                     </td>
                                 </tr>
 
@@ -126,7 +126,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                       Private Chef Team
+                                       Private Chefs Team
                                     </td>
                                 </tr>
 
