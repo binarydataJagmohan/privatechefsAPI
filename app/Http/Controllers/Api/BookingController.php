@@ -72,7 +72,7 @@ class BookingController extends Controller
                             'email'   => $chef->email,
                         ];
                         Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
-                            $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                            $message->from('dev3.bdpl@gmail.com', "Private Chefs");
                             $message->subject('Location Notification');
                             $message->to($data['email']);
                         });
@@ -209,7 +209,7 @@ class BookingController extends Controller
                                     'email'   => $chef->email,
                                 ];
                                 Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
-                                    $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                                    $message->from('dev3.bdpl@gmail.com', "Private Chefs");
                                     $message->subject('Location Notification');
                                     $message->to($data['email']);
                                 });
@@ -271,8 +271,8 @@ class BookingController extends Controller
                             ];
 
                             Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
-                                $message->from('dev3.bdpl@gmail.com', "Private Chef");
-                                $message->subject(' Your Account Password for Private Chef');
+                                $message->from('dev3.bdpl@gmail.com', "Private Chefs");
+                                $message->subject(' Your Account Password for Private Chefs');
                                 $message->to($data['email']);
                             });
                         }
@@ -1005,7 +1005,7 @@ class BookingController extends Controller
             if ($savebookingdata) {
 
                 if ($request->category == 'onetime') {
-                     $bookingmeals = BookingMeals::where('booking_id', $request->bookingid)->delete();
+                    $bookingmeals = BookingMeals::where('booking_id', $request->bookingid)->delete();
 
                     $dateString = $request->date;
                     $timezoneStart = strpos($dateString, '(');
@@ -1662,20 +1662,29 @@ class BookingController extends Controller
     {
         try {
             $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
-                ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
-                ->whereNull('applied_jobs.booking_id')
+                ->leftJoin('applied_jobs', function ($join) use ($request) {
+                    $join->on('applied_jobs.booking_id', '=', 'bookings.id')
+                        ->where('applied_jobs.chef_id', '=', $request->id);
+                })
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
-                ->count();
+                ->whereNull('applied_jobs.booking_id')
+                ->count();      
             $applied_booking = User::join('bookings', 'users.id', 'bookings.user_id')
-                ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
+               ->join('applied_jobs', function ($join) use ($request) {
+                    $join->on('applied_jobs.booking_id', '=', 'bookings.id')
+                        ->where('applied_jobs.chef_id', '=', $request->id);
+                })
                 ->where('users.status', '!=', 'deleted')
                 ->where('applied_jobs.status', 'applied')
-                ->where('bookings.status', '!=', 'deleted')
+                 ->where('bookings.status','!=', 'deleted')
                 ->where('applied_jobs.chef_id', $request->id)
                 ->count();
             $hired_booking = User::join('bookings', 'users.id', 'bookings.user_id')
-                ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
+            ->join('applied_jobs', function ($join) use ($request) {
+                $join->on('applied_jobs.booking_id', '=', 'bookings.id')
+                    ->where('applied_jobs.chef_id', '=', $request->id);
+            })
                 ->where('users.status', '!=', 'deleted')
                 ->where('applied_jobs.status', 'hired')
                 ->where('bookings.status', '!=', 'deleted')
