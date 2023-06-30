@@ -638,7 +638,7 @@ class BookingController extends Controller
                 ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
                 ->join('service_choices', 'service_choices.id', '=', 'bookings.service_id')
 
-                ->select('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.booking_id as appliedId', 'u1.id as userId', 'applied_jobs.chef_id as chefId')
+                ->select('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(DISTINCT booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.booking_id as appliedId', 'u1.id as userId', 'applied_jobs.chef_id as chefId')
                 ->groupBy('users.name', 'users.id', 'users.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id')->where('bookings.status', '=', 'active')->where('bookings.user_id', $id)
                 ->orderBy('bookings.id', 'DESC')
                 ->get();
@@ -972,6 +972,7 @@ class BookingController extends Controller
     public function update_booking(Request $request)
     {
         try {
+            // return $request->all();
             // $checkemail  = User::where('email', $request->email)->count();
 
             // if ($checkemail <= 0) {
@@ -1005,6 +1006,7 @@ class BookingController extends Controller
             if ($savebookingdata) {
 
                 if ($request->category == 'onetime') {
+
                     $bookingmeals = BookingMeals::where('booking_id', $request->bookingid)->delete();
 
                     $dateString = $request->date;
@@ -1013,7 +1015,7 @@ class BookingController extends Controller
                     $dateString = substr_replace($dateString, '', $timezoneStart, $timezoneEnd - $timezoneStart + 1);
                     $date = Carbon::parse($dateString);
                     $formattedDate = $date->format('Y-m-d');
-
+                    //return $formattedDate;
 
                     $bookingmeals = new BookingMeals();
                     $bookingmeals->booking_id = $request->bookingid;
@@ -1629,12 +1631,12 @@ class BookingController extends Controller
                 ->where('bookings.status', '!=', 'deleted')
                 ->count();
             $allBookings = User::join('bookings', 'users.id', '=', 'bookings.user_id')
-                ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                // ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
-                ->where(function ($query) {
-                    $query->where('applied_jobs.status', 'applied')
-                        ->orWhereNull('applied_jobs.status');
-                })
+                // ->where(function ($query) {
+                //     $query->where('applied_jobs.status', 'applied')
+                //         ->orWhereNull('applied_jobs.status');
+                // })
                 ->where('bookings.status', '!=', 'deleted')
                 ->count();
             $hired_booking = User::join('bookings', 'users.id', 'bookings.user_id')
