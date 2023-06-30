@@ -652,7 +652,7 @@ class UserController extends Controller
 
                 Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
                     $message->from('dev3.bdpl@gmail.com', "Private Chefs");
-                    $message->subject(' Your Account Password for Private Chefs');
+                    $message->subject('Your Account Password for Private Chefs');
                     $message->to($data['email']);
                 });
 
