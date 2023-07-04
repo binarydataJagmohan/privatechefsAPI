@@ -157,7 +157,7 @@ class UserChatController extends Controller
                     });
             })
             ->groupBy(
-                'chat_messages.booking_id',
+                'chat_messages.unique_booking_id',
                 'chat_messages.single_chat_id',
                 'chat_messages.group_id'
             )
@@ -476,7 +476,7 @@ class UserChatController extends Controller
                     });
             })
             ->groupBy(
-                'chat_messages.booking_id',
+                'chat_messages.unique_booking_id',
                 'chat_messages.single_chat_id',
                 'chat_messages.group_id'
             )
@@ -691,7 +691,7 @@ class UserChatController extends Controller
                     });
             })
             ->groupBy(
-                'chat_messages.booking_id',
+                'chat_messages.unique_booking_id',
                 'chat_messages.single_chat_id',
                 'chat_messages.group_id'
             )
@@ -902,7 +902,7 @@ class UserChatController extends Controller
                     });
             })
             ->groupBy(
-                'chat_messages.booking_id',
+                'chat_messages.unique_booking_id',
                 'chat_messages.single_chat_id',
                 'chat_messages.group_id'
             )
@@ -1126,7 +1126,7 @@ class UserChatController extends Controller
                     });
             })
             ->groupBy(
-                'chat_messages.booking_id',
+                'chat_messages.unique_booking_id',
                 'chat_messages.single_chat_id',
                 'chat_messages.group_id'
             )

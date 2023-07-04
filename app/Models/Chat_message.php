@@ -15,6 +15,7 @@ class Chat_message extends Model
         'group_id',
         'message',
         'status',
-        'message_status'
+        'message_status',
+        'read_msg_status'
     ];
 }

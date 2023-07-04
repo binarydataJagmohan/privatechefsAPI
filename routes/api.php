@@ -288,6 +288,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
    Route::post('/send-message-to-user-by-admin/', [App\Http\Controllers\Api\AdminChatController::class, 'send_message_to_user_by_admin']);
 
    Route::post('/create-group-by-admin', [App\Http\Controllers\Api\AdminChatController::class, 'create_group_by_admin']);
+
+   Route::post('/get-admin-message-data-by-filter/', [App\Http\Controllers\Api\AdminChatController::class, 'get_admin_message_data_by_filter']);
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {

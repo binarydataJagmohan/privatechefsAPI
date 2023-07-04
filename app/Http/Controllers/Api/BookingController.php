@@ -65,23 +65,24 @@ class BookingController extends Controller
                         ->orderBy('distance')
                         ->get();
                     //return $chefs;
+                    if ($chefs) {
+                        foreach ($chefs as $chef) {
+                            $data = [
+                                'name'   => $chef->name,
+                                'email'   => $chef->email,
+                            ];
+                            Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
+                                $message->from('dev3.bdpl@gmail.com', "Private Chefs");
+                                $message->subject('Location Notification');
+                                $message->to($data['email']);
+                            });
 
-                    foreach ($chefs as $chef) {
-                        $data = [
-                            'name'   => $chef->name,
-                            'email'   => $chef->email,
-                        ];
-                        Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
-                            $message->from('dev3.bdpl@gmail.com', "Private Chefs");
-                            $message->subject('Location Notification');
-                            $message->to($data['email']);
-                        });
-
-                        $notification = new Notification();
-                        $notification->notify_to = $chef->user_id;
-                        $notification->description = "A  $request->name has just made a booking within your area. Please make necessary arrangements and ensure a seamless experience for them. Thank you for your prompt attention.";
-                        $notification->type = 'location_notification';
-                        $notification->save();
+                            $notification = new Notification();
+                            $notification->notify_to = $chef->user_id;
+                            $notification->description = "A  $request->name has just made a booking within your area. Please make necessary arrangements and ensure a seamless experience for them. Thank you for your prompt attention.";
+                            $notification->type = 'location_notification';
+                            $notification->save();
+                        }
                     }
 
                     if ($request->category == 'onetime') {
@@ -202,25 +203,25 @@ class BookingController extends Controller
                                 ->get();
 
                             //return $chefs;
+                            if ($chefs) {
+                                foreach ($chefs as $chef) {
+                                    $data = [
+                                        'name'   => $chef->name,
+                                        'email'   => $chef->email,
+                                    ];
+                                    Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
+                                        $message->from('dev3.bdpl@gmail.com', "Private Chefs");
+                                        $message->subject('Location Notification');
+                                        $message->to($data['email']);
+                                    });
 
-                            foreach ($chefs as $chef) {
-                                $data = [
-                                    'name'   => $chef->name,
-                                    'email'   => $chef->email,
-                                ];
-                                Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
-                                    $message->from('dev3.bdpl@gmail.com', "Private Chefs");
-                                    $message->subject('Location Notification');
-                                    $message->to($data['email']);
-                                });
-
-                                $notification = new Notification();
-                                $notification->notify_to = $chef->user_id;
-                                $notification->description = "A $request->name has just made a booking within your area. Please make necessary arrangements and ensure a seamless experience for them. Thank you for your prompt attention.";
-                                $notification->type = 'location_notification';
-                                $notification->save();
+                                    $notification = new Notification();
+                                    $notification->notify_to = $chef->user_id;
+                                    $notification->description = "A $request->name has just made a booking within your area. Please make necessary arrangements and ensure a seamless experience for them. Thank you for your prompt attention.";
+                                    $notification->type = 'location_notification';
+                                    $notification->save();
+                                }
                             }
-
 
                             if ($request->category == 'onetime') {
 
@@ -980,10 +981,10 @@ class BookingController extends Controller
             $booking =  Booking::find($request->bookingid);
 
             if ($request->service_id) {
-            $booking->service_id = $request->service_id;
+                $booking->service_id = $request->service_id;
             }
             if ($request->cuisine_id) {
-            $booking->cuisine_id = implode(",", $request->cuisine_id);
+                $booking->cuisine_id = implode(",", $request->cuisine_id);
             }
             if ($request->allergies_id) {
                 $booking->allergies_id = implode(",", $request->allergies_id);
@@ -1025,11 +1026,11 @@ class BookingController extends Controller
                     $bookingmeals->dinner = $request->meals['dinner'] == '1' ? 'yes' : 'no';
                     $bookingmeals->category = $request->category;
                     $savebookingmeals  = $bookingmeals->save();
-                } 
-                
+                }
+
                 if ($request->category == 'multipletimes') {
 
-                
+
                     $bookingmeals = BookingMeals::where('booking_id', $request->bookingid)->delete();
 
                     foreach ($request->meals as $meals) {
@@ -1087,54 +1088,54 @@ class BookingController extends Controller
 
             $todayBookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'completed')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereDate('booking_meals.date', $currentDate)
                 ->count();
 
 
             $totalChef = AppliedJobs::join('users', 'applied_jobs.chef_id', 'users.id')
                 ->join('bookings', 'applied_jobs.booking_id', 'bookings.id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'completed')
                 ->where('users.role', 'chef')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->distinct('users.id')
                 ->whereDate('booking_meals.date', $currentDate)
                 ->count();
 
             $totalamount = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->sum('aj1.amount');
 
             $pendingBooking = User::select('booking_meals.date as orderDate', 'aj1.amount', 'bookings.id as bookingId')
                 ->join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'upcoming')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->orderby('bookings.id', 'desc')
                 ->groupBy('bookings.id') // Group by user ID
                 ->get();
 
             $completedBooking = Booking::select('bookings.id as bookingId', 'users.address', 'users.name', 'applied_jobs.created_at as ordertime')
                 ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->join('users', 'applied_jobs.chef_id', '=', 'users.id')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
-                ->where('bookings.booking_status','upcoming')
+                ->where('bookings.status', '!=', 'deleted')
+                ->where('bookings.booking_status', 'upcoming')
                 ->whereIn('applied_jobs.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 ->orderby('bookings.id', 'desc')
@@ -1151,9 +1152,9 @@ class BookingController extends Controller
             $currentbookings = User::select('aj1.created_at')
                 ->join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', '>=', $previousWeekDate)
                 ->whereDate('booking_meals.date', '<=', $currentDate)
@@ -1161,9 +1162,9 @@ class BookingController extends Controller
 
             $previousbookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', '>=', $previousWeekDate1)
                 ->whereDate('booking_meals.date', '<=', $previousWeekDate)
@@ -1173,20 +1174,20 @@ class BookingController extends Controller
 
             $currentusers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->join('users', 'bookings.user_id', 'users.id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->where('users.role', 'user')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereDate('booking_meals.date', '>=', $previousWeekDate1)
                 ->whereDate('booking_meals.date', '<=', $previousWeekDate)
                 ->count();
 
             $previoususers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->join('users', 'bookings.user_id', 'users.id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->where('users.role', 'user')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereDate('booking_meals.date', '>=', $previousWeekDate1)
                 ->whereDate('booking_meals.date', '<=', $previousWeekDate)
                 ->count();
@@ -1195,18 +1196,18 @@ class BookingController extends Controller
 
             $weeklyUsers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->join('users', 'bookings.user_id', 'users.id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->where('users.role', 'user')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereBetween('booking_meals.date', [$startDate, $endDate])
                 ->count();
 
             $weeklyBooking = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->whereBetween('booking_meals.date', [$startDate, $endDate])
                 ->count();
@@ -1227,35 +1228,35 @@ class BookingController extends Controller
 
             $todayBookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'completed')
                 ->where('aj1.chef_id', $request->id)
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereDate('booking_meals.date', $currentDate)
                 ->count();
 
-                $pendingBookingCount = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
+            $pendingBookingCount = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->join('booking_meals', 'aj1.booking_id', '=', 'booking_meals.booking_id')
                 ->where('bookings.booking_status', 'upcoming')
                 ->where('aj1.chef_id', $request->id)
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereDate('booking_meals.date', '>', $currentDate)
-                ->distinct('bookings.id') 
+                ->distinct('bookings.id')
                 ->count(); // Count the number of distinct booking_ids
-                        
-            
+
+
             $totalamount = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','booking_meals.booking_id')
+                ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
                 ->where('bookings.booking_status', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->where('aj1.chef_id', $request->id)
                 ->whereDate('booking_meals.date', $currentDate)
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->where('bookings.status', 'active')
                 ->sum('aj1.amount');
 
@@ -1263,23 +1264,23 @@ class BookingController extends Controller
             $pendingBooking = User::select('booking_meals.date as orderDate', 'aj1.amount', 'bookings.id as bookingId')
                 ->join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','booking_meals.booking_id')
+                ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
                 ->where('bookings.booking_status', 'upcoming')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->where('aj1.chef_id', $request->id)
                 ->groupBy('bookings.id') // Group by user ID
                 ->orderby('bookings.id', 'desc')
                 ->get();
 
-            $completedBooking = Booking::select('bookings.id as bookingId', 'users.address', 'users.name', 'applied_jobs.created_at as ordertime','booking_meals.date')
+            $completedBooking = Booking::select('bookings.id as bookingId', 'users.address', 'users.name', 'applied_jobs.created_at as ordertime', 'booking_meals.date')
                 ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
                 ->join('users', 'applied_jobs.chef_id', '=', 'users.id')
-                ->join('booking_meals','applied_jobs.booking_id','booking_meals.booking_id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'booking_meals.booking_id')
                 ->where('bookings.booking_status', 'upcoming')
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->whereIn('applied_jobs.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 ->where('applied_jobs.chef_id', $request->id)
@@ -1296,10 +1297,10 @@ class BookingController extends Controller
 
             $currentbookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','booking_meals.booking_id')
+                ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
                 ->where('aj1.chef_id', $request->id)
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->where('aj1.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', '>=', $previousWeekDate)
                 ->whereDate('booking_meals.date', '<=', $currentDate)
@@ -1307,10 +1308,10 @@ class BookingController extends Controller
 
             $previousbookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','booking_meals.booking_id')
+                ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
                 ->where('aj1.chef_id', $request->id)
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->where('aj1.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', '>=', $previousWeekDate)
                 ->whereDate('booking_meals.date', '<=', $currentDate)
@@ -1320,10 +1321,10 @@ class BookingController extends Controller
 
             $weeklyBooking = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','booking_meals.booking_id')
+                ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
                 ->where('aj1.chef_id', $request->id)
                 ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status','!=','deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->where('aj1.status', ['applied', 'hired'])
                 ->whereBetween('booking_meals.date', [$startDate, $endDate])
                 ->count();
@@ -1472,7 +1473,7 @@ class BookingController extends Controller
             $currentDate = Carbon::now()->toDateString();
             $todayBookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'completed')
                 ->where('users.created_by', $request->id)
                 ->where('users.status', '!=', 'deleted')
@@ -1482,7 +1483,7 @@ class BookingController extends Controller
 
             $totalChef = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 // ->distinct('users.id')
@@ -1494,7 +1495,7 @@ class BookingController extends Controller
 
             $totalamount = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->where('users.created_by', $request->id)
@@ -1506,7 +1507,7 @@ class BookingController extends Controller
             $pendingBooking = User::select('booking_meals.date as orderDate', 'aj1.amount', 'bookings.id as bookingId')
                 ->join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('bookings.booking_status', 'upcoming')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->where('users.created_by', $request->id)
@@ -1519,7 +1520,7 @@ class BookingController extends Controller
             $completedBooking = Booking::select('bookings.id as bookingId', 'users.address', 'users.name', 'applied_jobs.created_at as ordertime')
                 ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
                 ->join('users', 'applied_jobs.chef_id', '=', 'users.id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->where('bookings.status', 'active')
                 ->where('bookings.booking_status', 'upcoming')
                 ->where('users.status', '!=', 'deleted')
@@ -1536,7 +1537,7 @@ class BookingController extends Controller
 
             $weeklyUsers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->join('users', 'bookings.user_id', 'users.id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->where('users.role', 'user')
                 ->where('applied_jobs.status', ['applied', 'hired'])
                 ->where('users.status', '!=', 'deleted')
@@ -1547,7 +1548,7 @@ class BookingController extends Controller
 
             $weeklyBooking = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('users.created_by', $request->id)
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
@@ -1562,7 +1563,7 @@ class BookingController extends Controller
             $currentbookings = User::select('aj1.created_at')
                 ->join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('users.created_by', $request->id)
@@ -1573,7 +1574,7 @@ class BookingController extends Controller
 
             $previousbookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
-                ->join('booking_meals','aj1.booking_id','bookings.id')
+                ->join('booking_meals', 'aj1.booking_id', 'bookings.id')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('users.created_by', $request->id)
@@ -1586,7 +1587,7 @@ class BookingController extends Controller
 
             $currentusers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->join('users', 'bookings.user_id', 'users.id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->where('users.role', 'user')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
@@ -1597,7 +1598,7 @@ class BookingController extends Controller
 
             $previoususers = Booking::join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->join('users', 'bookings.user_id', 'users.id')
-                ->join('booking_meals','applied_jobs.booking_id','bookings.id')
+                ->join('booking_meals', 'applied_jobs.booking_id', 'bookings.id')
                 ->where('users.role', 'user')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
@@ -1671,22 +1672,22 @@ class BookingController extends Controller
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->whereNull('applied_jobs.booking_id')
-                ->count();      
+                ->count();
             $applied_booking = User::join('bookings', 'users.id', 'bookings.user_id')
-               ->join('applied_jobs', function ($join) use ($request) {
+                ->join('applied_jobs', function ($join) use ($request) {
                     $join->on('applied_jobs.booking_id', '=', 'bookings.id')
                         ->where('applied_jobs.chef_id', '=', $request->id);
                 })
                 ->where('users.status', '!=', 'deleted')
                 ->where('applied_jobs.status', 'applied')
-                 ->where('bookings.status','!=', 'deleted')
+                ->where('bookings.status', '!=', 'deleted')
                 ->where('applied_jobs.chef_id', $request->id)
                 ->count();
             $hired_booking = User::join('bookings', 'users.id', 'bookings.user_id')
-            ->join('applied_jobs', function ($join) use ($request) {
-                $join->on('applied_jobs.booking_id', '=', 'bookings.id')
-                    ->where('applied_jobs.chef_id', '=', $request->id);
-            })
+                ->join('applied_jobs', function ($join) use ($request) {
+                    $join->on('applied_jobs.booking_id', '=', 'bookings.id')
+                        ->where('applied_jobs.chef_id', '=', $request->id);
+                })
                 ->where('users.status', '!=', 'deleted')
                 ->where('applied_jobs.status', 'hired')
                 ->where('bookings.status', '!=', 'deleted')

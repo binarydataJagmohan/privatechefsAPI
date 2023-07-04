@@ -1284,7 +1284,6 @@ class AdminChatController extends Controller
              $Chat_message->group_id =  $chat_group->id;
              $Chat_message->chat_type =  $chat_type;
              $Chat_message->message =  $messgae;
-             $Chat_message->message_status =  'read';
              $Chat_message_save = $Chat_message->save();
 
              if($Chat_message_save){
