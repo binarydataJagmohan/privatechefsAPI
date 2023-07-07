@@ -1628,16 +1628,17 @@ class BookingController extends Controller
     {
         try {
             $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
+             // ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->count();
             $allBookings = User::join('bookings', 'users.id', '=', 'bookings.user_id')
-                // ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
-                // ->where(function ($query) {
-                //     $query->where('applied_jobs.status', 'applied')
-                //         ->orWhereNull('applied_jobs.status');
-                // })
+                ->where(function ($query) {
+                    $query->where('applied_jobs.status', 'hired')
+                        ->orWhereNull('applied_jobs.status');
+                })
                 ->where('bookings.status', '!=', 'deleted')
                 ->count();
             $hired_booking = User::join('bookings', 'users.id', 'bookings.user_id')

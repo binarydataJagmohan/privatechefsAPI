@@ -297,3 +297,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('get-applied-bookings-count/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_applied_chef_bookings_count']);
     Route::get('concierge-bookings-count/{id}', [App\Http\Controllers\Api\BookingController::class, 'concierge_bookings_count']);
 });
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+    Route::get('get-admin-calender-bookings', [App\Http\Controllers\Api\CalenderController::class, 'get_admin_calender_bookings']);
+    Route::get('get-chef-calender-bookings/{id}', [App\Http\Controllers\Api\CalenderController::class, 'get_chef_calender_bookings']);
+    Route::get('get-concierge-calender-bookings/{id}', [App\Http\Controllers\Api\CalenderController::class, 'get_concierge_calender_bookings']);
+    Route::get('get-all-chef', [App\Http\Controllers\Api\UserController::class, 'get_all_chef']);
+});

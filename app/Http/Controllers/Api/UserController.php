@@ -102,7 +102,7 @@ class UserController extends Controller
 
                 $token = Auth::login($user);
 
-                $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin','created_by')->where('id', $user->id)->first();
+                $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin', 'created_by')->where('id', $user->id)->first();
 
                 // unset($user->password);
                 // unset($user->view_password);
@@ -131,7 +131,7 @@ class UserController extends Controller
                 $payload = Auth::getPayload($token);
                 $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
 
-                return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $auth_user, 'token' => $token,'expiration' => $expirationTime]], 200);
+                return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $auth_user, 'token' => $token, 'expiration' => $expirationTime]], 200);
             }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
@@ -186,13 +186,13 @@ class UserController extends Controller
             $online_status_user->last_activity = Carbon::now()->format('Y-m-d H:i:s');
             $online_status_user->save();
 
-            $notify_by = $user->id;
-            $notify_to = $admin;
-            $description = 'Welcome back! You have successfully logged in to your account.';
-            $description2 = $user->name . ' has logged in to their account.';
-            $type = 'Login';
+            // $notify_by = $user->id;
+            // $notify_to = $admin;
+            // $description = 'Welcome back! You have successfully logged in to your account.';
+            // $description2 = $user->name . ' has logged in to their account.';
+            // $type = 'Login';
 
-            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description2, $type);
+            // createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description2, $type);
 
 
             return response()->json([
@@ -209,7 +209,7 @@ class UserController extends Controller
                     'approved_by_admin' => $user->approved_by_admin,
                     'profile_status' => $user->profile_status,
                     'address' => $user->address,
-                    'created_by'=>$user->created_by
+                    'created_by' => $user->created_by
                 ],
                 'authorisation' => [
                     'token' => $token,
@@ -373,44 +373,44 @@ class UserController extends Controller
             $request->validate([
                 'password' => 'required|string|min:8',
             ]);
-    
+
             $user = User::find($request->user_id);
             if (!$user) {
                 return response()->json(['status' => false, 'msg' => 'User not found'], 404);
             }
-    
+
             $user->password = Hash::make($request->password);
             $user->view_password = $request->password;
             $user->save();
-    
+
             PasswordReset::where('user_id', $request->user_id)->delete();
-    
+
             $admin = User::where('role', 'admin')->get();
             $concierge = User::find($request->id);
-    
+
             if ($concierge && $concierge->created_by) {
                 $notify_by1 = $concierge->id;
                 $notify_to1 = $concierge->created_by;
                 $description1 = $user->name . ' has just reset their password.';
                 $type1 = 'forget_password';
-    
+
                 createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
             }
-    
+
             $notify_by = $user->id;
             $notify_to = $admin;
             $description = 'Your password has been reset successfully.';
             $description1 = $user->name . ' has just reset their password.';
             $type = 'forget_password';
-    
+
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
-    
+
             return response()->json(['status' => true, 'message' => 'Password reset successful'], 200);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => 'Password reset failed'], 500);
         }
     }
-    
+
 
     public function check_user_email_verfication(Request $request)
     {
@@ -771,6 +771,23 @@ class UserController extends Controller
     {
         try {
             $users = User::where('created_by', $request->id)->orderBy('id', 'DESC')->where('role', 'chef')->where('status', '!=', 'deleted')->get();
+            return response()->json([
+                'status' => true,
+                'message' => 'All chef fetched successfully.',
+                'data' => $users
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    public function get_all_chef(Request $request)
+    {
+        try {
+            $users = User::orderBy('id', 'DESC')->where('role', 'chef')->where('status', '!=', 'deleted')->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All chef fetched successfully.',
