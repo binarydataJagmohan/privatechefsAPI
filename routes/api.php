@@ -303,10 +303,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('get-admin-calender-bookings', [App\Http\Controllers\Api\CalenderController::class, 'get_admin_calender_bookings']);
     Route::get('get-chef-calender-bookings/{id}', [App\Http\Controllers\Api\CalenderController::class, 'get_chef_calender_bookings']);
     Route::get('get-concierge-calender-bookings/{id}', [App\Http\Controllers\Api\CalenderController::class, 'get_concierge_calender_bookings']);
-    Route::get('get-all-chef', [App\Http\Controllers\Api\UserController::class, 'get_all_chef']);
 });
 
 Route::get('get-data', [App\Http\Controllers\Api\UserController::class, 'get_data']);
+Route::get('get-all-chef', [App\Http\Controllers\Api\UserController::class, 'get_all_chef']);
 
 
 
