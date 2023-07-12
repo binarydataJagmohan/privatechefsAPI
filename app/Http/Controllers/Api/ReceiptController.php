@@ -101,7 +101,7 @@ class ReceiptController extends Controller
     {
         try {
             $receipt = Receipt::find($request->id);
-            $receipt->user_id = $request->user_id;
+            // $receipt->user_id = $request->user_id;
             $receipt->booking_id = $request->booking_id;
             $receipt->amount = $request->amount;
             $receipt->description = $request->description;

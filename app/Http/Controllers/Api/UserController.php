@@ -24,6 +24,7 @@ use App\Models\PasswordReset;
 use Helpers;
 use Laravel\Socialite\Facades\Socialite;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Http;
 
 
 class UserController extends Controller
@@ -801,4 +802,31 @@ class UserController extends Controller
             ]);
         }
     }
+    public function get_data(Request $request)
+    {
+        try {
+            $accessToken = "https://www.linkedin.com/in/binary-data-580636217/";
+            
+            // $resource = '/v2/me';
+            $params = ['oauth2_access_token' => $accessToken];
+            $url =  $accessToken;
+            $options = [
+                'http' => [
+                    'method' => 'GET',
+                    'header' => 'Content-Type: application/json',
+                ],
+            ];
+            $context = stream_context_create($options);
+            $response = file_get_contents($url, false, $context);
+            $data = json_decode($response);
+    
+            return response()->json([
+                'data' =>  $data
+            ]);
+        } catch (Exception $e) {
+            return 'Unable to get user details';
+        }
+    }
+    
+    
 }

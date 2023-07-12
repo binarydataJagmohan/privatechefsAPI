@@ -43,4 +43,10 @@ return [
         'redirect' => 'http://localhost:8000/api/authorized/google/callback',
 ],
 
+'linkedin' => [
+    'client_id' => env('LINKEDIN_CLIENT_ID'),
+    'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+    'redirect' =>env('LINKEDIN_REDIRECT_URI'),
+],
+
 ];

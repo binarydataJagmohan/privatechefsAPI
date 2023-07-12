@@ -28,7 +28,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('linkedin', function () {
+    return view('loginlinkedin');
+});
+
 Auth::routes();
+
+Route::get('/redirect', [App\Http\Controllers\SocialAuthLinkedinController::class, 'redirect']);
+Route::post('/callback', [App\Http\Controllers\SocialAuthLinkedinController::class, 'handleProviderCallback']);
+
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 

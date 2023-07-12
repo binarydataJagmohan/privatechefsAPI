@@ -546,11 +546,11 @@ class BookingController extends Controller
                 'chef_phone' =>  $chef->phone,
             ];
 
-            Mail::send('emails.emailVerificationEmail', ['data' => $data], function ($message) use ($data) {
-                $message->from('dev3.bdpl@gmail.com', "Chef Application for Booking");
-                $message->to($data['email']);
-                $message->subject('Email Verification Mail');
-            });
+            // Mail::send('emails.emailVerificationEmail', ['data' => $data], function ($message) use ($data) {
+            //     $message->from('dev3.bdpl@gmail.com', "Chef Application for Booking");
+            //     $message->to($data['email']);
+            //     $message->subject('Email Verification Mail');
+            // });
         }
 
         if ($appliedJobs) {
@@ -1353,7 +1353,11 @@ class BookingController extends Controller
     public function get_chef_booking(Request $request)
     {
         try {
-            $bookings =  Booking::select('bookings.id', 'applied_jobs.booking_id', 'applied_jobs.status as applystatus', 'applied_jobs.created_at as applydate')->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')->where('applied_jobs.jobs_status', 'active')->where('applied_jobs.chef_id', $request->id)->get();
+            $bookings =  Booking::select('users.address','bookings.id', 'applied_jobs.booking_id', 'applied_jobs.status as applystatus', 'applied_jobs.created_at as applydate')
+            ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
+            ->join('users','applied_jobs.chef_id','users.id')
+            ->where('applied_jobs.jobs_status', 'active')
+            ->where('applied_jobs.chef_id', $request->id)->get();
             return response()->json([
                 'status' => true,
                 'message' => 'All Bookings fetched successfully.',
@@ -1378,9 +1382,9 @@ class BookingController extends Controller
                 ->join('service_choices as sc', 'sc.id', '=', 'b.service_id')
                 ->leftJoin('applied_jobs as aj', function ($join) {
                     $join->on('b.id', '=', 'aj.booking_id')
-                        ->where('aj.status', '=', 'hired');
+                        ->where('aj.status', '=', 'applied');
                 })
-                ->whereNull('aj.booking_id')
+                // ->whereNull('aj.booking_id')
                 ->where('b.status', '=', 'active') // Add the condition here
                 ->groupBy(
                     'b.name',
@@ -1632,15 +1636,16 @@ class BookingController extends Controller
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->count();
-            $allBookings = User::join('bookings', 'users.id', '=', 'bookings.user_id')
+                $allBookings = User::join('bookings', 'users.id', '=', 'bookings.user_id')
                 ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
                 ->where(function ($query) {
-                    $query->where('applied_jobs.status', 'hired')
+                    $query->where('applied_jobs.status', 'applied')
                         ->orWhereNull('applied_jobs.status');
                 })
                 ->where('bookings.status', '!=', 'deleted')
                 ->count();
+            
             $hired_booking = User::join('bookings', 'users.id', 'bookings.user_id')
                 ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
@@ -1741,6 +1746,66 @@ class BookingController extends Controller
                 'status' => false,
                 'message' => $e->getMessage()
             ]);
+        }
+    }
+    public function get_concierge_filter_by_booking($id, $type)
+    {
+        try {
+            $adminchefuserbookings = DB::table('users as u')
+            ->join('bookings as b', 'u.id', '=', 'b.user_id')
+            ->join('booking_meals as bm', 'b.id', '=', 'bm.booking_id')
+            ->join('service_choices as sc', 'sc.id', '=', 'b.service_id')
+            ->leftJoin('applied_jobs as aj', function ($join) {
+                $join->on('b.id', '=', 'aj.booking_id')
+                    ->where('aj.status', '=', 'hired');
+            })
+            ->whereNull('aj.booking_id')
+            ->where('b.booking_status', $type)
+            ->where('b.status', '=', 'active')
+            ->groupBy(
+                'b.name',
+                'u.id',
+                'b.surname',
+                'u.pic',
+                'b.location',
+                'b.booking_status',
+                'bm.category',
+                'b.id',
+                'aj.booking_id',
+                'aj.status',
+                'aj.chef_id',
+                'b.status'
+            )
+            ->select(
+                'b.name',
+                'u.id',
+                'b.surname',
+                'u.pic',
+                'b.location',
+                'b.booking_status',
+                'bm.category',
+                DB::raw('GROUP_CONCAT(bm.date) AS dates'),
+                DB::raw('MAX(bm.created_at) AS latest_created_at'),
+                'b.id AS booking_id',
+                'aj.status AS applied_jobs_status',
+                'aj.chef_id',
+                'b.status',
+                'u.created_by'
+            )
+            ->where('b.status', '!=', 'deleted')
+            ->where('u.status', '!=', 'deleted')
+            ->where('u.created_by', $id)
+            ->orderBy('b.id', 'DESC')
+            ->get();
+
+
+            if (!$adminchefuserbookings) {
+                return response()->json(['message' => 'Booking not found', 'status' => true], 404);
+            }
+
+            return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $adminchefuserbookings]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
         }
     }
 }

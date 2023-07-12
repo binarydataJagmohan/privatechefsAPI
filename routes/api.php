@@ -275,6 +275,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-all-concierge-bookings/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_all_concierge_bookings']);
     Route::get('/single-concierge-invoice/{id}', [App\Http\Controllers\Api\InvoiceController::class, 'single_concierge_invoice']);
     Route::get('/get-notification-concierge/{id}', [App\Http\Controllers\Api\NotificationController::class, 'get_notification_concierge']);
+    Route::get('/get-concierge-filter-by-booking/{id}/{type}', [App\Http\Controllers\Api\BookingController::class, 'get_concierge_filter_by_booking']);
 });
 
 
@@ -304,3 +305,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('get-concierge-calender-bookings/{id}', [App\Http\Controllers\Api\CalenderController::class, 'get_concierge_calender_bookings']);
     Route::get('get-all-chef', [App\Http\Controllers\Api\UserController::class, 'get_all_chef']);
 });
+
+Route::get('get-data', [App\Http\Controllers\Api\UserController::class, 'get_data']);
+
+
+
