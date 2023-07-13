@@ -807,7 +807,7 @@ class UserController extends Controller
         try {
             $accessToken = "https://www.linkedin.com/in/binary-data-580636217/";
             
-            // $resource = '/v2/me';
+            $resource = '/v2/me';
             $params = ['oauth2_access_token' => $accessToken];
             $url =  $accessToken;
             $options = [

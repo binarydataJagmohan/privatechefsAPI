@@ -9,11 +9,13 @@ class InstagramController extends Controller
     public function getInstagramImages()
     {
         try {
-            $access_token = 'IGQVJYQ0J0MXcwMEJDZAXVGWUlBLWc3SUZA1cDdWQXB1cmFaVzIzQVd4NmhIZAjNleVV5RDZAuaUFfRC1hbE8tVVRWbDBZAQi1YUWRNd29KLTRHQ1lHWW8wbEkwSVRvNEIwVGx5MVBrdzdB';
+            $access_token = 'IGQVJXOWE0b1Y2YmlLOVIyb3dXay02b1VtYWgyMEl2ZAURNZAmdGQ0RtVm01UlhYekxmTi1rbjFQOTRQaFZAONWRQS1h5dW92ZAWpWS3Y1TVRINnlnOHRsZADhfYkJTa1VDdGFWZA2dxR1lB';
             $fields = 'id,caption,media_type,media_url,thumbnail_url';
 
            // $client = new Client();
            $url = "https://graph.instagram.com/me/media?fields={$fields}&access_token={$access_token}";
+
+        //    $url = "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token={$access_token}";
 // $url  = "https://graph.instagram.com/access_token?grant_type=ig_refresh_token&
 // client_secret=055ced48abb1a82c9ad93b2cf22af4cc&access_token=IGQVJVRWtjR25oS2VMRGxwcVlDTmFEWTNORjhUTzRYUFFDT1Q3WnlmOGFuT09iWlBMYlRZALU1nRkdLUFVtbXM0WjhCd2poU2puZAFp4bHFLa1BPSk5vYkhrd29PSVNDdFYxQnZAOZAURRQzBmUHA0OFVlSwZDZD";
 

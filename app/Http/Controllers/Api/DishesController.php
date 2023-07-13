@@ -60,7 +60,7 @@ class DishesController extends Controller
                 if ($request->dish_category_id == '1') {
                     $dish->type = 'starter';
                 } elseif ($request->dish_category_id == '2') {
-                    $dish->type = 'firstcourse Course';
+                    $dish->type = 'firstcourse';
                 } elseif ($request->dish_category_id == '3') {
                     $dish->type = 'maincourse';
                 } else {
