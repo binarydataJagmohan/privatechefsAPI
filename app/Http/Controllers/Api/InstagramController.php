@@ -9,15 +9,16 @@ class InstagramController extends Controller
     public function getInstagramImages()
     {
         try {
-            $access_token = 'IGQVJXOWE0b1Y2YmlLOVIyb3dXay02b1VtYWgyMEl2ZAURNZAmdGQ0RtVm01UlhYekxmTi1rbjFQOTRQaFZAONWRQS1h5dW92ZAWpWS3Y1TVRINnlnOHRsZADhfYkJTa1VDdGFWZA2dxR1lB';
+            $access_token = 'IGQVJXbEJVVVByd0NOdWJxNFMxbXJtTTlXaGlmZA3A5dGdReWVkdkdCX2w5a1F6V2NrZAUpPN2F0aVA0ZAm1pcWpSNmtmNWdhazYtUjIwNUpjNF9WMDVvREpGVW9hQUdVZAmVKNldZAcnVJRFFfd0llT2pZAUAZDZD';
             $fields = 'id,caption,media_type,media_url,thumbnail_url';
 
            // $client = new Client();
-           $url = "https://graph.instagram.com/me/media?fields={$fields}&access_token={$access_token}";
+        //    $url = "https://graph.instagram.com/me/media?fields={$fields}&access_token={$access_token}";
 
-        //    $url = "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token={$access_token}";
-// $url  = "https://graph.instagram.com/access_token?grant_type=ig_refresh_token&
-// client_secret=055ced48abb1a82c9ad93b2cf22af4cc&access_token=IGQVJVRWtjR25oS2VMRGxwcVlDTmFEWTNORjhUTzRYUFFDT1Q3WnlmOGFuT09iWlBMYlRZALU1nRkdLUFVtbXM0WjhCd2poU2puZAFp4bHFLa1BPSk5vYkhrd29PSVNDdFYxQnZAOZAURRQzBmUHA0OFVlSwZDZD";
+        $url = "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token={$access_token}";
+// $url  = "https://graph.instagram.com/access_token?grant_type=ig_exchange_token&
+// client_secret=81945f1dedd6cadd969dfbcdadd2e7dc&access_token=IGQVJYOTR6ZA3l1ZAnRBNTdMNTNoQTh2TTlMZA081a3ljb3k0OXVxU01TWnVfX09PUl8xM2VJZAkZAHQVp3ZADFhdmhkNGNycTRvVjlTXzlMLTBFM3ctUGpOTlNPOXRqTE95bVRUUGpfY1ZAJQ2tNdUxlNE5NRAZDZD";
+
 
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

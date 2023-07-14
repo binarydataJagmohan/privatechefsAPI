@@ -1704,7 +1704,8 @@ class BookingController extends Controller
                 ->whereNotExists(function ($query) {
                     $query->select(DB::raw(1))
                         ->from('applied_jobs')
-                        ->whereColumn('applied_jobs.booking_id', '=', 'bookings.id');
+                        ->whereColumn('applied_jobs.booking_id', '=', 'bookings.id')
+                        ->where('applied_jobs.status','hired');
                 })
                 ->count();
             $applied_booking = User::join('bookings', 'users.id', 'bookings.user_id')

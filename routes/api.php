@@ -307,6 +307,6 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
 Route::get('get-data', [App\Http\Controllers\Api\UserController::class, 'get_data']);
 Route::get('get-all-chef', [App\Http\Controllers\Api\UserController::class, 'get_all_chef']);
-
+Route::get('get-all-chef-location', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_chef_location']);
 
 
