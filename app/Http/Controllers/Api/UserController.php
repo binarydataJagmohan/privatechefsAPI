@@ -129,6 +129,23 @@ class UserController extends Controller
                 //     $message->to($request->email);
                 //     $message->subject('Email Verification Mail');
                 // });
+
+                $data = [
+                    'name'   => $request->name,
+                ];
+
+                // if ($request->role == 'user') {
+                //     Mail::send('emails.registerEmailforuser', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
+                //         $message->to($request->email);
+                //         $message->subject('User Registration Confirmation');
+                //     });
+                // }
+                // if ($request->role == 'chef') {
+                //     Mail::send('emails.registerEmailforchef', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
+                //         $message->to($request->email);
+                //         $message->subject('Chef Registration Confirmation');
+                //     });
+                // }
                 $payload = Auth::getPayload($token);
                 $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
 
@@ -331,7 +348,7 @@ class UserController extends Controller
                 $admin = User::select('id')->where('role', 'admin')->get();
                 $concierge = User::select('id', 'created_by')->where('id', $request->id)->first();
 
-                if ($concierge->created_by) {
+                if ($concierge && $concierge->created_by) {
                     $notify_by1 = $concierge->id;
                     $notify_to1 =  $concierge->created_by;
                     $description1 = $user->name . ', has just requested to reset their password.';
@@ -552,28 +569,30 @@ class UserController extends Controller
                         'expiration' => $expirationTime
                     ]
                 ]);
+
             } else {
                 $data = $request->all();
                 $data['password'] = Hash::make($request->password);
                 $data['view_password'] = $request->password;
+                $data['name'] = $request->name;
+                $data['role'] = "user";
+                $data['pic'] = null;
+                $data['surname'] = null;
+                $data['phone'] = null;
+                $data['address'] = null;
+                $data['approved_by_admin'] = "no";
+                $data['profile_status'] = "pending";
+                $data['created_by'] = null;
                 $user = new User();
                 $register  = $user->create($data);
-                //return $register
+               // return $register;
 
                 if ($register) {
                     $token = Auth::login($register);
                     $payload = Auth::getPayload($token);
                     $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
-                    return response()->json([
-                        'status' => true,
-                        'message' => 'User created successfully',
-                        'user' => $data,
-                        'authorisation' => [
-                            'token' => $token,
-                            'type' => 'bearer',
-                            'expiration' => $expirationTime
-                        ]
-                    ]);
+
+                    return response()->json(['status' => true, 'message' => 'User created successfully', 'data' => ['user' => $register, 'token' => $token, 'expiration' => $expirationTime]], 200);
                 } else {
                     return response()->json(['message' => "'There has been error for to register the user"], 404);
                 }
@@ -819,7 +838,7 @@ class UserController extends Controller
             $context = stream_context_create($options);
             $response = file_get_contents($url, false, $context);
             $data = json_decode($response);
-    
+
             return response()->json([
                 'data' =>  $data
             ]);
@@ -827,6 +846,4 @@ class UserController extends Controller
             return 'Unable to get user details';
         }
     }
-    
-    
 }

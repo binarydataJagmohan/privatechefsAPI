@@ -268,50 +268,50 @@ class ChefDetailController extends Controller
     }
 
     public function save_chef_menu_items(Request $request)
-{
-    try {
-        $check_dishes = MenuItems::where('dish_id', $request->dish_id)
-            ->where('menu_id', $request->menu_id)
-            ->where('status', 'active')
-            ->count();
+    {
+        try {
+            $check_dishes = MenuItems::where('dish_id', $request->dish_id)
+                ->where('menu_id', $request->menu_id)
+                ->where('status', 'active')
+                ->count();
 
 
-        if ($check_dishes <= 0) {
-            
-            $dishes = new MenuItems();
-            $dishes->menu_id = $request->menu_id;
-            $dishes->user_id = $request->user_id;
-            $dishes->type = $request->type;
-            $dishes->dish_id = $request->dish_id;
-            $dishes->save();
-        
+            if ($check_dishes <= 0) {
 
-            $dishes = MenuItems::select('menu_items.id as menu_item_id', 'item_name', 'menu_items.type')
-            ->where('menu_id', $request->menu_id)
-            ->where('menu_items.user_id', $request->user_id)
-            ->where('menu_items.status', 'active')
-            ->orderBy('menu_items.id', 'desc')
-            ->join('dishes', 'menu_items.dish_id', '=', 'dishes.id')
-            ->get();
+                $dishes = new MenuItems();
+                $dishes->menu_id = $request->menu_id;
+                $dishes->user_id = $request->user_id;
+                $dishes->type = $request->type;
+                $dishes->dish_id = $request->dish_id;
+                $dishes->save();
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Menu items have been saved successfully',
-                'error' => '',
-                'dishes' => $dishes
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'Menu item already exists',
-                'error' => '',
-                'data' => ''
-            ]);
+
+                $dishes = MenuItems::select('menu_items.id as menu_item_id', 'item_name', 'menu_items.type')
+                    ->where('menu_id', $request->menu_id)
+                    ->where('menu_items.user_id', $request->user_id)
+                    ->where('menu_items.status', 'active')
+                    ->orderBy('menu_items.id', 'desc')
+                    ->join('dishes', 'menu_items.dish_id', '=', 'dishes.id')
+                    ->get();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Menu items have been saved successfully',
+                    'error' => '',
+                    'dishes' => $dishes
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Menu item already exists',
+                    'error' => '',
+                    'data' => ''
+                ]);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
         }
-    } catch (\Exception $e) {
-        throw new HttpException(500, $e->getMessage());
     }
-}
 
 
     public function delete_chef_menu_item(Request $request)
@@ -497,6 +497,22 @@ class ChefDetailController extends Controller
             } else {
                 return response()->json(['status' => false, 'data' => ""], 400);
             }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_all_chef_location()
+    {
+        try {
+            $location = ChefLocation::select('users.pic', 'chef_location.address')
+                ->join('users', 'chef_location.user_id', 'users.id')
+                ->where('chef_location.status', '!=', 'deleted')
+                ->get();
+            $cheflocation = ChefDetail::select('users.pic', 'users.address')
+                 ->join('users', 'chef_details.user_id', 'users.id')
+                ->where('users.role', '=', 'chef')
+                ->get();
+            return response()->json(['status' => true, 'message' => 'Chef location fetched succesfully', 'data' => $location,'location'=>$cheflocation ]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
