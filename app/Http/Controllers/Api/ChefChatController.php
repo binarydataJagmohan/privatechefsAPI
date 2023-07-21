@@ -38,75 +38,81 @@ class ChefChatController extends Controller
                 'chat_messages.chat_type AS latest_chat_type',
                 'sender.is_online',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
-                    DB::raw('CASE 
-                        WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                            SELECT message 
-                            FROM chat_messages 
-                           WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                            ORDER BY created_at DESC 
-                            LIMIT 1
-                        )
-                        WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT message
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                DB::raw('CASE 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
-                        ELSE NULL
-                    END AS latest_message'),
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "group" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    ELSE NULL
+                END AS latest_message'),
 
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
+                    WHEN chat_messages.chat_type = "booking" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT created_at
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_created_at'),
+                END AS latest_created_at'),
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_type'),
+                END AS latest_type'),
                 
             )
             ->join('users AS sender', function ($join) {
@@ -122,6 +128,7 @@ class ChefChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -143,13 +150,18 @@ class ChefChatController extends Controller
 
             if($chat_type == 'single'){
 
-                $single_chat_id = '1'.$userId;
+                $first = $userSideMessages[0]->receiver_id;
+                $second = $userSideMessages[0]->sender_id;
+
+                $unquie = $first.$second;
+                $unquie_two = $second.$first;
 
                 $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 
-                ->where('chat_messages.single_chat_id', $single_chat_id)
+                ->where('chat_messages.single_chat_id', $unquie)
+                ->orWhere('chat_messages.single_chat_id', $unquie_two)
                 ->get();
 
                 $chat_member = 0;
@@ -164,13 +176,79 @@ class ChefChatController extends Controller
                 $unquie = $first.$second;
                 $unquie_two = $second.$first;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select(
+                    'message',
+                    'chat_messages.booking_id',
+                    'chat_messages.bookig_send_by',
+                    'sender.name AS sender_name',
+                    'receiver.name AS receiver_name',
+                    'sender.pic AS sender_pic',
+                    'receiver.pic AS receiver_pic',
+                    'sender.role AS sender_role',
+                    'receiver.role AS receiver_role',
+                    'sender.id AS sender_id',
+                    'receiver.id AS receiver_id',
+                    'chat_messages.created_at as chatdate',
+                    'type',
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT name
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT role
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_role'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT pic
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_pic'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT id
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_id')
+                )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                
                 ->where('chat_messages.unique_booking_id', $unquie)
                 ->orWhere('chat_messages.unique_booking_id', $unquie_two)
                 ->get();
+
 
                 $chat_member = 0;
 
@@ -334,74 +412,80 @@ class ChefChatController extends Controller
                 'sender.is_online',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                     DB::raw('CASE 
-                        WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                            SELECT message 
-                            FROM chat_messages 
-                           WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                            ORDER BY created_at DESC 
-                            LIMIT 1
-                        )
-                        WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT message
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
-                        ELSE NULL
-                    END AS latest_message'),
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "group" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    ELSE NULL
+                END AS latest_message'),
 
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
+                    WHEN chat_messages.chat_type = "booking" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT created_at
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_created_at'),
+                END AS latest_created_at'),
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_type'),
+                END AS latest_type'),
                 
             )
             ->join('users AS sender', function ($join) {
@@ -417,6 +501,7 @@ class ChefChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -453,13 +538,78 @@ class ChefChatController extends Controller
             
             if($chat_type == 'booking'){
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id','chat_messages.bookig_send_by', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type')
+                $userChatMessages = Chat_message::select(
+                    'message',
+                    'chat_messages.booking_id',
+                    'chat_messages.bookig_send_by',
+                    'sender.name AS sender_name',
+                    'receiver.name AS receiver_name',
+                    'sender.pic AS sender_pic',
+                    'receiver.pic AS receiver_pic',
+                    'sender.role AS sender_role',
+                    'receiver.role AS receiver_role',
+                    'sender.id AS sender_id',
+                    'receiver.id AS receiver_id',
+                    'chat_messages.created_at as chatdate',
+                    'type',
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT name
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT role
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_role'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT pic
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_pic'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT id
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_id')
+                )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                
                 ->where('chat_messages.unique_booking_id', $request->unique_booking_id)
-                
                 ->get();
+
 
                  $chat_member = 0 ;
 
@@ -527,74 +677,80 @@ class ChefChatController extends Controller
                 'sender.is_online',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                     DB::raw('CASE 
-                        WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                            SELECT message 
-                            FROM chat_messages 
-                           WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                            ORDER BY created_at DESC 
-                            LIMIT 1
-                        )
-                        WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT message
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
-                        ELSE NULL
-                    END AS latest_message'),
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "group" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    ELSE NULL
+                END AS latest_message'),
 
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
+                    WHEN chat_messages.chat_type = "booking" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT created_at
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_created_at'),
+                END AS latest_created_at'),
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_type'),
+                END AS latest_type'),
                 
             )
             ->join('users AS sender', function ($join) {
@@ -610,6 +766,7 @@ class ChefChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -630,12 +787,76 @@ class ChefChatController extends Controller
 
             if($chat_type == 'single'){
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select(
+                    'message',
+                    'chat_messages.booking_id',
+                    'chat_messages.bookig_send_by',
+                    'sender.name AS sender_name',
+                    'receiver.name AS receiver_name',
+                    'sender.pic AS sender_pic',
+                    'receiver.pic AS receiver_pic',
+                    'sender.role AS sender_role',
+                    'receiver.role AS receiver_role',
+                    'sender.id AS sender_id',
+                    'receiver.id AS receiver_id',
+                    'chat_messages.created_at as chatdate',
+                    'type',
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT name
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT role
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_role'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT pic
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_pic'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT id
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_id')
+                )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                
-              
-                ->Where('chat_messages.single_chat_id', $request->single_chat_id)
+                ->where('chat_messages.unique_booking_id', $request->unique_booking_id)
                 ->get();
 
                 $chat_member = 0;
@@ -716,74 +937,80 @@ class ChefChatController extends Controller
                 'sender.is_online',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                     DB::raw('CASE 
-                        WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                            SELECT message 
-                            FROM chat_messages 
-                           WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                            ORDER BY created_at DESC 
-                            LIMIT 1
-                        )
-                        WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT message
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
-                        ELSE NULL
-                    END AS latest_message'),
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "group" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    ELSE NULL
+                END AS latest_message'),
 
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
+                    WHEN chat_messages.chat_type = "booking" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT created_at
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_created_at'),
+                END AS latest_created_at'),
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_type'),
+                END AS latest_type'),
                 
             )
             ->join('users AS sender', function ($join) {
@@ -799,6 +1026,7 @@ class ChefChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -846,7 +1074,73 @@ class ChefChatController extends Controller
                 $unquie = $first.$second;
                 $unquie_two = $second.$first;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id','chat_messages.bookig_send_by', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type')
+                $userChatMessages = Chat_message::select(
+                    'message',
+                    'chat_messages.booking_id',
+                    'chat_messages.bookig_send_by',
+                    'sender.name AS sender_name',
+                    'receiver.name AS receiver_name',
+                    'sender.pic AS sender_pic',
+                    'receiver.pic AS receiver_pic',
+                    'sender.role AS sender_role',
+                    'receiver.role AS receiver_role',
+                    'sender.id AS sender_id',
+                    'receiver.id AS receiver_id',
+                    'chat_messages.created_at as chatdate',
+                    'type',
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT name
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT role
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_role'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT pic
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_pic'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT id
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_id')
+                )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 ->where('chat_messages.unique_booking_id', $unquie)
@@ -918,74 +1212,80 @@ class ChefChatController extends Controller
                 'sender.is_online',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                     DB::raw('CASE 
-                        WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                            SELECT message 
-                            FROM chat_messages 
-                           WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                            ORDER BY created_at DESC 
-                            LIMIT 1
-                        )
-                        WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT message
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
-                        ELSE NULL
-                    END AS latest_message'),
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "group" THEN (
+                        SELECT message 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    ELSE NULL
+                END AS latest_message'),
 
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
+                    WHEN chat_messages.chat_type = "booking" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT created_at
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
                         SELECT created_at
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_created_at'),
+                END AS latest_created_at'),
 
                 DB::raw('CASE 
-                    WHEN chat_messages.chat_type = "single" OR chat_messages.chat_type = "booking" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE ((chat_messages.sender_id = '.$userId.' AND chat_messages.receiver_id = sender.id) OR (chat_messages.sender_id = sender.id AND chat_messages.receiver_id = '.$userId.'))
-                        ORDER BY created_at DESC 
+                    WHEN chat_messages.chat_type = "booking" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.unique_booking_id = chat_messages.unique_booking_id AND cm.chat_type = "booking" 
+                        ORDER BY cm.created_at DESC 
+                        LIMIT 1
+                    )
+                    WHEN chat_messages.chat_type = "single" THEN (
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.single_chat_id = chat_messages.single_chat_id AND cm.chat_type = "single" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     WHEN chat_messages.chat_type = "group" THEN (
-                        SELECT type
-                        FROM chat_messages 
-                        WHERE chat_messages.group_id IN (
-                            SELECT group_id
-                            FROM chat_group_members
-                            WHERE member_id = '.$userId.'
-                        )
-                        AND chat_messages.chat_type = "group" 
-                        ORDER BY created_at DESC 
+                        SELECT type 
+                        FROM chat_messages AS cm
+                        WHERE cm.group_id = chat_messages.group_id AND cm.chat_type = "group" 
+                        ORDER BY cm.created_at DESC 
                         LIMIT 1
                     )
                     ELSE NULL
-                 END AS latest_type'),
+                END AS latest_type'),
                 
             )
             ->join('users AS sender', function ($join) {
@@ -1001,6 +1301,7 @@ class ChefChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -1030,13 +1331,79 @@ class ChefChatController extends Controller
                 $unquie_two = $second.$first;
 
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+               $userChatMessages = Chat_message::select(
+                    'message',
+                    'chat_messages.booking_id',
+                    'chat_messages.bookig_send_by',
+                    'sender.name AS sender_name',
+                    'receiver.name AS receiver_name',
+                    'sender.pic AS sender_pic',
+                    'receiver.pic AS receiver_pic',
+                    'sender.role AS sender_role',
+                    'receiver.role AS receiver_role',
+                    'sender.id AS sender_id',
+                    'receiver.id AS receiver_id',
+                    'chat_messages.created_at as chatdate',
+                    'type',
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT name
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT role
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_role'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT pic
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_pic'),
+                    DB::raw('CASE 
+                        WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
+                            SELECT (
+                                SELECT id
+                                FROM users
+                                WHERE id = CASE
+                                    WHEN chat_messages.sender_id = sender.id THEN sender.created_by
+                                    ELSE receiver.created_by
+                                END
+                            )
+                        )
+                        ELSE NULL
+                    END AS created_by_id')
+                )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                ->Where('chat_messages.single_chat_id', $unquie)
-                ->orWhere('chat_messages.single_chat_id', $unquie_two)
+                ->where('chat_messages.unique_booking_id', $unquie)
+                ->orWhere('chat_messages.unique_booking_id', $unquie_two)
                 ->get();
-
+                
                 $chat_member = 0;
             }
 

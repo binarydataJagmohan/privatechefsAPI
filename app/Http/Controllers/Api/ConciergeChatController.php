@@ -10,9 +10,9 @@ use App\Models\Chat_group_member;
 use App\Models\Chat_message;
 use DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-class AdminChatController extends Controller
+class ConciergeChatController extends Controller
 {
-    public function get_admin_message_data(Request $request)
+    public function get_concierge_message_data(Request $request)
     {
         
         $userId = $request->id;
@@ -128,13 +128,30 @@ class AdminChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orwhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
-                    ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id,sender.id)"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                   
+                            });
+                    })
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id, sender.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                    
+                            });
+                    })
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
                             ->where('member_id', $userId);
-                           
                     });
             })
             ->groupBy(
@@ -251,6 +268,7 @@ class AdminChatController extends Controller
                 ->orWhere('chat_messages.unique_booking_id', $unquie_two)
                 ->get();
 
+
                  $chat_member = 0 ;
 
             }
@@ -300,7 +318,7 @@ class AdminChatController extends Controller
         }
     }
 
-    public function contact_by_admin_to_user_and_chef(Request $request)
+    public function contact_by_concierge_to_user_and_chef(Request $request)
     {
         try {
 
@@ -333,7 +351,7 @@ class AdminChatController extends Controller
                 $messgae->receiver_id =  $request->receiver_id;
                 $messgae->unique_booking_id =  $request->unique_booking_id;
                 $messgae->booking_id =  $request->booking_id;
-                $messgae->bookig_send_by =  'admin';
+                $messgae->bookig_send_by =  'concierge';
                 $messgae->message =  $request->message;
                 $messgae->chat_type =  $request->chat_type;
                 $messgae->save();
@@ -368,7 +386,7 @@ class AdminChatController extends Controller
         }
     }
 
-    public function get_click_admin_chef_user_chat_data(Request $request)
+    public function get_click_concierge_chef_user_chat_data(Request $request)
     {
         try {
 
@@ -384,7 +402,8 @@ class AdminChatController extends Controller
 
         if (($sort == 'asc' || $sort == 'desc') && $sorttype == 'second') {
 
-            $userSideMessages = Chat_message::select(
+
+             $userSideMessages = Chat_message::select(
                 'chat_messages.booking_id',
                 'chat_messages.unique_booking_id',
                 'chat_messages.single_chat_id',
@@ -487,27 +506,47 @@ class AdminChatController extends Controller
                     ->orWhere('chat_messages.receiver_id', '=', 'sender.id');
             })
             ->leftJoin('users AS receiver', function ($join) {
-                $join->on('chat_messages.receiver_id', '=', 'receiver.id')
+                 $join->on('chat_messages.receiver_id', '=', 'receiver.id')
                     ->orWhereNull('chat_messages.receiver_id');
             })
-            
+
             ->leftJoin('chat_groups', 'chat_messages.group_id', '=', 'chat_groups.id')
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orwhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
-                    ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id,sender.id)"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                   
+                            });
+                    })
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id, sender.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                    
+                            });
+                    })
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
                             ->where('member_id', $userId);
-                           
                     });
             })
-            ->groupBy('chat_messages.unique_booking_id', 'chat_messages.single_chat_id', 'chat_messages.group_id')
+            ->groupBy(
+                'chat_messages.unique_booking_id',
+                'chat_messages.single_chat_id',
+                'chat_messages.group_id'
+            )
             ->orderBy('latest_created_at', $sort)
             ->get();
-
 
             $chat_type = $request->latest_chat_type;
 
@@ -517,8 +556,6 @@ class AdminChatController extends Controller
                 $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                
-              
                 ->Where('chat_messages.single_chat_id', $request->single_chat_id)
                 ->get();
 
@@ -746,26 +783,48 @@ class AdminChatController extends Controller
                     ->orWhere('chat_messages.receiver_id', '=', 'sender.id');
             })
             ->leftJoin('users AS receiver', function ($join) {
-                $join->on('chat_messages.receiver_id', '=', 'receiver.id')
+                 $join->on('chat_messages.receiver_id', '=', 'receiver.id')
                     ->orWhereNull('chat_messages.receiver_id');
             })
-            
+
             ->leftJoin('chat_groups', 'chat_messages.group_id', '=', 'chat_groups.id')
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orwhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
-                    ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id,sender.id)"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                   
+                            });
+                    })
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id, sender.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                    
+                            });
+                    })
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
                             ->where('member_id', $userId);
-                           
                     });
             })
-            ->groupBy('chat_messages.unique_booking_id', 'chat_messages.single_chat_id', 'chat_messages.group_id')
+            ->groupBy(
+                'chat_messages.unique_booking_id',
+                'chat_messages.single_chat_id',
+                'chat_messages.group_id'
+            )
             ->orderByRaw('unreadcount DESC, latest_created_at DESC')
             ->get();
+
 
 
             $chat_type = $request->latest_chat_type;
@@ -858,7 +917,6 @@ class AdminChatController extends Controller
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 ->where('chat_messages.unique_booking_id', $request->unique_booking_id)
                 ->get();
-
 
                  $chat_member = 0 ;
 
@@ -1005,24 +1063,45 @@ class AdminChatController extends Controller
                     ->orWhere('chat_messages.receiver_id', '=', 'sender.id');
             })
             ->leftJoin('users AS receiver', function ($join) {
-                $join->on('chat_messages.receiver_id', '=', 'receiver.id')
+                 $join->on('chat_messages.receiver_id', '=', 'receiver.id')
                     ->orWhereNull('chat_messages.receiver_id');
             })
-            
+
             ->leftJoin('chat_groups', 'chat_messages.group_id', '=', 'chat_groups.id')
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orwhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
-                    ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id,sender.id)"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                   
+                            });
+                    })
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id, sender.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                    
+                            });
+                    })
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
                             ->where('member_id', $userId);
-                           
                     });
             })
-            ->groupBy('chat_messages.unique_booking_id', 'chat_messages.single_chat_id', 'chat_messages.group_id')
+            ->groupBy(
+                'chat_messages.unique_booking_id',
+                'chat_messages.single_chat_id',
+                'chat_messages.group_id'
+            )
             ->orderBy('latest_created_at', $sort)
             ->get();
 
@@ -1038,6 +1117,7 @@ class AdminChatController extends Controller
                 $unquie = $first.$second;
                 $unquie_two = $second.$first;
 
+
                 $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
@@ -1045,6 +1125,7 @@ class AdminChatController extends Controller
                 ->orWhere('chat_messages.single_chat_id', $unquie_two)
                 ->get();
 
+                
                 $chat_member = 0;
             }
 
@@ -1130,6 +1211,7 @@ class AdminChatController extends Controller
                 ->orWhere('chat_messages.unique_booking_id', $unquie_two)
                 ->get();
 
+
                  $chat_member = 0 ;
 
             }
@@ -1173,7 +1255,8 @@ class AdminChatController extends Controller
 
         if ( $sort == 'unread' && $sorttype == 'first') {
 
-            $userSideMessages = Chat_message::select(
+
+             $userSideMessages = Chat_message::select(
                 'chat_messages.booking_id',
                 'chat_messages.unique_booking_id',
                 'chat_messages.single_chat_id',
@@ -1276,25 +1359,46 @@ class AdminChatController extends Controller
                     ->orWhere('chat_messages.receiver_id', '=', 'sender.id');
             })
             ->leftJoin('users AS receiver', function ($join) {
-                $join->on('chat_messages.receiver_id', '=', 'receiver.id')
+                 $join->on('chat_messages.receiver_id', '=', 'receiver.id')
                     ->orWhereNull('chat_messages.receiver_id');
             })
-            
+
             ->leftJoin('chat_groups', 'chat_messages.group_id', '=', 'chat_groups.id')
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orwhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
-                    ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id,sender.id)"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                   
+                            });
+                    })
+                    ->orWhere(function ($subquery) use ($userId) {
+                        $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(receiver.id, sender.id)"))
+                            ->whereExists(function ($innerSubquery) use ($userId) {
+                                $innerSubquery->select('id')
+                                    ->from('users')
+                                    ->where('created_by', $userId);
+                                    
+                            });
+                    })
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
                             ->where('member_id', $userId);
-                           
                     });
             })
-            ->groupBy('chat_messages.unique_booking_id', 'chat_messages.single_chat_id', 'chat_messages.group_id')
-            ->orderByRaw('unreadcount DESC, latest_created_at DESC')
+            ->groupBy(
+                'chat_messages.unique_booking_id',
+                'chat_messages.single_chat_id',
+                'chat_messages.group_id'
+            )
+           ->orderByRaw('unreadcount DESC, latest_created_at DESC')
             ->get();
 
 
@@ -1309,13 +1413,13 @@ class AdminChatController extends Controller
                 $unquie = $first.$second;
                 $unquie_two = $second.$first;
 
-
                 $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 ->Where('chat_messages.single_chat_id', $unquie)
                 ->orWhere('chat_messages.single_chat_id', $unquie_two)
                 ->get();
+
 
                 $chat_member = 0;
             }
@@ -1450,7 +1554,7 @@ class AdminChatController extends Controller
         }
     }
 
-    public function contact_by_admin_to_user_and_chef_with_share_file(Request $request)
+    public function contact_by_concierge_to_user_and_chef_with_share_file(Request $request)
     {   
         $randomNumber = mt_rand(1000000000, 9999999999);
 
@@ -1510,7 +1614,7 @@ class AdminChatController extends Controller
                 $messgae->receiver_id =  $request->receiver_id;
                 $messgae->unique_booking_id =  $request->unique_booking_id;
                 $messgae->booking_id =  $request->booking_id;
-                $messgae->bookig_send_by =  'admin';
+                $messgae->bookig_send_by =  'concierge';
                 $messgae->chat_type =  $request->chat_type;
 
                 if ($type === 'image') {
@@ -1601,19 +1705,8 @@ class AdminChatController extends Controller
 
     }
 
-     public function get_all_user_data(Request $request)
-    {
-        try {
-            $user = User::where('status','active')->where('role','!=','admin')->get();
-           
-            return response()->json(['status' => true, 'message' => "all user data", 'data' => $user]);
-           
-        } catch (\Exception $e) {
-            throw new HttpException(500, $e->getMessage());
-        }
-    }
 
-    public function send_message_to_user_by_admin(Request $request)
+    public function send_message_to_user_by_concierge(Request $request)
     {
         try {
             
@@ -1641,7 +1734,7 @@ class AdminChatController extends Controller
         }
     }
 
-    public function create_group_by_admin(Request $request)
+    public function create_group_by_concierge(Request $request)
     {
         
         $group_name =  $request->group_name;
@@ -1702,5 +1795,15 @@ class AdminChatController extends Controller
         }
     }
 
-   
+     public function get_all_concierge_user_data(Request $request,$id)
+    {
+        try {
+            $user = User::where('created_by',$id)->where('status','active')->where('role','!=','admin')->get();
+           
+            return response()->json(['status' => true, 'message' => "all user data", 'data' => $user]);
+           
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 }

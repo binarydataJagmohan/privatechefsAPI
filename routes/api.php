@@ -282,15 +282,13 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
    Route::post('/get-admin-message-data/', [App\Http\Controllers\Api\AdminChatController::class, 'get_admin_message_data']);
    Route::post('/contact-by-admin-to-user-and-chef/', [App\Http\Controllers\Api\AdminChatController::class, 'contact_by_admin_to_user_and_chef']);
-
    Route::post('/get-click-admin-chef-user-chat-data/', [App\Http\Controllers\Api\AdminChatController::class, 'get_click_admin_chef_user_chat_data']);
    Route::post('/contact-by-admin-to-user-and-chef-with-share-file/', [App\Http\Controllers\Api\AdminChatController::class, 'contact_by_admin_to_user_and_chef_with_share_file']);
    Route::get('get-all-user-data', [App\Http\Controllers\Api\AdminChatController::class, 'get_all_user_data']);
    Route::post('/send-message-to-user-by-admin/', [App\Http\Controllers\Api\AdminChatController::class, 'send_message_to_user_by_admin']);
-
    Route::post('/create-group-by-admin', [App\Http\Controllers\Api\AdminChatController::class, 'create_group_by_admin']);
-
    Route::post('/get-admin-message-data-by-filter/', [App\Http\Controllers\Api\AdminChatController::class, 'get_admin_message_data_by_filter']);
+   Route::get('get-all-concierge-user-data/{id}', [App\Http\Controllers\Api\AdminChatController::class, 'get_all_concierge_user_data']);
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -308,5 +306,18 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 Route::get('get-data', [App\Http\Controllers\Api\UserController::class, 'get_data']);
 Route::get('get-all-chef', [App\Http\Controllers\Api\UserController::class, 'get_all_chef']);
 
+// Concierge chat api start
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+   Route::post('get-concierge-message-data', [App\Http\Controllers\Api\ConciergeChatController::class, 'get_concierge_message_data']);
+   Route::post('contact-by-concierge-to-user-and-chef', [App\Http\Controllers\Api\ConciergeChatController::class, 'contact_by_concierge_to_user_and_chef']);
+   Route::post('get-click-concierge-chef-user-chat-data', [App\Http\Controllers\Api\ConciergeChatController::class, 'get_click_concierge_chef_user_chat_data']);
+   Route::post('contact-by-concierge-to-user-and-chef-with-share-file', [App\Http\Controllers\Api\ConciergeChatController::class, 'contact_by_concierge_to_user_and_chef_with_share_file']);
+   Route::post('send-message-to-user-by-concierge', [App\Http\Controllers\Api\ConciergeChatController::class, 'send_message_to_user_by_concierge']);
+   Route::post('create-group-by-concierge', [App\Http\Controllers\Api\ConciergeChatController::class, 'create_group_by_concierge']);
+   Route::get('get-all-concierge-user-data/{id}', [App\Http\Controllers\Api\ConciergeChatController::class, 'get_all_concierge_user_data']);
+});
+
+// Concierge chat api end
 
 

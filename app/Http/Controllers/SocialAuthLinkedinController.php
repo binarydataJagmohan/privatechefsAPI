@@ -10,33 +10,37 @@ use Exception;
 
 class SocialAuthLinkedinController extends Controller
 {
+
     public function redirect()
     {
         return Socialite::driver('linkedin')->redirect();
     }
-
-
     public function callback()
     {
         try {
-            $linkdinUser = Socialite::driver('linkedin')->user();
-            $existUser = User::where('email',$linkdinUser->email)->first();
-            if($existUser) {
-                Auth::loginUsingId($existUser->id);
+           
+
+            $user = Socialite::driver('linkedin')->user();
+           
+            $finduser = User::where('linkedin_id', $user->id)->first();
+            if ($finduser) {
+                Auth::login($finduser);
+                // return redirect()->intended('dashboard');
+
+            } else {
+                return "hii";
+                $newUser = User::create([
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'linkedin_id' => $user->id,
+                    'password' => encrypt('123456'),
+                    'view_password' => 123456,
+                ]);
+
+                Auth::login($newUser);
             }
-            else {
-                $user = new User;
-                $user->name = $linkdinUser->name;
-                $user->email = $linkdinUser->email;
-                $user->linkedin_id = $linkdinUser->id;
-                $user->password = md5(rand(1,10000));
-                $user->save();
-                Auth::loginUsingId($user->id);
-            }
-            return redirect()->to('/home');
-        } 
-        catch (Exception $e) {
-            return 'error';
+        } catch (\Exception $e) {
+            dd($e->getMessage());
         }
     }
 }
