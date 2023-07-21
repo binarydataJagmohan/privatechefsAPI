@@ -508,7 +508,11 @@ class ChefDetailController extends Controller
                 ->join('users', 'chef_location.user_id', 'users.id')
                 ->where('chef_location.status', '!=', 'deleted')
                 ->get();
-            return response()->json(['status' => true, 'message' => 'Chef location fetched succesfully', 'data' => $location]);
+            $cheflocation = ChefDetail::select('users.pic', 'users.address')
+                 ->join('users', 'chef_details.user_id', 'users.id')
+                ->where('users.role', '=', 'chef')
+                ->get();
+            return response()->json(['status' => true, 'message' => 'Chef location fetched succesfully', 'data' => $location,'location'=>$cheflocation ]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }

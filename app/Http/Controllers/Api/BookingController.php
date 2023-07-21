@@ -1056,7 +1056,7 @@ class BookingController extends Controller
                 }
             }
 
-            return response()->json(['status' => true, 'message' => "Booking has been update successfully"], 200);
+            return response()->json(['status' => true, 'message' => "Booking has been updated successfully"], 200);
             // } else {
 
             //     return response()->json(['status' => false, 'message' => "Email already exits", 'data' => ""], 200);
@@ -1077,8 +1077,8 @@ class BookingController extends Controller
             })
             ->where('bookings.id', $id)
             ->where('applied_jobs.status', 'applied')
-            ->select('bookings.id as booking_id', 'bookings.name', 'bookings.location', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'users.name as userName', 'users.surname as userSurname', 'applied_jobs.chef_id', 'menus.id as menu_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
-            ->groupBy('bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', 'bookings.id', 'bookings.location')
+            ->select('bookings.id as booking_id', 'bookings.name', 'bookings.location', 'bookings.surname', 'users.address', 'applied_jobs.amount', 'users.name as userName', 'users.surname as userSurname', 'applied_jobs.chef_id', 'menus.id as menu_id', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
+            ->groupBy('bookings.name', 'bookings.surname', 'bookings.location', 'applied_jobs.amount', 'applied_jobs.chef_id', 'bookings.id', 'users.address')
             ->orderBy('applied_jobs.id', 'DESC')
             ->get();
 
@@ -1101,6 +1101,7 @@ class BookingController extends Controller
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->whereDate('booking_meals.date', $currentDate)
+                ->distinct('bookings.id')
                 ->count();
 
 
@@ -1120,6 +1121,7 @@ class BookingController extends Controller
                 ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
+                ->where('bookings.booking_status', '=', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 // ->groupBy('bookings.id') // Add this line to group the results by bookings
@@ -1659,16 +1661,16 @@ class BookingController extends Controller
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->count();
-            $allBookings = User::join('bookings', 'users.id', '=', 'bookings.user_id')
-                ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
-                ->where('users.status', '!=', 'deleted')
-                ->where(function ($query) {
-                    $query->where('applied_jobs.status', 'applied')
-                        ->orWhereNull('applied_jobs.status');
+                $allBookings = DB::table('users')
+                ->join('bookings', 'users.id', '=', 'bookings.user_id')
+                ->leftJoin('applied_jobs', function ($join) {
+                    $join->on('bookings.id', '=', 'applied_jobs.booking_id')
+                        ->where('applied_jobs.status', '=', 'hired');
                 })
-                ->where('bookings.status', '!=', 'deleted')
-                ->count();
-
+                ->where('users.status', '!=', 'deleted')
+                ->whereNull('applied_jobs.booking_id')
+                ->count();            
+                
             $hired_booking = User::join('bookings', 'users.id', 'bookings.user_id')
                 ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
