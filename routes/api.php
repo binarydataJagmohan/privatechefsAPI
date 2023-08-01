@@ -321,3 +321,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 // Concierge chat api end
 
 
+
+Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+    Route::get('get-chef-menu', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_menu']);
+    Route::post('assigned-booking-by-admin', [App\Http\Controllers\Api\BookingController::class, 'assigned_booking_by_admin']);
+});

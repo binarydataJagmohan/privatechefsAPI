@@ -1839,4 +1839,46 @@ class BookingController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+    public function assigned_booking_by_admin(Request $request)
+    {
+
+        $booking = new AppliedJobs();
+        $booking->booking_id = $request->booking_id;
+        $booking->chef_id = $request->chef_id;
+        $booking->amount = $request->amount;
+        $booking->client_amount = $request->client_amount;
+        $booking->admin_amount = $request->admin_amount;
+        $booking->user_show = 'visible';
+        $booking->menu = $request->menu;
+        $booking->status = 'hired';
+        $appliedJobs  = $booking->save();
+
+        if ($appliedJobs) {
+
+            $booking = Booking::select('id', 'user_id')->where('id', $request->booking_id)->first();
+            $user = User::select('id', 'email', 'name')->where('id', $booking->user_id)->first();
+            $chef = User::select('id', 'email', 'name', 'phone')->where('id', $request->chef_id)->first();
+
+            $data = [
+                'name' =>  $user->name,
+                'email' =>  $user->email,
+                'booking_id' => $booking->id,
+                'chef_name' =>  $chef->name,
+                'chef_email' =>  $chef->email,
+                'chef_phone' =>  $chef->phone,
+            ];
+
+            // Mail::send('emails.emailVerificationEmail', ['data' => $data], function ($message) use ($data) {
+            //     $message->from('dev3.bdpl@gmail.com', "Chef Application for Booking");
+            //     $message->to($data['email']);
+            //     $message->subject('Email Verification Mail');
+            // });
+        }
+
+        if ($appliedJobs) {
+            return response()->json(['message' => 'Booking has been applied successfully', 'status' => true]);
+        } else {
+            return response()->json(['status' => true, 'message' => 'There has been error in saving the booking',]);
+        }
+    }
 }

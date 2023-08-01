@@ -517,4 +517,23 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+    public function get_chef_menu(Request $request)
+    {
+        try {
+            $users = User::select('users.id as chefid','menus.menu_name','menus.id as menuid')
+                ->join('menus','users.id','menus.user_id')
+                ->where('users.role', 'chef')
+                ->where('users.status', 'active')
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
 }
