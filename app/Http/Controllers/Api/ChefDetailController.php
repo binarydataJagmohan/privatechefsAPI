@@ -208,7 +208,7 @@ class ChefDetailController extends Controller
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                ->select('users.id', 'users.name', 'users.profile_status', 'users.address', 'users.pic', 'users.approved_by_admin')
+                ->select('users.id', 'users.name', 'users.profile_status', 'users.address', 'users.pic', 'users.approved_by_admin', 'users.email')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->orderby('users.id', 'desc')
@@ -509,10 +509,10 @@ class ChefDetailController extends Controller
                 ->where('chef_location.status', '!=', 'deleted')
                 ->get();
             $cheflocation = ChefDetail::select('users.pic', 'users.address')
-                 ->join('users', 'chef_details.user_id', 'users.id')
+                ->join('users', 'chef_details.user_id', 'users.id')
                 ->where('users.role', '=', 'chef')
                 ->get();
-            return response()->json(['status' => true, 'message' => 'Chef location fetched succesfully', 'data' => $location,'location'=>$cheflocation ]);
+            return response()->json(['status' => true, 'message' => 'Chef location fetched succesfully', 'data' => $location, 'location' => $cheflocation]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -521,8 +521,8 @@ class ChefDetailController extends Controller
     public function get_chef_menu(Request $request)
     {
         try {
-            $users = User::select('users.id as chefid','menus.menu_name','menus.id as menuid')
-                ->join('menus','users.id','menus.user_id')
+            $users = User::select('users.id as chefid', 'menus.menu_name', 'menus.id as menuid')
+                ->join('menus', 'users.id', 'menus.user_id')
                 ->where('users.role', 'chef')
                 ->where('users.status', 'active')
                 ->get();
@@ -535,5 +535,24 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+    public function get_all_top_rated_chef()
+    {
+        try {
+            $activeChefs = User::where('status', 'active')->get();
 
+            $topRatedChefIds = [];
+            foreach ($activeChefs as $chef) {
+                $topRatedChefIds = array_merge($topRatedChefIds, explode(',', $chef->top_rated));
+            }
+            $topRatedChefIds = array_unique($topRatedChefIds);
+    
+            $topRatedChefs = User::whereIn('id', $topRatedChefIds)->get();
+    
+            return response()->json(['status' => true, 'data' => $topRatedChefs], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    
+    
 }
