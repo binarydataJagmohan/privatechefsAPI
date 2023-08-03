@@ -238,7 +238,7 @@ class ChefDetailController extends Controller
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
                 ->whereIn('cuisine.name', $selectedCuisinesArray)
-                ->select('users.id', 'users.name', 'users.address', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                ->select('users.id', 'users.name', 'users.address', 'users.profile_status', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->get();
 
@@ -545,14 +545,53 @@ class ChefDetailController extends Controller
                 $topRatedChefIds = array_merge($topRatedChefIds, explode(',', $chef->top_rated));
             }
             $topRatedChefIds = array_unique($topRatedChefIds);
-    
+
             $topRatedChefs = User::whereIn('id', $topRatedChefIds)->get();
-    
+
             return response()->json(['status' => true, 'data' => $topRatedChefs], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
     }
-    
-    
+    public function get_chef_all_location(Request $request)
+    {
+        try {
+            $users = User::select('id', 'address', 'lat')->where('role', 'chef')
+                ->whereNotNull('users.address')
+                ->where('status', 'active')
+                ->get();
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function chef_location_filter(Request $request)
+    {
+        try {
+            $selectedLocation = $request->input('locations');
+            $selectedLocationArray = explode(',', $selectedLocation);
+
+            $users = User::leftJoin('applied_jobs', 'users.id', 'applied_jobs.chef_id')
+                ->where('users.role', 'chef')
+                ->where('users.status', 'active')
+                ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
+                ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                ->whereIn('users.lat', $selectedLocationArray)
+                ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                ->whereNotNull('users.address')
+                ->where('users.status', '!=', 'deleted')
+                ->groupBy('users.id', 'users.name', 'users.address')
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 }
