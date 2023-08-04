@@ -328,6 +328,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('get-top-rated-chef/{id}', [App\Http\Controllers\Api\SettingController::class, 'get_top_rated_chef']);
     Route::get('get-chef-all-location', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_all_location']);
     Route::get('chef-location-filter', [App\Http\Controllers\Api\ChefDetailController::class, 'chef_location_filter']);
+    Route::get('chef-price-filter', [App\Http\Controllers\Api\ChefDetailController::class, 'chef_price_filter']);
 });
 
 Route::group(['middleware' => ['api']], function ($router) {

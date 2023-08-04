@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\ChefDetail;
 use App\Models\ChefLocation;
 use App\Models\Menu;
-use App\Models\Dishes;
+use App\Models\AppliedJobs;
 use App\Models\Notification;
 use App\Models\MenuItems;
 use Illuminate\Support\Facades\DB;
@@ -205,10 +205,11 @@ class ChefDetailController extends Controller
             // ->groupBy('users.id', 'users.name', 'users.address')
             // ->get();
             $users = User::where('users.role', 'chef')
+                ->leftJoin('applied_jobs', 'users.id', 'applied_jobs.chef_id')
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                ->select('users.id', 'users.name', 'users.profile_status', 'users.address', 'users.pic', 'users.approved_by_admin', 'users.email')
+                ->select('users.id', 'users.name', 'users.profile_status', 'applied_jobs.amount', 'users.address', 'users.pic', 'users.approved_by_admin', 'users.email')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->orderby('users.id', 'desc')
@@ -581,7 +582,6 @@ class ChefDetailController extends Controller
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
                 ->whereIn('users.lat', $selectedLocationArray)
                 ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
-                ->whereNotNull('users.address')
                 ->where('users.status', '!=', 'deleted')
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->get();
@@ -594,4 +594,83 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+    public function chef_price_filter(Request $request)
+    {
+        try {
+            $price = $request->input('price');
+
+            if ($price !== null && $price < 250) {
+                $users = User::leftJoin('applied_jobs', 'users.id', 'applied_jobs.chef_id')
+                    ->where('users.role', 'chef')
+                    ->where('users.status', 'active')
+                    ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
+                    ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                    ->where('applied_jobs.amount', '<', 250) 
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status','applied_jobs.amount',DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                    ->where('users.status', '!=', 'deleted')
+                    ->groupBy('users.id', 'users.name', 'users.address')
+                    ->get();
+            } elseif ($price !== null && $price >= 2000) {
+                $users = User::leftJoin('applied_jobs', 'users.id', 'applied_jobs.chef_id')
+                    ->where('users.role', 'chef')
+                    ->where('users.status', 'active')
+                    ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
+                    ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                    ->where('applied_jobs.amount', '>=', 2000)
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount',DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                    ->where('users.status', '!=', 'deleted')
+                    ->groupBy('users.id', 'users.name', 'users.address')
+                    ->get();
+            } elseif ($price !== null && $price >= 250 && $price <= 499) {
+                $users = User::leftJoin('applied_jobs', 'users.id', 'applied_jobs.chef_id')
+                    ->where('users.role', 'chef')
+                    ->where('users.status', 'active')
+                    ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
+                    ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                    ->whereBetween('applied_jobs.amount', [ 250, 499])
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status','applied_jobs.amount', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                    ->where('users.status', '!=', 'deleted')
+                    ->groupBy('users.id', 'users.name', 'users.address')
+                    ->get();
+            } elseif ($price !== null && $price >= 500 && $price < 1000) {
+                $users = User::leftJoin('applied_jobs', 'users.id', 'applied_jobs.chef_id')
+                    ->where('users.role', 'chef')
+                    ->where('users.status', 'active')
+                    ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
+                    ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                    ->whereBetween('applied_jobs.amount', [500, 1000])
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount',DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                    ->where('users.status', '!=', 'deleted')
+                    ->groupBy('users.id', 'users.name', 'users.address')
+                    ->get();
+            } elseif ($price !== null && $price >= 1000 && $price <= 1099) {
+                $users = User::leftJoin('applied_jobs', 'users.id', 'applied_jobs.chef_id')
+                    ->where('users.role', 'chef')
+                    ->where('users.status', 'active')
+                    ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
+                    ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                    ->whereBetween('applied_jobs.amount', [1000, 1099])
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name'), DB::raw('applied_jobs.status as appliedstatus'))
+                    ->where('users.status', '!=', 'deleted')
+                    ->groupBy('users.id', 'users.name', 'users.address')
+                    ->get();
+            }
+            else {
+                return response()->json([
+                    'status' => true,
+                    'data' => '',
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+    
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    
 }
