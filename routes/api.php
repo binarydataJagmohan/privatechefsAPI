@@ -334,4 +334,6 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 Route::group(['middleware' => ['api']], function ($router) {
     Route::get('get-slug-setting/{slug}', [App\Http\Controllers\Api\SettingController::class, 'get_slug_setting']);
     Route::get('get-all-top-rated-chef', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_top_rated_chef']);
+    Route::get('get-all-location', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_location']);
+    Route::get('get-location-by-slug/{slug}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_location_by_slug']);
 });

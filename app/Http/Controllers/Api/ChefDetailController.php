@@ -672,5 +672,39 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-    
+    public function get_all_location(Request $request)
+    {
+        try {
+            $users = User::select('id','address')
+            ->where('role','chef')
+            ->where('status','!=','deleted')
+            ->whereNotNull('address')
+            ->groupBy('address')
+            ->get();
+
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_location_by_slug(Request $request)
+    {
+        try {
+            $users = User::select('id','address','name')
+            ->where('role','chef')
+            ->where('status','!=','deleted')
+            ->where('address',$request->slug)
+            ->get();
+
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 }
