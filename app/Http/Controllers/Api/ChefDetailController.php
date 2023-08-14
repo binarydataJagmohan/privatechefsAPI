@@ -560,6 +560,7 @@ class ChefDetailController extends Controller
             $users = User::select('id', 'address', 'lat')->where('role', 'chef')
                 ->whereNotNull('users.address')
                 ->where('status', 'active')
+                 ->groupBy('address')
                 ->get();
             return response()->json([
                 'status' => true,
@@ -675,10 +676,11 @@ class ChefDetailController extends Controller
     public function get_all_location(Request $request)
     {
         try {
-            $users = User::select('id','address')
+            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'samos'];
+            $users = User::select('id','address','location_pic')
+            ->whereIn('address', $desiredLocations)
             ->where('role','chef')
             ->where('status','!=','deleted')
-            ->whereNotNull('address')
             ->groupBy('address')
             ->get();
 
@@ -693,7 +695,7 @@ class ChefDetailController extends Controller
     public function get_location_by_slug(Request $request)
     {
         try {
-            $users = User::select('id','address','name')
+            $users = User::select('id','address','name','location_pic')
             ->where('role','chef')
             ->where('status','!=','deleted')
             ->where('address',$request->slug)

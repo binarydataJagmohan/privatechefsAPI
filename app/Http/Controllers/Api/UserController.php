@@ -569,7 +569,6 @@ class UserController extends Controller
                         'expiration' => $expirationTime
                     ]
                 ]);
-
             } else {
                 $data = $request->all();
                 $data['password'] = Hash::make($request->password);
@@ -585,7 +584,7 @@ class UserController extends Controller
                 $data['created_by'] = null;
                 $user = new User();
                 $register  = $user->create($data);
-               // return $register;
+                // return $register;
 
                 if ($register) {
                     $token = Auth::login($register);
@@ -747,12 +746,19 @@ class UserController extends Controller
                     'password' => $password,
                     'email'   => $user->email,
                 ];
-
-                // Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
-                //     $message->from('dev3.bdpl@gmail.com', "Private Chef");
-                //     $message->subject(' Your Account Password for Private Chef');
-                //     $message->to($data['email']);
-                // });
+                if ($request->created_by != '1') {
+                    Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
+                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->subject(' Your Account Password for Private Chef');
+                        $message->to($data['email']);
+                    });
+                } else {
+                    Mail::send('emails.invitationChefMail', ["data" => $data], function ($message) use ($data) {
+                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->subject('Invitation to Join Private Chefs World Team!');
+                        $message->to($data['email']);
+                    });
+                }
 
                 return response()->json(['status' => true, 'message' => "User created successfully", 'data' => $user], 200);
             } else {
@@ -825,7 +831,7 @@ class UserController extends Controller
     {
         try {
             $accessToken = "https://www.linkedin.com/in/binary-data-580636217/";
-            
+
             $resource = '/v2/me';
             $params = ['oauth2_access_token' => $accessToken];
             $url =  $accessToken;
