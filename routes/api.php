@@ -321,19 +321,20 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('get-chef-menu', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_menu']);
     Route::post('assigned-booking-by-admin', [App\Http\Controllers\Api\BookingController::class, 'assigned_booking_by_admin']);
-    Route::get('get-settings', [App\Http\Controllers\Api\SettingController::class, 'get_settings']);
-    Route::get('get-single-setting/{id}', [App\Http\Controllers\Api\SettingController::class, 'get_single_setting']);
-    Route::post('update-setting/{id}', [App\Http\Controllers\Api\SettingController::class, 'update_setting']);
-    Route::post('top-rated-chef/{id}', [App\Http\Controllers\Api\SettingController::class, 'top_rated_chef']);
-    Route::get('get-top-rated-chef/{id}', [App\Http\Controllers\Api\SettingController::class, 'get_top_rated_chef']);
+    Route::get('get-settings', [App\Http\Controllers\Api\PagesController::class, 'get_settings']);
+    Route::get('get-single-setting/{id}', [App\Http\Controllers\Api\PagesController::class, 'get_single_setting']);
+    Route::post('update-setting/{id}', [App\Http\Controllers\Api\PagesController::class, 'update_setting']);
+    Route::post('top-rated-chef/{id}', [App\Http\Controllers\Api\PagesController::class, 'top_rated_chef']);
+    Route::get('get-top-rated-chef/{id}', [App\Http\Controllers\Api\PagesController::class, 'get_top_rated_chef']);
     Route::get('get-chef-all-location', [App\Http\Controllers\Api\ChefDetailController::class, 'get_chef_all_location']);
     Route::get('chef-location-filter', [App\Http\Controllers\Api\ChefDetailController::class, 'chef_location_filter']);
     Route::get('chef-price-filter', [App\Http\Controllers\Api\ChefDetailController::class, 'chef_price_filter']);
 });
 
 Route::group(['middleware' => ['api']], function ($router) {
-    Route::get('get-slug-setting/{slug}', [App\Http\Controllers\Api\SettingController::class, 'get_slug_setting']);
+    Route::get('get-slug-setting/{slug}', [App\Http\Controllers\Api\PagesController::class, 'get_slug_setting']);
     Route::get('get-all-top-rated-chef', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_top_rated_chef']);
     Route::get('get-all-location', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_location']);
     Route::get('get-location-by-slug/{slug}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_location_by_slug']);
+    Route::post('update-setting',[App\Http\Controllers\Api\SettingController::class,'update_setting']);
 });
