@@ -56,23 +56,29 @@ class BookingController extends Controller
                         ->select('users.email', 'users.name', 'chef_location.lat', 'chef_location.user_id', 'chef_location.lng', 'chef_location.address')
                         ->selectRaw(
                             "($earthRadius * ACOS(
-            COS(RADIANS($request->lat)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS($request->lng)) +
-            SIN(RADIANS($request->lat)) * SIN(RADIANS(chef_location.lat))
-        )) AS distance"
+                        COS(RADIANS(?)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS(?)) +
+                        SIN(RADIANS(?)) * SIN(RADIANS(chef_location.lat))
+                    )) AS distance",
+                            [$request->lat, $request->lng, $request->lat]
                         )
                         ->where('chef_location.status', 'active')
                         ->having('distance', '<=', $radius)
                         ->orderBy('distance')
                         ->get();
+
+                    $admin = User::select('email')->where('role', 'admin')->first();
+
                     //return $chefs;
                     if ($chefs) {
                         foreach ($chefs as $chef) {
                             $data = [
                                 'name'   => $chef->name,
                                 'email'   => $chef->email,
+                                'admin_email' => $admin->email,
                             ];
                             Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
                                 $message->from('dev3.bdpl@gmail.com', "Private Chefs");
+                                $message->bcc($data['admin_email']);
                                 $message->subject('Location Notification');
                                 $message->to($data['email']);
                             });
@@ -202,15 +208,19 @@ class BookingController extends Controller
                                 ->orderBy('distance')
                                 ->get();
 
+                                $admindata = User::select('email')->where('role', 'admin')->first();
+
                             //return $chefs;
                             if ($chefs) {
                                 foreach ($chefs as $chef) {
                                     $data = [
                                         'name'   => $chef->name,
                                         'email'   => $chef->email,
+                                        'admin_email' =>  $admindata->email,
                                     ];
                                     Mail::send('emails.chefLocation', ["data" => $data], function ($message) use ($data) {
                                         $message->from('dev3.bdpl@gmail.com', "Private Chefs");
+                                        $message->bcc($data['admin_email']);
                                         $message->subject('Location Notification');
                                         $message->to($data['email']);
                                     });
@@ -265,14 +275,18 @@ class BookingController extends Controller
 
                             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
+                            $admindata = User::select('email')->where('role', 'admin')->first();
+
                             $data = [
                                 'name'   => $user->name,
                                 'password' => $password,
                                 'email'   => $user->email,
+                                'admin_email' =>  $admindata->email,
                             ];
 
                             Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
                                 $message->from('dev3.bdpl@gmail.com', "Private Chefs");
+                                $message->bcc($data['admin_email']);
                                 $message->subject(' Your Account Password for Private Chefs');
                                 $message->to($data['email']);
                             });
@@ -544,6 +558,7 @@ class BookingController extends Controller
             $booking = Booking::select('id', 'user_id')->where('id', $request->booking_id)->first();
             $user = User::select('id', 'email', 'name')->where('id', $booking->user_id)->first();
             $chef = User::select('id', 'email', 'name', 'phone')->where('id', $request->chef_id)->first();
+            $admindata = User::select('email')->where('role', 'admin')->first();
 
             $data = [
                 'name' =>  $user->name,
@@ -552,13 +567,15 @@ class BookingController extends Controller
                 'chef_name' =>  $chef->name,
                 'chef_email' =>  $chef->email,
                 'chef_phone' =>  $chef->phone,
+                'admin_email' =>  $admindata->email,
             ];
 
-            // Mail::send('emails.emailVerificationEmail', ['data' => $data], function ($message) use ($data) {
-            //     $message->from('dev3.bdpl@gmail.com', "Chef Application for Booking");
-            //     $message->to($data['email']);
-            //     $message->subject('Email Verification Mail');
-            // });
+            Mail::send('emails.emailVerificationEmail', ['data' => $data], function ($message) use ($data) {
+                $message->from('dev3.bdpl@gmail.com', "Chef Application for Booking");
+                $message->to($data['email']);
+                $message->bcc($data['admin_email']);
+                $message->subject('Email Verification Mail');
+            });
         }
 
         if ($appliedJobs) {
@@ -1855,7 +1872,7 @@ class BookingController extends Controller
 
         if ($appliedJobs) {
 
-            $chef = User::select('name','email')->where('id', $request->chef_id)->first();
+            $chef = User::select('name', 'email')->where('id', $request->chef_id)->first();
             $booking = Booking::select('name', 'location', 'id')->where('id', $request->booking_id)->first();
 
             $bookingDate = Booking::select('booking_meals.category', DB::raw('GROUP_CONCAT(DISTINCT booking_meals.date) AS dates'))
@@ -1863,6 +1880,8 @@ class BookingController extends Controller
                 ->where('bookings.id', $request->booking_id)
                 ->groupBy('booking_meals.booking_id')
                 ->first();
+
+                $admindata = User::select('email')->where('role', 'admin')->first();
 
             $data = [
                 'chef_name' =>  $chef->name,
@@ -1872,15 +1891,14 @@ class BookingController extends Controller
                 'user_location' =>  $booking->location,
                 'booking_type' =>  $bookingDate->category,
                 'booking_date' =>  $bookingDate->dates,
+                'admin_email' =>  $admindata->email,
             ];
-
-        }
-
-        if ($appliedJobs) {
+     
 
             Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
                 $message->from('dev3.bdpl@gmail.com', "You have been hired");
                 $message->to($data['email']);
+                $message->bcc($data['admin_email']);
                 $message->subject('Congratulations! You have been hired ');
             });
 

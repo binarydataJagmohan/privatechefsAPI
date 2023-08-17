@@ -33,7 +33,7 @@ class PagesController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-    public function update_setting(Request $request)
+    public function update_page_info(Request $request)
     {
         try {
             $receipt = Pages::find($request->id);

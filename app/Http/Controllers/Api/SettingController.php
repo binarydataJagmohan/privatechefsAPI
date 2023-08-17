@@ -13,6 +13,7 @@ class SettingController extends Controller
     public function update_setting(Request $request)
     {
         try {
+
             $user = User::find($request->id);
             $user->name = $request->name;
             $user->email = $request->email;
@@ -21,7 +22,7 @@ class SettingController extends Controller
             $user->phone = $request->phone;
             $user->save();
             if ($user) {
-                return response()->json(['status' => true, 'message' => "Setting has been updated succesfully"], 200);
+                return response()->json(['status' => true, 'message' => "Setting has been updated succesfully",'data' => $user], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "There has been error for updating the setting"], 400);
             }

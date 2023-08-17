@@ -79,8 +79,7 @@ class UserController extends Controller
                     'message' => 'Validation error',
                     'errors' => $validator->errors(),
                 ], 200);
-            } else {
-                // Store the user in the database
+            }
                 $user = new User();
                 $user->name = $request->name;
                 $user->email = $request->email;
@@ -88,7 +87,6 @@ class UserController extends Controller
                 $user->password = Hash::make($request->password);
                 $user->view_password = $request->password;
                 $data = $user->save();
-
 
                 if ($request->role == 'chef') {
                     $detail = new ChefDetail();
@@ -99,14 +97,9 @@ class UserController extends Controller
                     // $data->user_id = $user->id;
                     // $data->save();
                 }
-
-
                 $token = Auth::login($user);
 
                 $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin', 'created_by')->where('id', $user->id)->first();
-
-                // unset($user->password);
-                // unset($user->view_password);
 
                 $email_token = Str::random(64);
 
@@ -115,7 +108,7 @@ class UserController extends Controller
                     'token' => $email_token
                 ]);
 
-                $admin = User::select('id')->where('role', 'admin')->get();
+                $admin = User::select('id','email')->where('role', 'admin')->get();
 
                 $notify_by = $user->id;
                 $notify_to =  $admin;
@@ -125,33 +118,38 @@ class UserController extends Controller
 
                 createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
-                // Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
-                //     $message->to($request->email);
-                //     $message->subject('Email Verification Mail');
-                // });
+                Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
+                    $message->to($request->email);
+                    $message->bcc(['recipient1@example.com', 'recipient2@example.com']);
+                    $message->subject('Email Verification Mail');
+                });
+
+                $admindata = User::select('email')->where('role', 'admin')->first();
 
                 $data = [
                     'name'   => $request->name,
+                    'admin_email' =>  $admindata->email,
                 ];
 
-                // if ($request->role == 'user') {
-                //     Mail::send('emails.registerEmailforuser', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
-                //         $message->to($request->email);
-                //         $message->subject('User Registration Confirmation');
-                //     });
-                // }
-                // if ($request->role == 'chef') {
-                //     Mail::send('emails.registerEmailforchef', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
-                //         $message->to($request->email);
-                //         $message->subject('Chef Registration Confirmation');
-                //     });
-                // }
+                if ($request->role == 'user') {
+                    Mail::send('emails.registerEmailforuser', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request,$data) {
+                        $message->to($request->email);
+                        $message->bcc($data['admin_email']);
+                        $message->subject('User Registration Confirmation');
+                    });
+                }
+                if ($request->role == 'chef') {
+                    Mail::send('emails.registerEmailforchef', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request,$data) {
+                        $message->to($request->email);
+                        $message->bcc($data['admin_email']);
+                        $message->subject('Chef Registration Confirmation');
+                    });
+                }
                 $payload = Auth::getPayload($token);
                 $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
 
                 return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $auth_user, 'token' => $token, 'expiration' => $expirationTime]], 200);
-            }
-        } catch (\Exception $e) {
+        } catch(\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
     }
@@ -662,19 +660,31 @@ class UserController extends Controller
                 $user->created_by = $request->created_by;
                 $user->role = 'user';
                 $savedata = $user->save();
+                
+                $admindata = User::select('email')->where('role', 'admin')->first();
 
                 $data = [
                     'name'   => $user->name,
                     'password' => $password,
                     'email'   => $user->email,
+                    'admin_email' =>  $admindata->email,
                 ];
 
-                Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
-                    $message->from('dev3.bdpl@gmail.com', "Private Chefs");
-                    $message->subject('Your Account Password for Private Chefs');
-                    $message->to($data['email']);
-                });
-
+               if ($request->created_by != '1') {
+                    Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
+                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->bcc($data['admin_email']);
+                        $message->subject(' Your Account Password for Private Chef');
+                        $message->to($data['email']);
+                    });
+                } else {
+                    Mail::send('emails.invitationChefMail', ["data" => $data], function ($message) use ($data) {
+                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                         $message->bcc($data['admin_email']);
+                        $message->subject('Invitation to Join Private Chefs World Team!');
+                        $message->to($data['email']);
+                    });
+                }
                 return response()->json(['status' => true, 'message' => "User created successfully", 'data' => $user], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
