@@ -144,6 +144,12 @@ class BookingController extends Controller
                     createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
                 }
 
+                Mail::send('emails.bookingConfirmation', ['booking' => $booking], function ($message) use ($booking) {
+                    $message->from('dev3.bdpl@gmail.com', "Private Chefs");
+                    $message->subject('Booking Confirmation');
+                    $message->to($booking->email);
+                });
+
                 return response()->json(['status' => true, 'message' => "booking done successfully", 'bookingid' => $booking->id], 200);
             } else {
 
@@ -194,21 +200,35 @@ class BookingController extends Controller
                             $earthRadius = 3959;
                             $radius = 60;
 
+                            //                     $chefs = DB::table('users')
+                            //                         ->join('chef_location', 'users.id', '=', 'chef_location.user_id')
+                            //                         ->select('users.email', 'users.name', 'chef_location.user_id', 'chef_location.lat', 'chef_location.lng', 'chef_location.address')
+                            //                         ->selectRaw(
+                            //                             "($earthRadius * ACOS(
+                            //     COS(RADIANS($request->lat)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS($request->lng)) +
+                            //     SIN(RADIANS($request->lat)) * SIN(RADIANS(chef_location.lat))
+                            // )) AS distance"
+                            //                         )
+                            //                         ->where('chef_location.status', 'active')
+                            //                         ->having('distance', '<=', $radius)
+                            //                         ->orderBy('distance')
+                            //                         ->get();
                             $chefs = DB::table('users')
                                 ->join('chef_location', 'users.id', '=', 'chef_location.user_id')
-                                ->select('users.email', 'users.name', 'chef_location.user_id', 'chef_location.lat', 'chef_location.lng', 'chef_location.address')
+                                ->select('users.email', 'users.name', 'chef_location.lat', 'chef_location.user_id', 'chef_location.lng', 'chef_location.address')
                                 ->selectRaw(
                                     "($earthRadius * ACOS(
-            COS(RADIANS($request->lat)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS($request->lng)) +
-            SIN(RADIANS($request->lat)) * SIN(RADIANS(chef_location.lat))
-        )) AS distance"
+        COS(RADIANS(?)) * COS(RADIANS(chef_location.lat)) * COS(RADIANS(chef_location.lng) - RADIANS(?)) +
+        SIN(RADIANS(?)) * SIN(RADIANS(chef_location.lat))
+    )) AS distance",
+                                    [$request->lat, $request->lng, $request->lat]
                                 )
                                 ->where('chef_location.status', 'active')
                                 ->having('distance', '<=', $radius)
                                 ->orderBy('distance')
                                 ->get();
 
-                                $admindata = User::select('email')->where('role', 'admin')->first();
+                            $admindata = User::select('email')->where('role', 'admin')->first();
 
                             //return $chefs;
                             if ($chefs) {
@@ -451,7 +471,20 @@ class BookingController extends Controller
                     $join->on('bookings.id', '=', 'applied_jobs.booking_id')
                         ->where('applied_jobs.chef_id', '=', $id);
                 })
-                ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'chef_id')
+                ->select(
+                    'bookings.name',
+                    'users.id',
+                    'bookings.surname',
+                    'users.pic',
+                    'bookings.location',
+                    'bookings.booking_status',
+                    'booking_meals.category',
+                    DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'),
+                    DB::raw('MAX(booking_meals.created_at) AS latest_created_at'),
+                    'bookings.id as booking_id',
+                    'applied_jobs.status as applied_jobs_status',
+                    'chef_id'
+                )
                 ->groupBy('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id', 'applied_jobs.status')
                 ->where('bookings.status', '=', 'active')
                 ->whereNotExists(function ($query) {
@@ -462,6 +495,30 @@ class BookingController extends Controller
                 })
                 ->orderBy('bookings.id', 'DESC')
                 ->get();
+
+            foreach ($chefuserbookings as $booking) {
+                $dates = explode(',', $booking->dates);
+                // $bookingStatus = 'Expired';
+                foreach ($dates as $date) {
+                    $dateObject = new \DateTime($date);
+                    $today = new \DateTime();
+
+                    $dateObject->setTime(0, 0, 0);
+                    $today->setTime(0, 0, 0);
+
+                    if ($dateObject >= $today) {
+                        if ($dateObject->format('Y-m-d') === $today->format('Y-m-d')) {
+                            $bookingStatus = 'Today';
+                        } else {
+                            $bookingStatus = 'Upcoming';
+                        }
+                        break;
+                    } else {
+                        $bookingStatus = 'Expired';
+                    }
+                }
+                $booking->booking_status = $bookingStatus;
+            }
 
 
             if (!$chefuserbookings) {
@@ -535,15 +592,12 @@ class BookingController extends Controller
         if ($appliedJobs) {
 
             $admin = User::select('id')->where('role', 'admin')->get();
-
             $concierge = User::select('id', 'created_by', 'name')->where('id', $request->chef_id)->first();
-
             if ($concierge->created_by) {
                 $notify_by1 = $concierge->id;
                 $notify_to1 =  $concierge->created_by;
                 $description1 = $concierge->name . ' has successfully applied on booking id ' . '#' . $request->booking_id;
                 $type1 = 'booking';
-
                 createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
             }
 
@@ -569,8 +623,7 @@ class BookingController extends Controller
                 'chef_phone' =>  $chef->phone,
                 'admin_email' =>  $admindata->email,
             ];
-
-            Mail::send('emails.emailVerificationEmail', ['data' => $data], function ($message) use ($data) {
+            Mail::send('emails.emailappliedbychef', ['data' => $data], function ($message) use ($data) {
                 $message->from('dev3.bdpl@gmail.com', "Chef Application for Booking");
                 $message->to($data['email']);
                 $message->bcc($data['admin_email']);
@@ -755,9 +808,7 @@ class BookingController extends Controller
 
     public function get_admin_chef_by_booking(Request $request)
     {
-
         try {
-
             $adminchefuserbookings = DB::table('users as u')
                 ->join('bookings as b', 'u.id', '=', 'b.user_id')
                 ->join('booking_meals as bm', 'b.id', '=', 'bm.booking_id')
@@ -800,11 +851,47 @@ class BookingController extends Controller
                 ->where('b.status', '!=', 'deleted')
                 ->orderBy('b.id', 'DESC')
                 ->get();
-
             if (!$adminchefuserbookings) {
                 return response()->json(['message' => 'Booking not found', 'status' => true], 404);
             }
+            // foreach ($adminchefuserbookings as $booking) {
+            //     $dates = explode(',', $booking->dates);
+            //     $bookingStatus = 'Expired';
+            //     foreach ($dates as $date) {
+            //         $dateObject = new \DateTime($date);
+            //         $today = new \DateTime();
+            //         $dateObject->setTime(0, 0, 0);
+            //         $today->setTime(0, 0, 0);
+            //         if ($dateObject >= $today) {
+            //             $bookingStatus = 'Upcoming';
+            //             break;
+            //         }
+            //     }
+            //     $booking->booking_status = $bookingStatus;
+            // }
+            foreach ($adminchefuserbookings as $booking) {
+                $dates = explode(',', $booking->dates);
+                // $bookingStatus = 'Expired';
+                foreach ($dates as $date) {
+                    $dateObject = new \DateTime($date);
+                    $today = new \DateTime();
 
+                    $dateObject->setTime(0, 0, 0);
+                    $today->setTime(0, 0, 0);
+
+                    if ($dateObject >= $today) {
+                        if ($dateObject->format('Y-m-d') === $today->format('Y-m-d')) {
+                            $bookingStatus = 'Today';
+                        } else {
+                            $bookingStatus = 'Upcoming';
+                        }
+                        break;
+                    } else {
+                        $bookingStatus = 'Expired';
+                    }
+                }
+                $booking->booking_status = $bookingStatus;
+            }
             return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $adminchefuserbookings]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
@@ -1178,6 +1265,8 @@ class BookingController extends Controller
                 ->orderby('bookings.id', 'desc')
                 ->groupBy('bookings.id')
                 ->get();
+
+            //return $completedBooking;
 
             $startDate = Carbon::now()->subDays(7)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
@@ -1674,10 +1763,23 @@ class BookingController extends Controller
     {
         try {
             $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
-                // ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                 ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
+                ->whereNull('applied_jobs.booking_id')
                 ->count();
+
+            // $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
+            //     ->leftJoin('applied_jobs', function ($join) {
+            //         $join->on('bookings.id', '=', 'applied_jobs.booking_id')
+            //             ->where('applied_jobs.status', '=', 'hired');
+            //     })
+            //     ->where('users.status', '!=', 'deleted')
+            //     ->where('bookings.status', '!=', 'deleted')
+            //     ->whereNull('applied_jobs.booking_id')
+            //     ->count();
+
+
             $allBookings = DB::table('users')
                 ->join('bookings', 'users.id', '=', 'bookings.user_id')
                 ->leftJoin('applied_jobs', function ($join) {
@@ -1694,6 +1796,7 @@ class BookingController extends Controller
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('applied_jobs.status', 'hired')
                 ->count();
+
             return response()->json([
                 'status' => true,
                 'message' => 'All chef fetched successfully.',
@@ -1881,7 +1984,7 @@ class BookingController extends Controller
                 ->groupBy('booking_meals.booking_id')
                 ->first();
 
-                $admindata = User::select('email')->where('role', 'admin')->first();
+            $admindata = User::select('email')->where('role', 'admin')->first();
 
             $data = [
                 'chef_name' =>  $chef->name,
@@ -1893,7 +1996,7 @@ class BookingController extends Controller
                 'booking_date' =>  $bookingDate->dates,
                 'admin_email' =>  $admindata->email,
             ];
-     
+
 
             Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
                 $message->from('dev3.bdpl@gmail.com', "You have been hired");
