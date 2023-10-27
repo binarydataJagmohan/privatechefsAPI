@@ -37,6 +37,10 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::post('/social-data-save', [App\Http\Controllers\Api\UserController::class, 'social_data_save']);
     Route::post('/select-role/{id}', [App\Http\Controllers\Api\UserController::class, 'select_role']);
     Route::get('/get-email-data/{email}', [App\Http\Controllers\Api\UserController::class, 'get_email_data']);
+
+    Route::get('/get-all-chef-by-location', [App\Http\Controllers\Api\UserController::class, 'get_chef_by_location']);
+
+
 });
 
 
@@ -111,6 +115,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/update-user-profile/{id}', [App\Http\Controllers\Api\UserController::class, 'update_user_profile']);
     Route::post('/update-users-image/{id}', [App\Http\Controllers\Api\UserController::class, 'update_users_image']);
 });
+Route::get('/get-single-chef-profile/{id}', [App\Http\Controllers\Api\UserController::class, 'get_single_chef_profile']);
 
 //notification
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -266,6 +271,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-concierge-chef-by-booking/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_concierge_chef_by_booking']);
     Route::get('/get-concierge-assigned-booking/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_concierge_assigned_booking']);
     Route::post('/create-chef', [App\Http\Controllers\Api\UserController::class, 'create_chef']);
+    Route::post('/admin-create-chef', [App\Http\Controllers\Api\UserController::class, 'admin_create_chef']);
+
+
+
     Route::post('/delete-chef/{id}', [App\Http\Controllers\Api\UserController::class, 'delete_chef']);
     Route::get('/get-all-concierge-chef/{id}', [App\Http\Controllers\Api\UserController::class, 'get_all_concierge_chef']);
     Route::get('/get-concierge-receipt/{id}', [App\Http\Controllers\Api\ReceiptController::class, 'get_concierge_receipt']);
