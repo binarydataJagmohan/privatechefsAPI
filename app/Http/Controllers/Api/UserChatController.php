@@ -129,6 +129,7 @@ class UserChatController extends Controller
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -501,6 +502,7 @@ class UserChatController extends Controller
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -766,6 +768,7 @@ class UserChatController extends Controller
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -1026,6 +1029,7 @@ class UserChatController extends Controller
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -1053,6 +1057,7 @@ class UserChatController extends Controller
 
                 $unquie = $first.$second;
                 $unquie_two = $second.$first;
+
 
                 $userChatMessages = Chat_message::select(
                     'message',
@@ -1123,8 +1128,8 @@ class UserChatController extends Controller
                 )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                ->where('chat_messages.unique_booking_id', $unquie)
-                ->orWhere('chat_messages.unique_booking_id', $unquie_two)
+                ->where('chat_messages.single_chat_id', $unquie)
+                ->orWhere('chat_messages.single_chat_id', $unquie_two)
                 ->get();
 
                 $chat_member = 0;
@@ -1301,6 +1306,7 @@ class UserChatController extends Controller
                 $query->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhereIn('chat_messages.group_id', function ($subquery) use ($userId) {
                         $subquery->select('group_id')
                             ->from('chat_group_members')
@@ -1656,6 +1662,8 @@ class UserChatController extends Controller
             ], 500);
         }
     }
+
+   
 
 
 }

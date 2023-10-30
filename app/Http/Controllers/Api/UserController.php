@@ -9,22 +9,15 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Models\User;
-use App\Models\Notification;
 use App\Models\ChefDetail;
 use App\Models\ChefLocation;
-use App\Models\CoFounder;
-use App\Models\About;
-use App\Models\Contact;
 use Mail;
-use App\Models\VerificationCode;
 use Carbon\Carbon;
 use App\Models\UserVerify;
 use Illuminate\Support\Str;
 use App\Models\PasswordReset;
-use Helpers;
 use Laravel\Socialite\Facades\Socialite;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Http;
+
 
 
 class UserController extends Controller
@@ -80,76 +73,76 @@ class UserController extends Controller
                     'errors' => $validator->errors(),
                 ], 200);
             }
-                $user = new User();
-                $user->name = $request->name;
-                $user->email = $request->email;
-                $user->role = $request->role;
-                $user->password = Hash::make($request->password);
-                $user->view_password = $request->password;
-                $data = $user->save();
+            $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->role = $request->role;
+            $user->password = Hash::make($request->password);
+            $user->view_password = $request->password;
+            $data = $user->save();
 
-                if ($request->role == 'chef') {
-                    $detail = new ChefDetail();
-                    $detail->user_id = $user->id;
-                    $detail->save();
+            if ($request->role == 'chef') {
+                $detail = new ChefDetail();
+                $detail->user_id = $user->id;
+                $detail->save();
 
-                    // $data = new ChefLocation();
-                    // $data->user_id = $user->id;
-                    // $data->save();
-                }
-                $token = Auth::login($user);
+                // $data = new ChefLocation();
+                // $data->user_id = $user->id;
+                // $data->save();
+            }
+            $token = Auth::login($user);
 
-                $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin', 'created_by')->where('id', $user->id)->first();
+            $auth_user = User::select('name', 'email', 'role', 'id', 'surname', 'pic', 'phone', 'approved_by_admin', 'created_by')->where('id', $user->id)->first();
 
-                $email_token = Str::random(64);
+            $email_token = Str::random(64);
 
-                UserVerify::create([
-                    'user_id' => $user->id,
-                    'token' => $email_token
-                ]);
+            UserVerify::create([
+                'user_id' => $user->id,
+                'token' => $email_token
+            ]);
 
-                $admin = User::select('id','email')->where('role', 'admin')->get();
+            $admin = User::select('id', 'email')->where('role', 'admin')->get();
 
-                $notify_by = $user->id;
-                $notify_to =  $admin;
-                $description = 'Thank you for registering. We hope you enjoy using our website.';
-                $description1 = $user->name . ' registered on our website. Please review their account.';
-                $type = 'Register';
+            $notify_by = $user->id;
+            $notify_to =  $admin;
+            $description = 'Thank you for registering. We hope you enjoy using our website.';
+            $description1 = $user->name . ' registered on our website. Please review their account.';
+            $type = 'Register';
 
-                createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
-                Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
+            Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
+                $message->to($request->email);
+                $message->bcc(['recipient1@example.com', 'recipient2@example.com']);
+                $message->subject('Email Verification Mail');
+            });
+
+            $admindata = User::select('email')->where('role', 'admin')->first();
+
+            $data = [
+                'name'   => $request->name,
+                'admin_email' =>  $admindata->email,
+            ];
+
+            if ($request->role == 'user') {
+                Mail::send('emails.registerEmailforuser', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
-                    $message->bcc(['recipient1@example.com', 'recipient2@example.com']);
-                    $message->subject('Email Verification Mail');
+                    $message->bcc($data['admin_email']);
+                    $message->subject('User Registration Confirmation');
                 });
+            }
+            if ($request->role == 'chef') {
+                Mail::send('emails.registerEmailforchef', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
+                    $message->to($request->email);
+                    $message->bcc($data['admin_email']);
+                    $message->subject('Chef Registration Confirmation');
+                });
+            }
+            $payload = Auth::getPayload($token);
+            $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
 
-                $admindata = User::select('email')->where('role', 'admin')->first();
-
-                $data = [
-                    'name'   => $request->name,
-                    'admin_email' =>  $admindata->email,
-                ];
-
-                if ($request->role == 'user') {
-                    Mail::send('emails.registerEmailforuser', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request,$data) {
-                        $message->to($request->email);
-                        $message->bcc($data['admin_email']);
-                        $message->subject('User Registration Confirmation');
-                    });
-                }
-                if ($request->role == 'chef') {
-                    Mail::send('emails.registerEmailforchef', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request,$data) {
-                        $message->to($request->email);
-                        $message->bcc($data['admin_email']);
-                        $message->subject('Chef Registration Confirmation');
-                    });
-                }
-                $payload = Auth::getPayload($token);
-                $expirationTime = Carbon::createFromTimestamp($payload->get('exp'))->toDateTimeString();
-
-                return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $auth_user, 'token' => $token, 'expiration' => $expirationTime]], 200);
-        } catch(\Exception $e) {
+            return response()->json(['status' => true, 'message' => 'Registration has been done successfully please verfiy your email', 'data' => ['user' => $auth_user, 'token' => $token, 'expiration' => $expirationTime]], 200);
+        } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
     }
@@ -301,7 +294,7 @@ class UserController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('public/images/chef/users', $imageName);
+                $imagePath->move('/images/chef/users', $imageName);
                 $user->pic = $imageName;
             }
 
@@ -469,6 +462,32 @@ class UserController extends Controller
             return response()->json(['success' => false, 'msg' => $e->getMessage()]);
         }
     }
+
+
+    public function get_single_chef_profile(Request $request)
+    {
+        try {
+            // $chef = User::where('id', $request->id)->first();
+            // $chef = ChefDetail::select('chef_details.*','users.name as chefname')
+            // ->join('users', 'users.id', '=', 'chef_details.user_id')
+            // ->where('users.id', $request->id)
+            // ->first();
+            $chef = User::select('users.name as chefname', 'users.pic as chefpic', 'chef_details.about as chef_about', 'chef_details.service_title_1 as service_title_one', 'chef_details.service_title_1 as service_title_one', 'chef_details.service_title_1 as service_title_one', 'chef_details.service_title_2 as service_title_two', 'chef_details.service_title_3 as service_title_three', 'chef_details.service_title_4 as service_title_four', 'chef_details.service_description_1 as service_description_one', 'chef_details.service_description_2 as service_description_two', 'chef_details.service_description_3 as service_description_three', 'chef_details.service_description_4 as service_description_four', 'chef_details.love_cooking as lovecooking', 'chef_details.experience as chefexperience', 'chef_details.skills as chefskills', 'chef_details.favorite_dishes as cheffavorite_dishes')
+                ->leftJoin('chef_details', 'users.id', '=', 'chef_details.user_id')
+                ->where('users.id', $request->id)
+                ->first();
+
+            if ($chef) {
+                return response()->json(['status' => true, 'message' => "Single chef profile data fetched successfully", 'data' => $chef], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the single profile", 'data' => ""], 200);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'msg' => $e->getMessage()]);
+        }
+    }
+
+
     public function get_all_users()
     {
         try {
@@ -660,7 +679,7 @@ class UserController extends Controller
                 $user->created_by = $request->created_by;
                 $user->role = 'user';
                 $savedata = $user->save();
-                
+
                 $admindata = User::select('email')->where('role', 'admin')->first();
 
                 $data = [
@@ -670,7 +689,7 @@ class UserController extends Controller
                     'admin_email' =>  $admindata->email,
                 ];
 
-               if ($request->created_by != '1') {
+                if ($request->created_by != '1') {
                     Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
                         $message->from('dev3.bdpl@gmail.com', "Private Chef");
                         $message->bcc($data['admin_email']);
@@ -680,7 +699,7 @@ class UserController extends Controller
                 } else {
                     Mail::send('emails.invitationChefMail', ["data" => $data], function ($message) use ($data) {
                         $message->from('dev3.bdpl@gmail.com', "Private Chef");
-                         $message->bcc($data['admin_email']);
+                        $message->bcc($data['admin_email']);
                         $message->subject('Invitation to Join Private Chefs World Team!');
                         $message->to($data['email']);
                     });
@@ -778,6 +797,72 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+
+
+
+    public function admin_create_chef(Request $request)
+    {
+        try {
+            $checkemail = User::where('email', $request->email)->count();
+
+            if ($checkemail <= 0) {
+                $user = new User();
+                $user->name = $request->name;
+                $user->surname = $request->surname;
+                $user->email = $request->email;
+                $user->phone = $request->phone;
+                $user->address = $request->address;
+                $user->passport_no = $request->passport_no;
+                $user->IBAN = $request->IBAN;
+                $user->BIC = $request->BIC;
+                $user->bank_name = $request->bank_name;
+                $user->holder_name = $request->holder_name;
+                $user->bank_address = $request->bank_address;
+                $user->approved_by_admin = 'yes';
+
+                $user->password = Hash::make($request->password);
+                $user->view_password = $request->password;
+
+                $user->created_by = $request->created_by;
+                $user->role = 'chef';
+                if ($request->hasFile('image')) {
+                    $randomNumber = mt_rand(1000000000, 9999999999);
+                    $imagePath = $request->file('image');
+                    $imageName = $randomNumber . $imagePath->getClientOriginalName();
+                    $imagePath->move('public/images/chef/users', $imageName);
+                    $user->pic = $imageName;
+                }
+
+                $savedata = $user->save();
+
+                $data = [
+                    'name'   => $user->name,
+                    'password' => $user->password,
+                    'email'   => $user->email,
+                    'surname' => $user->surname,
+                    'phone' => $user->phone,
+                    'address' => $user->address,
+                    'passport_no' => $user->passport_no,
+                    'IBAN' => $user->IBAN,
+                    'BIC' => $user->BIC,
+                    'bank_name' => $user->bank_name,
+                    'holder_name' => $user->holder_name,
+                    'bank_address' => $user->bank_address
+                ];
+                return response()->json(['status' => true, 'message' => "User created successfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+
+
+
+
     public function delete_chef(Request $request)
     {
         try {
@@ -860,6 +945,23 @@ class UserController extends Controller
             ]);
         } catch (Exception $e) {
             return 'Unable to get user details';
+        }
+    }
+
+
+
+    public function get_chef_by_location(Request $request)
+    {
+        try {
+            $user = ChefLocation::where('address', $request->address)->where('status', 'active')->get();
+
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
         }
     }
 }

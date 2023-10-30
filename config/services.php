@@ -41,12 +41,19 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => 'http://localhost:8000/api/authorized/google/callback',
-],
+    ],
 
-'linkedin' => [
-    'client_id' => env('LINKEDIN_CLIENT_ID'),
-    'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
-    'redirect' =>env('LINKEDIN_REDIRECT_URI'),
-],
+    'linkedin' => [
+        'client_id' => env('LINKEDIN_CLIENT_ID'),
+        'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+        'redirect' => env('LINKEDIN_REDIRECT_URI'),
+    ],
+    'sign-in-with-apple' => [
+        'client_id' => '1484693818649409',
+        'client_secret' => '98cfcf8910ebf76f124f05fda3d492cd',
+        // 'redirect' => 'https://dealmih.com/appleid/callback',
+        'redirect' => 'http://localhost:8000/api/appleid/callback',
+    ],
+
 
 ];

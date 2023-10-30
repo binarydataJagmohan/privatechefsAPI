@@ -101,7 +101,7 @@ class ChefDetailController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('public/images/chef/users', $imageName);
+                $imagePath->move('images/chef/users', $imageName);
                 $user->pic = $imageName;
             }
 
@@ -128,6 +128,17 @@ class ChefDetailController extends Controller
                 $resume->employment_status = $request->employment_status;
                 $resume->website = $request->website;
                 $resume->languages = $request->languages;
+
+                $resume->service_title_1 = $request->service_title_1;
+                $resume->service_description_1 = $request->service_description_1;
+                $resume->service_title_2 = $request->service_title_2;
+                $resume->service_description_2 = $request->service_description_2;
+                $resume->service_title_3 = $request->service_title_3;
+                $resume->service_description_3 = $request->service_description_3;
+                $resume->service_title_4 = $request->service_title_4;
+                $resume->service_description_4 = $request->service_description_4;
+
+
                 $resume->experience = $request->experience;
                 $resume->skills = $request->skills;
                 $resume->favorite_chef = $request->favorite_chef;
@@ -676,7 +687,7 @@ class ChefDetailController extends Controller
     public function get_all_location(Request $request)
     {
         try {
-            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'samos'];
+            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'samos','Chandigarh'];
             $users = User::select('id','address','location_pic')
             ->whereIn('address', $desiredLocations)
             ->where('role','chef')
@@ -707,6 +718,47 @@ class ChefDetailController extends Controller
             ], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+     public function getChefDetailByLocation(Request $request)
+    {
+        try {  
+              
+            $latitude = $request->lat;
+            $longitude = $request->lng;
+            $radius = 50; // Radius in kilometers
+
+            $chefs = DB::table('chef_location')
+                ->select('id', 'user_id', 'address', 'lat', 'lng')
+                ->where('location_status', 'visible')
+                ->where('status', 'active')
+                ->whereRaw(
+                    '(6371 * ACOS(COS(RADIANS(?)) * COS(RADIANS(lat)) * COS(RADIANS(? - lng)) + SIN(RADIANS(?)) * SIN(RADIANS(lat))) <= ?)',
+                    [$latitude, $longitude, $latitude, $radius]
+                )
+                ->get();
+
+            if ($chefs->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No chefs found within the specified 50km radius',
+                     'data' => []
+                ], 200);
+            }
+
+
+            return response()->json([
+                'status' => true,
+                'data' => $chefs
+            ], 200);
+            
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch user messages',
+            ], 500);
         }
     }
 }
