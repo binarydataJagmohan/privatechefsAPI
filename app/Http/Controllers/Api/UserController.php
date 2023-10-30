@@ -17,6 +17,8 @@ use App\Models\UserVerify;
 use Illuminate\Support\Str;
 use App\Models\PasswordReset;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\DB;
+
 
 
 
@@ -960,6 +962,62 @@ class UserController extends Controller
             } else {
                 return response()->json(['status' => false, 'message' => "There has been error for fetching the chef location", 'data' => ""], 400);
             }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function get_user_all_location(Request $request)
+    {
+        try {
+            $users = User::select('id', 'address', 'lat')->where('role', 'user')
+                ->whereNotNull('users.address')
+                ->where('status', 'active')
+                 ->groupBy('address')
+                ->get();
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function user_location_filter(Request $request)
+    {
+        try {
+            $selectedLocation = $request->input('locations');
+            $selectedLocationArray = explode(',', $selectedLocation);
+
+            $users = User::where('role', 'user')
+            ->where('status', 'active')
+            ->whereIn('address', $selectedLocationArray)
+            ->where('status', '!=', 'deleted')
+            ->select('id', 'address', 'lat', 'name', 'profile_status')
+            ->get();
+
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function get_chef_all_location_by_concierge(Request $request)
+    {
+        try {
+            $users = User::where('created_by', $request->id)->select('id', 'address', 'lat')->where('role', 'chef')
+                ->whereNotNull('users.address')
+                ->where('status', 'active')
+                 ->groupBy('address')
+                ->get();
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
