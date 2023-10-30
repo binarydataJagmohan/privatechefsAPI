@@ -970,7 +970,7 @@ class BookingController extends Controller
                 ->leftJoin('menus', function ($join) {
                     $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
                 })
-                ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'amount', 'client_amount', 'admin_amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
+                ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status','applied_jobs.chef_id as applied_chef_id', 'amount', 'client_amount', 'admin_amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'),'users_chef.name as applied_chef_name')
                 ->groupBy(
                     'bookings.name',
                     'users.id',
@@ -980,7 +980,11 @@ class BookingController extends Controller
                     'bookings.booking_status',
                     'booking_meals.category',
                     'bookings.id',
-                )->where('bookings.status', '=', 'active')->where('applied_jobs.status', 'hired')
+                    'applied_jobs.chef_id',
+                    'users_chef.name'
+                )
+                ->leftJoin('users as users_chef', 'users_chef.id', '=', 'applied_jobs.chef_id') // Join with users table to get chef's name
+                ->where('bookings.status', '=', 'active')->where('applied_jobs.status', 'hired')
                 ->orderBy('applied_jobs.id', 'DESC')
                 ->get();
 
@@ -1762,12 +1766,22 @@ class BookingController extends Controller
     public function get_bookings_count(Request $request)
     {
         try {
-            $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
-                 ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
-                ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status', '!=', 'deleted')
-                ->whereNull('applied_jobs.booking_id')
-                ->count();
+                $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
+                    ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                    ->where('users.status', '!=', 'deleted')
+                    ->where('bookings.status', '!=', 'deleted')
+                    ->whereNull('applied_jobs.booking_id')
+                    ->count();
+
+                    $admin_available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
+                    ->leftJoin('applied_jobs', function ($join) {
+                        $join->on('bookings.id', '=', 'applied_jobs.booking_id')
+                            ->where('applied_jobs.status', '=', 'hired');
+                    })
+                    ->where('users.status', '!=', 'deleted')
+                    ->where('bookings.status', '!=', 'deleted')
+                    ->whereNull('applied_jobs.booking_id')
+                    ->count();
 
             // $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
             //     ->leftJoin('applied_jobs', function ($join) {
@@ -1802,7 +1816,8 @@ class BookingController extends Controller
                 'message' => 'All chef fetched successfully.',
                 'available_booking' => $available_booking,
                 'allbooking'   => $allBookings,
-                'hired_booking'   => $hired_booking
+                'hired_booking'   => $hired_booking,
+                'admin_available_booking' => $admin_available_booking
             ]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
