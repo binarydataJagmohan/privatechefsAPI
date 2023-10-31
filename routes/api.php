@@ -358,4 +358,6 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::post('update-setting/{id}',[App\Http\Controllers\Api\SettingController::class,'update_setting']);
 
     Route::post('get-chef-details-by-location', [App\Http\Controllers\Api\ChefDetailController::class, 'getChefDetailByLocation']);
+
+    Route::post('send-message-to-user-by-admin', [App\Http\Controllers\Api\UserController::class, 'sendMessageToUserByAdmin']);
 });

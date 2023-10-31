@@ -1022,4 +1022,40 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+
+     public function sendMessageToUserByAdmin(Request $request)
+    {
+        try {
+            
+            foreach ($request->user_id as $id){
+
+                $user = User::select('email','name')->where('id', $id)->first();
+
+                $data = [
+                    'email'   => $user->email,
+                    'name' =>  $user->name,
+                    'message'=> $request->message,
+                ];
+
+                Mail::send('emails.SpecialMessageToUser', ["data" => $data], function ($message) use ($data) {
+                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->subject('The PrivateChefs team has a special message for you:');
+                        $message->to($data['email']);
+                });
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'The message has been sent successfully'
+            ], 200);
+
+            
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+
+
 }
