@@ -347,6 +347,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('get-user-all-location', [App\Http\Controllers\Api\UserController::class, 'get_user_all_location']);
     Route::get('user-location-filter', [App\Http\Controllers\Api\UserController::class, 'user_location_filter']);
 
+    Route::post('hired-assigned-booking-by-admin', [App\Http\Controllers\Api\BookingController::class, 'hired_assigned_booking_by_admin']);
+
 
 });
 
@@ -360,4 +362,7 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::post('get-chef-details-by-location', [App\Http\Controllers\Api\ChefDetailController::class, 'getChefDetailByLocation']);
 
     Route::post('send-message-to-user-by-admin', [App\Http\Controllers\Api\UserController::class, 'sendMessageToUserByAdmin']);
+
+    Route::post('/save-payment', [App\Http\Controllers\Api\BookingController::class, 'savePayment']);
+    
 });

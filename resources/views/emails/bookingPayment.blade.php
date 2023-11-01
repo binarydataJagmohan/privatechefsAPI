@@ -63,7 +63,7 @@
                                     <tr>
                                         <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            Subject: Culinary Experience Tailored Just for You!
+                                            Subject:  Booking Payment Confirmation - PrivateChefsWorld
                                         </td>
                                     </tr>
 
@@ -72,7 +72,7 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            Dear {{ $data['user_name'] }},
+                                            Dear admin,
                                         </td>
                                     </tr>
                                     <tr
@@ -80,48 +80,18 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                           Greetings from PrivateChefsWorld! 
+                                            A user name {{ $data['client_name'] }}, with email {{ $data['client_email'] }}, has successfully made a payment of {{ $data['amount'] }} for {{ $data['chef_name'] }}, who can be reached at {{ $data['chef_email'] }}
 
                                         </td>
                                     </tr>
+                                    
+                                   
                                     <tr
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                           We're thrilled to inform you that your personalized culinary journey is ready to unfold. Our team has meticulously curated a selection of talented chefs, each offering their unique expertise to cater to your culinary preferences.
-
-                                        </td>
-                                    </tr>
-                                    <tr
-                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                        <td class="content-block"
-                                            style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
-                                            valign="top">
-                                            Chef name is  {{ $data['chef_name'] }} and their prices  ${{ $data['client_amount'] }}
-                                        </td>
-                                    </tr>
-                                    <tr
-                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                        <td class="content-block"
-                                            style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
-                                            valign="top">
-                                            We understand the importance of pricing transparency. The cost for your chosen experience is {{ $data['client_amount'] }}. This includes the chef's service, ingredients, and the unforgettable dining experience.
-                                        </td>
-                                    </tr>
-                                    <tr
-                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                        <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0;">
-                                            <a href="{{ env('FRONT_END_URL') }}/user/payment?booking_id={{ $data['booking_id'] }}&amount={{ $data['client_amount'] }}&chef_id={{ $data['chef_id'] }}&client_id={{ $data['client_id'] }}"
-                                            style="display: inline-block; background-color: #007bff; color: #fff; text-align: center; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">Confirm Booking</a>
-                                        </td>
-                                    </tr>
-                                    <tr
-                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                        <td class="content-block"
-                                            style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
-                                            valign="top">
-                                            If this culinary journey aligns with your expectations and preferences, kindly click the button below to confirm your booking and proceed with the next steps:
+                                            Thank you for your understanding and cooperation.
                                         </td>
                                     </tr>
                                     <tr

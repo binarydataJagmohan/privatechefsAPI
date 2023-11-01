@@ -693,14 +693,14 @@ class UserController extends Controller
 
                 if ($request->created_by != '1') {
                     Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
-                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->from(config('mail.from.address'), "Private Chefs");
                         $message->bcc($data['admin_email']);
                         $message->subject(' Your Account Password for Private Chef');
                         $message->to($data['email']);
                     });
                 } else {
                     Mail::send('emails.invitationChefMail', ["data" => $data], function ($message) use ($data) {
-                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->from(config('mail.from.address'), "Private Chefs");
                         $message->bcc($data['admin_email']);
                         $message->subject('Invitation to Join Private Chefs World Team!');
                         $message->to($data['email']);
@@ -779,13 +779,13 @@ class UserController extends Controller
                 ];
                 if ($request->created_by != '1') {
                     Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
-                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject(' Your Account Password for Private Chef');
                         $message->to($data['email']);
                     });
                 } else {
                     Mail::send('emails.invitationChefMail', ["data" => $data], function ($message) use ($data) {
-                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject('Invitation to Join Private Chefs World Team!');
                         $message->to($data['email']);
                     });
@@ -1039,7 +1039,7 @@ class UserController extends Controller
                 ];
 
                 Mail::send('emails.SpecialMessageToUser', ["data" => $data], function ($message) use ($data) {
-                        $message->from('dev3.bdpl@gmail.com', "Private Chef");
+                        $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject('The PrivateChefs team has a special message for you:');
                         $message->to($data['email']);
                 });

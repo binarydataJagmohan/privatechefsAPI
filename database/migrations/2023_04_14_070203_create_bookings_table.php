@@ -29,6 +29,11 @@ return new class extends Migration
             $table->integer('childrens')->nullable();
             $table->integer('teens')->nullable();
             $table->text('chef_offer')->nullable();
+            $table->string('charge_id', 100)->nullable();
+            $table->string('charge_amount')->nullable();
+            $table->text('charge_receipt_url')->nullable();
+            $table->string('charge_created_date')->nullable();
+            $table->enum('payment_status', ['completed', 'pending', 'canceled'])->default('pending');
             $table->unsignedBigInteger('assigned_to_user_id')->nullable();
             $table->enum('booking_status', ['completed', 'upcoming', 'canceled'])->default('upcoming');
             $table->enum('status', ['active', 'deactive','deleted'])->default('active');
