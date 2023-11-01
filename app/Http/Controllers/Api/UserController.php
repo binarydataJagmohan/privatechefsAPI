@@ -992,7 +992,8 @@ class UserController extends Controller
 
             $users = User::where('role', 'user')
             ->where('status', 'active')
-            ->whereIn('address', $selectedLocationArray)
+            // ->whereIn('address', $selectedLocationArray)
+            ->whereIn('users.lat', $selectedLocationArray)
             ->where('status', '!=', 'deleted')
             ->select('id', 'address', 'lat', 'name', 'profile_status')
             ->get();
@@ -1005,7 +1006,6 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-
     public function get_chef_all_location_by_concierge(Request $request)
     {
         try {
