@@ -1057,5 +1057,22 @@ class UserController extends Controller
     }
 
 
+    public function test(Request $request)
+    {
+        try {
+            $users = User::where('created_by', $request->id)->select('id', 'address', 'lat')->where('role', 'chef')
+                ->whereNotNull('users.address')
+                ->where('status', 'active')
+                 ->groupBy('address')
+                ->get();
+            return response()->json([
+                'status' => true,
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
 
 }
