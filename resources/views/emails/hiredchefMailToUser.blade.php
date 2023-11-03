@@ -54,9 +54,9 @@
                                     style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <tr>
                                         <td style="text-align: center">
-                                            <a href="#" style="display: block;margin-bottom: 10px;"> <img
-                                                    src="{{ url('public/images/logo.png') }}" height="50"
-                                                    alt="logo" /></a> <br />
+                                           <a href="#" style="display: block; margin-bottom: 10px;">
+                                              <img src="{{ config('app.url') }}/public/images/logo.png" height="50" alt="logo" />
+                                            </a>
                                         </td>
                                     </tr>
 
@@ -106,13 +106,13 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            We understand the importance of pricing transparency. The cost for your chosen experience is {{ $data['client_amount'] }}. This includes the chef's service, ingredients, and the unforgettable dining experience.
+                                            We understand the importance of pricing transparency. The cost for your chosen experience is ${{ $data['client_amount'] }}. This includes the chef's service, ingredients, and the unforgettable dining experience.
                                         </td>
                                     </tr>
                                     <tr
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                         <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0;">
-                                            <a href="{{ env('FRONT_END_URL') }}/user/payment?booking_id={{ $data['booking_id'] }}&amount={{ $data['client_amount'] }}&chef_id={{ $data['chef_id'] }}&client_id={{ $data['client_id'] }}"
+                                            <a href="{{ env('NEXT_URL') }}user/payment?booking_id={{ $data['booking_id'] }}&amount={{ $data['client_amount'] }}&chef_id={{ $data['chef_id'] }}&client_id={{ $data['client_id'] }}"
                                             style="display: inline-block; background-color: #007bff; color: #fff; text-align: center; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">Confirm Booking</a>
                                         </td>
                                     </tr>

@@ -218,6 +218,9 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::get('/get-all-bookings', [App\Http\Controllers\Api\BookingController::class, 'get_all_bookings']);
     Route::get('/get-chef-bookings/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_chef_bookings']);
+
+    Route::post('/assigned-booking-by-admin-without-db', [App\Http\Controllers\Api\BookingController::class, 'AssignedBookingByAdminWithoutDatabse']);
+
 });
 Route::post('/updateAllergyCusine/{id}', [App\Http\Controllers\Api\UserController::class, 'updateAllergyCusine']);
 
