@@ -55,33 +55,33 @@
                                             </a>
                                         </td>
                                 </tr>
-{{--
-                                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+
+                                {{-- <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Subject:
+                                        Subject: Welcome Aboard,{{ $user->name }}!
                                     </td>
                                 </tr> --}}
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Dear {{$data['name']}},
+                                        Dear {{ $user->name }},
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Congratulations and welcome to the enchanting world of Private Chefs Worldwide! 🍽️✨
+                                        Congratulations! We are thrilled to inform you that you have been selected to join the esteemed team of Private Chefs Worldwide! 🌍👨‍🍳
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        We're thrilled to inform you that your registration is complete, and you are now part of an exclusive community of culinary enthusiasts who share your passion for exceptional dining experiences.
+                                        Your culinary talents and passion for creating extraordinary dining experiences have set you apart, and we are excited to have you on board. Welcome to a global community of talented chefs who share your dedication to the art of gastronomy.
                                     </td>
                                 </tr>
 
@@ -89,47 +89,28 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Get ready to embark on a journey filled with mouthwatering dishes, talented chefs, and unforgettable moments. At Private Chefs Worldwide, we believe in the power of gastronomy to create extraordinary memories. Whether you're looking to savor gourmet breakfasts, relish delightful lunches, or indulge in magnificent dinners, we have an array of culinary wonders awaiting you.
+                                        At Private Chefs Worldwide, we believe in the power of exceptional cuisine to create unforgettable memories. Your skills, creativity, and expertise will now have the opportunity to shine, delighting clients from around the world. Whether you're a maestro of international cuisine or a specialist in a particular culinary style, your unique offerings will captivate discerning palates.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Your adventure starts now, and we can't wait to bring the world's finest chefs to your table. Get ready to explore diverse cuisines, flavors, and culinary traditions that will take your taste buds on a global tour.
+                                        We are committed to supporting your culinary journey, providing opportunities, and helping you thrive in the world of private dining. Stay tuned for exclusive client requests, exciting culinary experiences, and the chance to showcase your skills to a global audience.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Stay tuned for updates, special offers, and exclusive experiences that will make your culinary journey with Private Chefs Worldwide truly magical.
+                                        Thank you for choosing to be a part of our vibrant culinary community. Your culinary adventures begin now, and we can't wait to see the extraordinary dining experiences you'll create.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Thank you for choosing us to be a part of your culinary exploration. Your next extraordinary dining experience is just a click away!
-                                    </td>
-                                </tr>
-                                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                    <td class="content-block"
-                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
-                                        valign="top">
-                                        Click on the following link to verify your email address and activate your account:
-                                    </td>
-                                </tr>
-                                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                    <td class="content-block" itemprop="handler" itemscope
-                                        itemtype="http://schema.org/HttpActionHandler"
-                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
-                                        valign="top">
-
-
-                                            <a href="{{ env('NEXT_URL') }}/?id={{ $user_id }}&hash={{ $token }}" class="btn-primary" itemprop="url"
-                                           style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #ff4e00; margin: 0; border-color: #ff4e00; border-style: solid; border-width: 8px 16px;">Verify Email</a>
-
+                                        Once again, welcome to Private Chefs Worldwide, and here's to a future filled with delectable moments!
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">

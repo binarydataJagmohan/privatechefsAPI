@@ -130,14 +130,21 @@ class UserController extends Controller
                 Mail::send('emails.registerEmailforuser', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
                     $message->bcc($data['admin_email']);
-                    $message->subject('User Registration Confirmation');
+                    $message->subject('Welcome to the Culinary Magic of Private Chefs Worldwide!');
                 });
             }
             if ($request->role == 'chef') {
                 Mail::send('emails.registerEmailforchef', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
                     $message->bcc($data['admin_email']);
-                    $message->subject('Chef Registration Confirmation');
+                    $message->subject('Registration Received - Welcome to Private Chefs Worldwide!');
+                });
+            }
+            if ($request->role == 'concierge') {
+                Mail::send('emails.registerEmailforconcierge', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
+                    $message->to($request->email);
+                    $message->bcc($data['admin_email']);
+                    $message->subject('Welcome to the Private Chefs Worldwide Partnership!');
                 });
             }
             $payload = Auth::getPayload($token);
@@ -1027,7 +1034,7 @@ class UserController extends Controller
      public function sendMessageToUserByAdmin(Request $request)
     {
         try {
-            
+
             foreach ($request->user_id as $id){
 
                 $user = User::select('email','name')->where('id', $id)->first();
@@ -1050,7 +1057,7 @@ class UserController extends Controller
                 'message' => 'The message has been sent successfully'
             ], 200);
 
-            
+
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }

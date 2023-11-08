@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Cuisine;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Support\Facades\Validator;
+use Mail;
 
 class ChefDetailController extends Controller
 {
@@ -241,7 +242,7 @@ class ChefDetailController extends Controller
         try {
             $selectedCuisines = $request->input('cuisines');
             $selectedCuisinesArray = explode(',', $selectedCuisines);
-            //return $selectedCuisines;  
+            //return $selectedCuisines;
 
             $users = User::join('applied_jobs', 'users.id', 'applied_jobs.chef_id')
                 ->whereIn('applied_jobs.status', ['applied', 'hired'])
@@ -474,6 +475,14 @@ class ChefDetailController extends Controller
                 $notification->save();
             }
 
+            if ($user->approved_by_admin == 'yes') {
+            Mail::send('emails.chefconfirmingapproval', ['user' => $user], function ($message) use ($user) {
+                $message->from(config('mail.from.address'), "Chef register confirming approval");
+                $message->to($user->email);
+                $message->subject("Welcome Aboard, " . $user->name);
+            });
+        }
+
             if ($user) {
                 return response()->json(['status' => true, 'message' => "Profile Approved successfully", 'data' => $user], 200);
             } else {
@@ -617,7 +626,7 @@ class ChefDetailController extends Controller
                     ->where('users.status', 'active')
                     ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                     ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                    ->where('applied_jobs.amount', '<', 250) 
+                    ->where('applied_jobs.amount', '<', 250)
                     ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status','applied_jobs.amount',DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
                     ->where('users.status', '!=', 'deleted')
                     ->groupBy('users.id', 'users.name', 'users.address')
@@ -678,8 +687,8 @@ class ChefDetailController extends Controller
                 'status' => true,
                 'data' => $users
             ], 200);
-    
-            
+
+
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -687,7 +696,7 @@ class ChefDetailController extends Controller
     public function get_all_location(Request $request)
     {
         try {
-            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'samos','Chandigarh'];
+            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos','Chandigarh'];
             $users = User::select('id','address','location_pic')
             ->whereIn('address', $desiredLocations)
             ->where('role','chef')
@@ -723,8 +732,8 @@ class ChefDetailController extends Controller
 
      public function getChefDetailByLocation(Request $request)
     {
-        try {  
-              
+        try {
+
             $latitude = $request->lat;
             $longitude = $request->lng;
             $radius = 50; // Radius in kilometers
@@ -752,7 +761,7 @@ class ChefDetailController extends Controller
                 'status' => true,
                 'data' => $chefs
             ], 200);
-            
+
 
         } catch (\Exception $e) {
             return response()->json([

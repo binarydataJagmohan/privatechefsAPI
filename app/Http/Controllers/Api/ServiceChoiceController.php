@@ -43,9 +43,7 @@ class ServiceChoiceController extends Controller
     public function saveService(Request $request)
     {
         $validator = Validator::make($request->all(), [
-        'name' => 'required|string|unique:service_choices,service_name',//|max:50|
-        // 'description' => 'required|string|',//max:500
-        //'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'name' => 'required|string|unique:service_choices,service_name',
     ]);
 
     if ($validator->fails()) {
