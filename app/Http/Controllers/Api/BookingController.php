@@ -867,6 +867,8 @@ class BookingController extends Controller
                     $message->subject('Culinary Experience Tailored Just for You! ');
                 });
 
+                return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
+
             }else {
 
                 Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
@@ -875,9 +877,11 @@ class BookingController extends Controller
                     $message->bcc($data['admin_email']);
                     $message->subject('You have Been Chosen to Create Culinary Magic! ');
                 });
+
+                return response()->json(['message' => 'Hired mail has been successfully sent to chef', 'status' => true]);
             }
 
-             return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
+             
 
         } else {
              return response()->json(['message' => 'There has been error', 'status' => false]);
@@ -1290,7 +1294,7 @@ class BookingController extends Controller
             $todayBookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.payment_status', 'completed')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->whereDate('booking_meals.date', $currentDate)
@@ -1301,7 +1305,7 @@ class BookingController extends Controller
             $totalChef = AppliedJobs::join('users', 'applied_jobs.chef_id', 'users.id')
                 ->join('bookings', 'applied_jobs.booking_id', 'bookings.id')
                 ->join('booking_meals', 'applied_jobs.booking_id', 'booking_meals.booking_id')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.payment_status', 'completed')
                 ->where('users.role', 'chef')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
@@ -1314,11 +1318,11 @@ class BookingController extends Controller
                 ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
-                ->where('bookings.booking_status', '=', 'completed')
+                ->where('bookings.payment_status', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 // ->groupBy('bookings.id') // Add this line to group the results by bookings
-                ->sum('aj1.amount');
+                ->sum('aj1.client_amount');
 
             // $totalamount = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
             //     ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
@@ -1349,7 +1353,7 @@ class BookingController extends Controller
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('bookings.booking_status', 'upcoming')
-                ->whereIn('applied_jobs.status', ['applied', 'hired'])
+                ->whereIn('applied_jobs.status', ['hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 ->orderby('bookings.id', 'desc')
                 ->groupBy('bookings.id')
@@ -1449,7 +1453,7 @@ class BookingController extends Controller
             $todayBookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.payment_status', 'completed')
                 ->where('aj1.chef_id', $request->id)
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
@@ -1471,7 +1475,7 @@ class BookingController extends Controller
             $totalamount = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.payment_status', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->where('aj1.chef_id', $request->id)
                 ->whereDate('booking_meals.date', $currentDate)
@@ -1501,7 +1505,7 @@ class BookingController extends Controller
                 ->where('bookings.booking_status', 'upcoming')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
-                ->whereIn('applied_jobs.status', ['applied', 'hired'])
+                ->whereIn('applied_jobs.status', ['hired'])
                 ->whereDate('booking_meals.date', $currentDate)
                 ->where('applied_jobs.chef_id', $request->id)
                 ->orderby('applied_jobs.id', 'desc')
@@ -1698,7 +1702,7 @@ class BookingController extends Controller
             $todayBookings = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.payment_status', 'completed')
                 ->where('users.created_by', $request->id)
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
@@ -1708,7 +1712,7 @@ class BookingController extends Controller
             $totalChef = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.payment_status', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 // ->distinct('users.id')
                 ->where('users.created_by', $request->id)
@@ -1720,7 +1724,7 @@ class BookingController extends Controller
             $totalamount = User::join('applied_jobs AS aj1', 'users.id', '=', 'aj1.chef_id')
                 ->join('bookings', 'bookings.id', '=', 'aj1.booking_id')
                 ->join('booking_meals', 'aj1.booking_id', 'booking_meals.booking_id')
-                ->where('bookings.booking_status', 'completed')
+                ->where('bookings.payment_status', 'completed')
                 ->whereIn('aj1.status', ['applied', 'hired'])
                 ->where('users.created_by', $request->id)
                 ->whereDate('booking_meals.date', $currentDate)
@@ -2111,6 +2115,8 @@ class BookingController extends Controller
                     $message->subject('Culinary Experience Tailored Just for You! ');
                 });
 
+                return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
+
             }else {
 
                 Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
@@ -2119,10 +2125,11 @@ class BookingController extends Controller
                     $message->bcc($data['admin_email']);
                     $message->subject('You have Been Chosen to Create Culinary Magic!');
                 });
+
+                return response()->json(['message' => 'Hired mail has been successfully sent to chef', 'status' => true]);
             }
 
 
-            return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
         } else {
             return response()->json(['status' => true, 'message' => 'There has been error in saving the booking',]);
         }

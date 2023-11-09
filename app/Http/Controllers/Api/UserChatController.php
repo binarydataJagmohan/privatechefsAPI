@@ -9,6 +9,7 @@ use App\Models\Chat_group;
 use App\Models\Chat_group_member;
 use App\Models\Chat_message;
 use DB;
+use Mail;
 class UserChatController extends Controller
 {
     public function get_user_message_data(Request $request)
@@ -319,10 +320,33 @@ class UserChatController extends Controller
                 $messgae->chat_type =  $request->chat_type;
                 $messgae->save();
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'messgae has been sent successfully'
-                ]);
+                if ($messgae->save()) {
+
+                    $sender = User::select('name', 'email','role')->where('id', $request->user_id)->first();
+
+                    $receiver = User::select('name', 'email')->where('id', $receiver_id)->first();
+
+                    $data = [
+                        'sender_name' => $sender->name,
+                        'sender_role' => $sender->role,
+                        'recevier_name' =>  $receiver->name,
+                        'recevier_email' => $receiver->email,
+                        'message' =>  $request->message,
+                    
+                    ];
+
+                    Mail::send('emails.chat_messages', ['data' => $data], function ($message) use ($data) {
+                        $message->from(config('mail.from.address'), "Private Chefs");
+                        $message->to($data['recevier_email']);
+                        $message->subject('New incoming message alert ');
+                    });
+
+
+                    return response()->json(['status' => true, 'message' => 'Mesage has been sent successfully']);
+                } else {
+
+                    return response()->json(['status' => false, 'message' => 'There has been for sending the mesage']);
+                }
             }  
 
             if($request->chat_type == 'booking'){

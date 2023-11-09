@@ -299,7 +299,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/get-click-admin-chef-user-chat-data/', [App\Http\Controllers\Api\AdminChatController::class, 'get_click_admin_chef_user_chat_data']);
     Route::post('/contact-by-admin-to-user-and-chef-with-share-file/', [App\Http\Controllers\Api\AdminChatController::class, 'contact_by_admin_to_user_and_chef_with_share_file']);
     Route::get('get-all-user-data', [App\Http\Controllers\Api\AdminChatController::class, 'get_all_user_data']);
-    Route::post('/send-message-to-user-by-admin/', [App\Http\Controllers\Api\AdminChatController::class, 'send_message_to_user_by_admin']);
+    Route::post('/send-message-by-admin-to-user', [App\Http\Controllers\Api\AdminChatController::class, 'send_message_to_user_by_admin']);
     Route::post('/create-group-by-admin', [App\Http\Controllers\Api\AdminChatController::class, 'create_group_by_admin']);
     Route::post('/get-admin-message-data-by-filter/', [App\Http\Controllers\Api\AdminChatController::class, 'get_admin_message_data_by_filter']);
     Route::get('get-all-concierge-user-data/{id}', [App\Http\Controllers\Api\AdminChatController::class, 'get_all_concierge_user_data']);
