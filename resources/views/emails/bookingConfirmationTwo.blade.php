@@ -55,7 +55,7 @@
                                     <tr>
                                         <td style="text-align: center">
                                            <a href="#" style="display: block; margin-bottom: 10px;">
-                                              <img src="{{ config('app.url') }}/public/images/logo.png" height="50" alt="logo" />
+                                              <img src="{{ config('app.url') }}/public/images/logo.png" height="100" alt="logo" />
                                             </a>
                                         </td>
                                     </tr>
@@ -80,7 +80,7 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                           Thank you for choosing PrivateChefsWorld for your culinary experience! 🍽️
+                                           Thank you for choosing Private Chefs World for your culinary experience! 🍽️
 
                                         </td>
                                     </tr>

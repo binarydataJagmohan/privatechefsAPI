@@ -585,16 +585,20 @@ class UserController extends Controller
 
 
                 $user = Auth::user();
-                return response()->json([
-                    'status' => true,
-                    'message' => 'user Loggedin successfully',
-                    'user' => $user,
-                    'authorisation' => [
-                        'token' => $token,
-                        'type' => 'bearer',
-                        'expiration' => $expirationTime
-                    ]
-                ]);
+                // return response()->json([
+                //     'status' => true,
+                //     'message' => 'user Loggedin successfully',
+                //     'user' => $user,
+                //     'authorisation' => [
+                //         'token' => $token,
+                //         'type' => 'bearer',
+                //         'expiration' => $expirationTime
+                //     ]
+                // ]);
+
+
+                return response()->json(['status' => true, 'message' => 'User Loggedin successfully', 'data' => ['user' => $user, 'token' => $token, 'expiration' => $expirationTime]], 200);
+
             } else {
                 $data = $request->all();
                 $data['password'] = Hash::make($request->password);

@@ -216,11 +216,18 @@ class ChefDetailController extends Controller
             // ->select('users.id', 'users.name', 'users.address','cuisine.name')
             // ->groupBy('users.id', 'users.name', 'users.address')
             // ->get();
+
+            $searchTerm =  $request->name;
+
             $users = User::where('users.role', 'chef')
                 ->leftJoin('applied_jobs', 'users.id', 'applied_jobs.chef_id')
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                ->where(function ($query) use ($searchTerm) {
+                    $query->where('users.name', 'LIKE', "%$searchTerm%")
+                          ->orWhere('users.surname', 'LIKE', "%$searchTerm%");
+                })
                 ->select('users.id', 'users.name', 'users.profile_status', 'applied_jobs.amount', 'users.address', 'users.pic', 'users.approved_by_admin', 'users.email')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
