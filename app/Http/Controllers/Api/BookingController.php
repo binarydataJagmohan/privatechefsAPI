@@ -153,11 +153,11 @@ class BookingController extends Controller
 
                 if ($request->category == 'onetime') {
 
-
                     Mail::send('emails.bookingConfirmation', ['booking' => $booking], function ($message) use ($booking) {
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject('Booking Confirmation');
                         $message->to($booking->email);
+                        $message->bcc(User::select('email')->where('role', 'admin')->first()->email); // Add admin email as BCC
                     });
 
                 }else {
@@ -166,6 +166,7 @@ class BookingController extends Controller
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject("We've Received Your Booking Request!");
                         $message->to($booking->email);
+                        $message->bcc(User::select('email')->where('role', 'admin')->first()->email); // Add admin email as BCC
                     });
                 }
 
@@ -2352,12 +2353,12 @@ class BookingController extends Controller
             ];
 
             // Send an email to the chef
-            Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
-                $message->from(config('mail.from.address'), "You have been hired");
-                $message->to($data['email']);
-                $message->bcc($data['admin_email']);
-                $message->subject('You have Been Chosen to Create Culinary Magic!');
-            });
+            // Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
+            //     $message->from(config('mail.from.address'), "You have been hired");
+            //     $message->to($data['email']);
+            //     $message->bcc($data['admin_email']);
+            //     $message->subject('You have Been Chosen to Create Culinary Magic!');
+            // });
 
             // Send an email to the admin
             $dataAdmin = [

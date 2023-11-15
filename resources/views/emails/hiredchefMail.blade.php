@@ -111,6 +111,15 @@
                                             Your culinary journey begins now, and we can't wait to see the extraordinary dining experiences you'll create. Our team will be in touch shortly to provide you with all the details you need for your upcoming culinary adventure. We're here to support you every step of the way, ensuring that your culinary masterpiece exceeds expectations.
                                         </td>
                                     </tr>
+
+                                    <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                        <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+
+                                        <a href="{{ env('NEXT_URL') }}/chef/hired-booking" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">See Your Booking</a>
+
+                                        </td>
+                                    </tr>
+
                                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                         <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                                             Thank you for choosing to be a part of Private Chefs Worldwide. Your passion and talent are the ingredients that will make this dining experience unforgettable.

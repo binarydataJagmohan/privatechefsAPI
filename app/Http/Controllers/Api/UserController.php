@@ -108,14 +108,14 @@ class UserController extends Controller
             $notify_by = $user->id;
             $notify_to =  $admin;
             $description = 'Thank you for registering. We hope you enjoy using our website.';
-            $description1 = $user->name . ' registered on our website. Please review their account.';
+            $description1 = $user->name .'('.$user->role.')'.' registered on our website.'. $user->id.'.'.$user->role;
             $type = 'Register';
 
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
             Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
                 $message->to($request->email);
-                $message->bcc(['recipient1@example.com', 'recipient2@example.com']);
+                // $message->bcc(['recipient1@example.com', 'recipient2@example.com']);
                 $message->subject('Email Verification Mail');
             });
 
@@ -585,18 +585,7 @@ class UserController extends Controller
 
 
                 $user = Auth::user();
-                // return response()->json([
-                //     'status' => true,
-                //     'message' => 'user Loggedin successfully',
-                //     'user' => $user,
-                //     'authorisation' => [
-                //         'token' => $token,
-                //         'type' => 'bearer',
-                //         'expiration' => $expirationTime
-                //     ]
-                // ]);
-
-
+    
                 return response()->json(['status' => true, 'message' => 'User Loggedin successfully', 'data' => ['user' => $user, 'token' => $token, 'expiration' => $expirationTime]], 200);
 
             } else {

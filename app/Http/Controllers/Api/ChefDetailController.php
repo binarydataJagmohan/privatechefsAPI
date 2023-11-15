@@ -47,6 +47,8 @@ class ChefDetailController extends Controller
             $user->bank_name = $request->bank_name;
             $user->holder_name = $request->holder_name;
             $user->bank_address = $request->bank_address;
+            $user->vat_no = $request->vat_no;
+            $user->tax_id = $request->tax_id;
             $user->lat = $request->lat;
             $user->lng = $request->lng;
             $user->profile_status = 'completed';
@@ -126,18 +128,18 @@ class ChefDetailController extends Controller
                 $resume->about = $request->about;
                 $resume->description = $request->description;
                 $resume->services_type = $request->services_type;
-                $resume->employment_status = $request->employment_status;
-                $resume->website = $request->website;
+                // $resume->employment_status = $request->employment_status;
+                // $resume->website = $request->website;
                 $resume->languages = $request->languages;
 
-                $resume->service_title_1 = $request->service_title_1;
-                $resume->service_description_1 = $request->service_description_1;
-                $resume->service_title_2 = $request->service_title_2;
-                $resume->service_description_2 = $request->service_description_2;
-                $resume->service_title_3 = $request->service_title_3;
-                $resume->service_description_3 = $request->service_description_3;
-                $resume->service_title_4 = $request->service_title_4;
-                $resume->service_description_4 = $request->service_description_4;
+                // $resume->service_title_1 = $request->service_title_1;
+                // $resume->service_description_1 = $request->service_description_1;
+                // $resume->service_title_2 = $request->service_title_2;
+                // $resume->service_description_2 = $request->service_description_2;
+                // $resume->service_title_3 = $request->service_title_3;
+                // $resume->service_description_3 = $request->service_description_3;
+                // $resume->service_title_4 = $request->service_title_4;
+                // $resume->service_description_4 = $request->service_description_4;
 
 
                 $resume->experience = $request->experience;
@@ -145,11 +147,11 @@ class ChefDetailController extends Controller
                 $resume->favorite_chef = $request->favorite_chef;
                 $resume->favorite_dishes = $request->favorite_dishes;
                 $resume->love_cooking = $request->love_cooking;
-                $resume->facebook_link = $request->facebook_link;
-                $resume->instagram_link = $request->instagram_link;
-                $resume->twitter_link = $request->twitter_link;
-                $resume->linkedin_link = $request->linkedin_link;
-                $resume->youtube_link = $request->youtube_link;
+                // $resume->facebook_link = $request->facebook_link;
+                // $resume->instagram_link = $request->instagram_link;
+                // $resume->twitter_link = $request->twitter_link;
+                // $resume->linkedin_link = $request->linkedin_link;
+                // $resume->youtube_link = $request->youtube_link;
                 $savedata = $resume->save();
 
                 // $resume = User::find($request->id);
