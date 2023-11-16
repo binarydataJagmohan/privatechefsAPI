@@ -261,6 +261,11 @@ class UserController extends Controller
             $user->tax_id = $request->tax_id;
             $user->lat = $request->lat;
             $user->lng = $request->lng;
+            $user->user_address = $request->user_address;
+            $user->user_city = $request->user_city;
+            $user->user_country = $request->user_country;
+            $user->user_post_code = $request->user_post_code;
+
             $user->profile_status = 'completed';
 
             $admin = User::select('id')->where('role', 'admin')->get();
@@ -515,6 +520,24 @@ class UserController extends Controller
         }
     }
 
+    public function getAllConcierge()
+    {
+        try {
+            $concierge = User::orderBy('id', 'DESC')->where('role', 'concierge')->where('status', 'active')->get();
+            return response()->json([
+                'status' => true,
+                'message' => 'All concierge fetched successfully.',
+                'data' => $concierge
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
     // public function updateAllergyCusine(Request $request,$id)
     // {
     //     try {
@@ -536,23 +559,67 @@ class UserController extends Controller
     //     }
     // }
 
-    public function updateAllergyCusine(Request $request, $id)
+
+    public function getAllergyAdditonalInfo(Request $request,$user_id)
     {
         try {
-            $user = User::find($id);
 
-            $cuisineIds = is_array($request->selectedcuisine) ? $request->selectedcuisine : explode(',', $request->selectedcuisine);
-            $allergyIds = is_array($request->selectedallergies) ? $request->selectedallergies : explode(',', $request->selectedallergies);
-            // return $request->all();
-            $user->cuisine_id = implode(",", $cuisineIds);
-            $user->allergy_id = implode(",", $allergyIds);
+            $userdata = User::select('allergy_id','additional_notes')->where('id',$user_id)->first();
+            
+            if($userdata){
+
+              return response()->json([
+                'status' => true,
+                'data' => $userdata,
+                'message' => 'Additonal information data fetch successsfully',
+                ]);
+
+            }else {
+
+                 return response()->json([
+                    'status' => false,
+                    'message' => 'failed to fetch additional information',
+                ]);
+
+            }
+           
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+
+    public function updateAllergyAdditonalInfo(Request $request)
+    {
+        try {
+
+            $user = User::find($request->user_id);
+            $user->allergy_id =$request->allergy_id;
+            $user->additional_notes = $request->additional_notes;
             $user->save();
 
-            return response()->json([
+            if($user->save()){
+
+              return response()->json([
                 'status' => true,
-                'message' => 'Allergies Updated',
-                'data' => $user
-            ]);
+                'message' => 'Additonal information update successsfully',
+                ]);
+
+            }else {
+
+                 return response()->json([
+                    'status' => false,
+                    'message' => 'failed to save additional information',
+                ]);
+
+            }
+
+
+           
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
             return response()->json([

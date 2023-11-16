@@ -179,6 +179,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-cuision', [App\Http\Controllers\Api\ChefDetailController::class, 'get_cuision']);
     Route::get('/get-all-users', [App\Http\Controllers\Api\UserController::class, 'get_all_users']);
+    Route::get('/get-all-concierge', [App\Http\Controllers\Api\UserController::class, 'getAllConcierge']);
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -222,7 +223,10 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/assigned-booking-by-admin-without-db', [App\Http\Controllers\Api\BookingController::class, 'AssignedBookingByAdminWithoutDatabse']);
 
 });
-Route::post('/updateAllergyCusine/{id}', [App\Http\Controllers\Api\UserController::class, 'updateAllergyCusine']);
+Route::post('/update-allergy-additonal-info', [App\Http\Controllers\Api\UserController::class, 'updateAllergyAdditonalInfo']);
+
+Route::get('/get-allergy-additonal-info/{user_id}', [App\Http\Controllers\Api\UserController::class, 'getAllergyAdditonalInfo']);
+
 
 Route::group(['middleware' => ['api']], function ($router) {
     Route::post('/save-contact', [App\Http\Controllers\Api\ContactController::class, 'save_contact']);
@@ -367,5 +371,9 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::post('send-message-to-user-by-admin', [App\Http\Controllers\Api\UserController::class, 'sendMessageToUserByAdmin']);
 
     Route::post('/save-payment', [App\Http\Controllers\Api\BookingController::class, 'savePayment']);
+
+    Route::post('update-new-setting',[App\Http\Controllers\Api\SettingController::class,'UpdateNewSetting']);
+
+    Route::get('subscribe/{email}',[App\Http\Controllers\Api\SettingController::class,'Subscribe']);
     
 });
