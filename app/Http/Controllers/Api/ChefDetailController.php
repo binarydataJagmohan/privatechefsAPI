@@ -486,7 +486,7 @@ class ChefDetailController extends Controller
 
             if ($user->approved_by_admin == 'yes') {
             Mail::send('emails.chefconfirmingapproval', ['user' => $user], function ($message) use ($user) {
-                $message->from(config('mail.from.address'), "Chef register confirming approval");
+                $message->from(config('mail.from.address'), "Private Chefs");
                 $message->to($user->email);
                 $message->subject("Welcome Aboard, " . $user->name);
             });

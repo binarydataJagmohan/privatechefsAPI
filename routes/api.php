@@ -180,6 +180,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-cuision', [App\Http\Controllers\Api\ChefDetailController::class, 'get_cuision']);
     Route::get('/get-all-users', [App\Http\Controllers\Api\UserController::class, 'get_all_users']);
     Route::get('/get-all-concierge', [App\Http\Controllers\Api\UserController::class, 'getAllConcierge']);
+    Route::post('/approved-concierge-profile', [App\Http\Controllers\Api\UserController::class, 'approveConciergeProfile']);
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -375,5 +376,7 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::post('update-new-setting',[App\Http\Controllers\Api\SettingController::class,'UpdateNewSetting']);
 
     Route::get('subscribe/{email}',[App\Http\Controllers\Api\SettingController::class,'Subscribe']);
+
+    Route::get('/get-all-chef-by-location-onfronted', [App\Http\Controllers\Api\UserController::class, 'get_chef_by_location_onfronted']);
     
 });

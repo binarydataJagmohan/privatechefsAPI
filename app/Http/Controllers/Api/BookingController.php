@@ -327,7 +327,7 @@ class BookingController extends Controller
                             Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
                                 $message->from(config('mail.from.address'), "Private Chefs");
                                 $message->bcc($data['admin_email']);
-                                $message->subject(' Your Account Password for Private Chefs');
+                                $message->subject(' Your Account Login Details for Private Chefs');
                                 $message->to($data['email']);
                             });
                         }
@@ -644,10 +644,10 @@ class BookingController extends Controller
                 'admin_email' =>  $admindata->email,
             ];
             Mail::send('emails.emailappliedbychef', ['data' => $data], function ($message) use ($data) {
-                $message->from(config('mail.from.address'), "Email Verification Mail");
+                $message->from(config('mail.from.address'), "Private Chefs");
                 $message->to($data['email']);
                 $message->bcc($data['admin_email']);
-                $message->subject('Chef Application for Booking');
+                $message->subject('Email Verification Mail');
             });
         }
 
@@ -873,7 +873,7 @@ class BookingController extends Controller
             }else {
 
                 Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
-                    $message->from(config('mail.from.address'), "You have been hired");
+                    $message->from(config('mail.from.address'), "Private Chefs");
                     $message->to($data['email']);
                     $message->bcc($data['admin_email']);
                     $message->subject('You have Been Chosen to Create Culinary Magic! ');
@@ -1651,7 +1651,32 @@ class BookingController extends Controller
                 return response()->json(['message' => 'Booking not found', 'status' => true], 404);
             }
 
-            return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $adminchefuserbookings]);
+
+             foreach ($adminchefuserbookings as $booking) {
+                $dates = explode(',', $booking->dates);
+                // $bookingStatus = 'Expired';
+                foreach ($dates as $date) {
+                    $dateObject = new \DateTime($date);
+                    $today = new \DateTime();
+
+                    $dateObject->setTime(0, 0, 0);
+                    $today->setTime(0, 0, 0);
+
+                    if ($dateObject >= $today) {
+                        if ($dateObject->format('Y-m-d') === $today->format('Y-m-d')) {
+                            $bookingStatus = 'Today';
+                        } else {
+                            $bookingStatus = 'Upcoming';
+                        }
+                        break;
+                    } else {
+                        $bookingStatus = 'Expired';
+                    }
+                }
+                $booking->booking_status = $bookingStatus;
+            }
+
+            return response()->json(['status' => true, 'message' => 'Data fetched d', 'data' => $adminchefuserbookings]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -2121,7 +2146,7 @@ class BookingController extends Controller
             }else {
 
                 Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
-                    $message->from(config('mail.from.address'), "You have been hired");
+                    $message->from(config('mail.from.address'), "Private Chefs");
                     $message->to($data['email']);
                     $message->bcc($data['admin_email']);
                     $message->subject('You have Been Chosen to Create Culinary Magic!');
@@ -2385,7 +2410,7 @@ class BookingController extends Controller
 
             // Send a user confirmation email
             Mail::send('emails.userbookingconfirmation', ['data' => $data], function ($message) use ($data) {
-                $message->from(config('mail.from.address'), "User booking confirmation");
+                $message->from(config('mail.from.address'), "Private Chefs");
                 $message->to($data['user_email']);  // Send it to the client's email address
                 $message->bcc($data['admin_email']);
                 $message->subject(' Your Culinary Experience Awaits – Booking Confirmation');

@@ -50,7 +50,7 @@ class SettingController extends Controller
                 ];
 
 
-                 Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
                     $message->from(config('mail.from.address'), "Private Chefs");
                     $message->subject(' Your Account Password for Private Chefs');
                     $message->to($data['email']);
@@ -75,7 +75,7 @@ class SettingController extends Controller
             Newsletter::subscribe($email);
             // Mail::to($email)->send(new SubscriptionConfirmation($email));
 
-            return response()->json(['status' => true, 'message' => 'Email is subscribed.'], 200);
+            return response()->json(['status' => true, 'message' => 'Thanks for subscribing! 🎉 Stay tuned for the latest updates and exclusive content!'], 200);
         }
     }
 

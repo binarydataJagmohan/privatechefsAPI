@@ -18,9 +18,7 @@ use Illuminate\Support\Str;
 use App\Models\PasswordReset;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\DB;
-
-
-
+use App\Models\Notification;
 
 class UserController extends Controller
 {
@@ -873,6 +871,9 @@ class UserController extends Controller
     public function admin_create_chef(Request $request)
     {
         try {
+
+            // return $request->all();
+
             $checkemail = User::where('email', $request->email)->count();
 
             if ($checkemail <= 0) {
@@ -888,6 +889,10 @@ class UserController extends Controller
                 $user->bank_name = $request->bank_name;
                 $user->holder_name = $request->holder_name;
                 $user->bank_address = $request->bank_address;
+                $user->vat_no = $request->vat_no;
+                $user->tax_id = $request->tax_id;
+                $user->lat = $request->lat;
+                $user->lng = $request->lng;
                 $user->approved_by_admin = 'yes';
 
                 $user->password = Hash::make($request->password);
@@ -907,7 +912,7 @@ class UserController extends Controller
 
                 $data = [
                     'name'   => $user->name,
-                    'password' => $user->password,
+                    'password' => $request->password,
                     'email'   => $user->email,
                     'surname' => $user->surname,
                     'phone' => $user->phone,
@@ -917,9 +922,19 @@ class UserController extends Controller
                     'BIC' => $user->BIC,
                     'bank_name' => $user->bank_name,
                     'holder_name' => $user->holder_name,
-                    'bank_address' => $user->bank_address
+                    'bank_address' => $user->bank_address,
+                    'vat_no' => $user->vat_no,
+                    'tax_id' => $user->tax_id
                 ];
-                return response()->json(['status' => true, 'message' => "User created successfully", 'data' => $user], 200);
+                
+
+                Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                    $message->from(config('mail.from.address'), "Private Chefs");
+                    $message->subject(' Your Account Login Details for Private Chefs');
+                    $message->to($data['email']);
+                });
+
+                return response()->json(['status' => true, 'message' => "Chef created successfully", 'data' => $user], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
             }
@@ -927,10 +942,6 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-
-
-
-
 
     public function delete_chef(Request $request)
     {
@@ -1141,5 +1152,89 @@ class UserController extends Controller
         }
     }
 
+    public function approveConciergeProfile(Request $request)
+    {
+        try {
+            $user = User::find($request->id);
+            $user->approved_by_admin = $request->approved_by_admin;
+            $user->save();
+
+            if ($user) {
+                $notification = new Notification();
+                $notification->notify_to = $user->id;
+                $notification->description = "Attention, Concierge! Your profile has been approved.";
+                $notification->type = 'approve_status';
+                $notification->save();
+            }
+
+            if ($user->approved_by_admin == 'yes') {
+                Mail::send('emails.conciergeconfirmapproval', ['user' => $user], function ($message) use ($user) {
+                    $message->from(config('mail.from.address'), "Private Chefs");
+                    $message->to($user->email);
+                    $message->subject("Account Approval, " . $user->name);
+                });
+            }
+
+            if ($user) {
+
+                if($request->approved_by_admin == 'yes'){
+
+                    return response()->json(['status' => true, 'message' => "Concierge profile approved successfully", 'data' => $user], 200);
+
+                }else {
+
+                    return response()->json(['status' => true, 'message' => "Concierge profile unapproved successfully", 'data' => $user], 200);
+                }
+
+                
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for approving the concierge profile", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+
+    public function get_chef_by_location_onfronted(Request $request)
+    {
+        try {
+            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos', 'Italy', 'Norway', 'Sweden', 'Spain'];
+            // Fetch chef details based on desired locations
+            $users = User::select('id', 'name', 'pic', 'address')
+                ->whereIn('address', $desiredLocations)
+                ->where('role', 'chef')
+                ->where('status', '!=', 'deleted')
+                ->get();
+
+            // Group chef details by location
+            $groupedUsers = $users->groupBy('address');
+
+            // Build the response data
+            $responseData = [];
+            foreach ($groupedUsers as $address => $chefs) {
+                $chefDetails = $chefs->map(function ($chef) {
+                    return [
+                        'chef_id' => $chef->id,
+                        'name' => $chef->name,
+                        'pic' => $chef->pic,
+                    ];
+                });
+
+                $responseData[] = [
+                    'address' => $address,
+                    'location_pic' => $chefs->first()->location_pic,
+                    'chefs' => $chefDetails->toArray(),
+                ];
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $responseData
+            ], 200);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 
 }

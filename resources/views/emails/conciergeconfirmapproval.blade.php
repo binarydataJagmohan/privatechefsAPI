@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title></title>
+        <title>Private Chefs</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
         <meta content="Coderthemes" name="author" />
@@ -19,7 +19,6 @@
         <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
         <!-- App Css-->
         <link href="assets/css/app.min.css" id="app-stylesheet" rel="stylesheet" type="text/css" />
-
     </head>
 
     <body style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;"
@@ -40,7 +39,7 @@
                        itemtype="http://schema.org/ConfirmAction"
                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; margin: 0; border: none;"
                        >
-                    
+
                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                         <td class="content-wrap"
                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; display: inline-block; font-size: 14px; vertical-align: top; margin: 0; padding: 30px;border: 3px solid #ff4e00;border-radius: 7px; background-color: #fff;"
@@ -57,81 +56,70 @@
                                         </td>
                                 </tr>
 
-                                <tr>
-                              <td
+                                {{-- <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                    <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Your Account Login Details for Private Chefs
+                                        Subject: Welcome Aboard,{{ $user->name }}!
                                     </td>
-                                    </tr>
-
-                                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                <td class="content-block"
-                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
-                                        valign="top">
-                                        Dear {{$data['name']}},
-                                    </td>
-                                </tr>
-                                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                <td class="content-block"
-                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
-                                        valign="top">
-                                        We are delighted to inform you that your recent order on Privatechef has been successfully processed. To enhance your future experience, we have created an account for you using the email address you provided during the booking process. We highly recommend logging in to enjoy personalized features and faster checkout in the future.
-                                    </td>
-                                    </tr>
+                                </tr> --}}
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        To access your account, please use the following login details:
+                                        Dear {{ $user->name }},
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Email: {{$data['email']}}
+                                        Congratulations! We are thrilled to inform you that your account has been approved
+                                    </td>
+                                </tr>
+                                
+                                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                    <td class="content-block"
+                                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
+                                        valign="top">
+                                        At Private Chefs Worldwide, we believe in the power of exceptional cuisine to create unforgettable memories. Your skills, creativity, and expertise will now have the opportunity to shine, delighting clients from around the world. Whether you're a maestro of international cuisine or a specialist in a particular culinary style, your unique offerings will captivate discerning palates.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Password: {{$data['password']}}
+                                        We are committed to supporting your culinary journey, providing opportunities, and helping you thrive in the world of private dining. Stay tuned for exclusive client requests, exciting culinary experiences, and the chance to showcase your skills to a global audience.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        For security reasons, we recommend changing your password upon logging in for the first time. 
+                                        Thank you for choosing to be a part of our vibrant culinary community. Your culinary adventures begin now, and we can't wait to see the extraordinary dining experiences you'll create.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Thank you for choosing Private Chefs, and we look forward to serving you again soon.
+                                        Once again, welcome to Private Chefs Worldwide, and here's to a future filled with delectable moments!
                                     </td>
                                 </tr>
-
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Warm regards,
+                                        Sincerely,
                                     </td>
                                 </tr>
-
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                       Private Chefs Team
+                                        The Private Chefs Worldwide Team 🌍👨‍🍳
                                     </td>
                                 </tr>
-
                             </table>
                         </td>
                     </tr>
