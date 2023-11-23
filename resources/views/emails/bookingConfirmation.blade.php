@@ -63,7 +63,7 @@
                                     <tr>
                                         <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            Subject: Booking Confirmation - PrivateChefsWorld
+                                            Subject: Booking Confirmation - Private Chefs World
                                         </td>
                                     </tr>
 
@@ -80,7 +80,7 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            We are delighted to inform you that your booking with PrivateChefsWorld has
+                                            We are delighted to inform you that your booking with Private Chefs World has
                                             been successfully confirmed. Thank you for choosing our services!
 
                                         </td>
@@ -103,7 +103,7 @@
                                             If you have any special requests or dietary preferences, please don't
                                             hesitate to let us know in advance, and we will do our best to accommodate
                                             them.
-                                            Thank you once again for choosing PrivateChefsWorld. We can't wait to serve
+                                            Thank you once again for choosing Private Chefs World. We can't wait to serve
                                             you and create a culinary masterpiece for your upcoming event.
                                         </td>
                                     </tr>

@@ -75,6 +75,13 @@ class SettingController extends Controller
             Newsletter::subscribe($email);
             // Mail::to($email)->send(new SubscriptionConfirmation($email));
 
+            Mail::send('emails.subscriptionEmail', [], function ($message) use ($email) {
+                $message->from(config('mail.from.address'), "Private Chefs");
+                $message->subject('Thank you for subscribing to Private Chefs Worldwide!');
+                $message->to($email);
+            });
+
+
             return response()->json(['status' => true, 'message' => 'Thanks for subscribing! 🎉 Stay tuned for the latest updates and exclusive content!'], 200);
         }
     }

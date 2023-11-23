@@ -106,7 +106,7 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            Thank you once again for choosing PrivateChefsWorld. We're looking forward to creating an unforgettable culinary experience for you.
+                                            Thank you once again for choosing Private Chefs World. We're looking forward to creating an unforgettable culinary experience for you.
                                         </td>
                                     </tr>
                                     <tr

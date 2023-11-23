@@ -607,6 +607,7 @@ class BookingController extends Controller
         $booking->chef_id = $request->chef_id;
         $booking->amount = $request->amount;
         $booking->menu = $request->menu;
+        $booking->user_show = 'visible';
         $appliedJobs  = $booking->save();
 
         if ($appliedJobs) {
@@ -647,7 +648,7 @@ class BookingController extends Controller
                 $message->from(config('mail.from.address'), "Private Chefs");
                 $message->to($data['email']);
                 $message->bcc($data['admin_email']);
-                $message->subject('Email Verification Mail');
+                $message->subject('Booking Request: Chef Application Received');
             });
         }
 
