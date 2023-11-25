@@ -484,10 +484,39 @@ class UserController extends Controller
             // ->join('users', 'users.id', '=', 'chef_details.user_id')
             // ->where('users.id', $request->id)
             // ->first();
-            $chef = User::select('users.name as chefname', 'users.pic as chefpic', 'chef_details.about as chef_about', 'chef_details.service_title_1 as service_title_one', 'chef_details.service_title_1 as service_title_one', 'chef_details.service_title_1 as service_title_one', 'chef_details.service_title_2 as service_title_two', 'chef_details.service_title_3 as service_title_three', 'chef_details.service_title_4 as service_title_four', 'chef_details.service_description_1 as service_description_one', 'chef_details.service_description_2 as service_description_two', 'chef_details.service_description_3 as service_description_three', 'chef_details.service_description_4 as service_description_four', 'chef_details.love_cooking as lovecooking', 'chef_details.experience as chefexperience', 'chef_details.skills as chefskills', 'chef_details.favorite_dishes as cheffavorite_dishes')
-                ->leftJoin('chef_details', 'users.id', '=', 'chef_details.user_id')
-                ->where('users.id', $request->id)
-                ->first();
+            $chef = User::leftJoin('chef_details', 'users.id', '=', 'chef_details.user_id')
+            ->leftJoin('chef_location', 'chef_details.user_id', '=', 'chef_location.user_id')
+            ->where('users.id', $request->id)
+            ->select(
+                'users.id',
+                'users.name',
+                'users.surname',
+                'users.phone',
+                'users.email',
+                'users.BIC',
+                'users.IBAN',
+                'users.address',
+                'users.bank_address',
+                'users.bank_name',
+                'users.holder_name',
+                'users.passport_no',
+                'users.pic',
+                'users.tax_id',
+                'users.vat_no',
+                'chef_details.about',
+                'chef_details.description',
+                'chef_details.services_type',
+                'chef_details.favorite_dishes',
+                'chef_details.languages',
+                'chef_details.love_cooking',
+                'chef_details.experience',
+                'chef_details.favorite_chef',
+                'chef_details.skills',
+                DB::raw('GROUP_CONCAT(chef_location.address SEPARATOR ", ") as addresses')
+            )
+            ->groupBy('users.id')
+            ->first();
+
 
             if ($chef) {
                 return response()->json(['status' => true, 'message' => "Single chef profile data fetched successfully", 'data' => $chef], 200);
@@ -562,7 +591,7 @@ class UserController extends Controller
     {
         try {
 
-            $userdata = User::select('allergy_id','additional_notes')->where('id',$user_id)->first();
+            $userdata = User::select('allergy_id','additional_notes','cuisine_id')->where('id',$user_id)->first();
             
             if($userdata){
 
@@ -597,6 +626,7 @@ class UserController extends Controller
 
             $user = User::find($request->user_id);
             $user->allergy_id =$request->allergy_id;
+            $user->cuisine_id =$request->cuisine_id;
             $user->additional_notes = $request->additional_notes;
             $user->save();
 

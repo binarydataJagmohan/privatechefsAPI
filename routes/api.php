@@ -199,7 +199,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::get('/get-single-user-assign-booking/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_single_user_assign_booking']);
 
-    Route::post('/updated-applied-booking-by-key-value/', [App\Http\Controllers\Api\BookingController::class, 'updated_applied_booking_by_key_value']);
+    Route::post('/updated-applied-booking-by-key-value', [App\Http\Controllers\Api\BookingController::class, 'updated_applied_booking_by_key_value']);
 
     Route::get('/get-admin-chef-by-booking', [App\Http\Controllers\Api\BookingController::class, 'get_admin_chef_by_booking']);
 
