@@ -124,7 +124,7 @@
                                             <a href="{{ env('NEXT_URL') }}/chef/myprofile" class="btn-primary" itemprop="url"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #ff4e00; margin: 0; border-color: #ff4e00; border-style: solid; border-width: 8px 16px;">View Profile</a>
 
-                                    </td>
+                                    </td>sdf
                                 </tr>
 
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
