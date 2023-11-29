@@ -98,15 +98,19 @@ class ChefDetailController extends Controller
     public function update_chef_image(Request $request)
     {
         try {
+
             $user = User::find($request->id);
 
+
             if ($request->hasFile('image')) {
+                $file = $request->file('image');
                 $randomNumber = mt_rand(1000000000, 9999999999);
-                $imagePath = $request->file('image');
-                $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/chef/users', $imageName);
+                $imageName = $randomNumber . $file->getClientOriginalName();
+
+                $file->move(public_path('images/chef/users'), $imageName); // Save to 'public/images/userprofileImg'
                 $user->pic = $imageName;
             }
+
 
             $savedata = $user->save();
             if ($savedata) {
@@ -147,11 +151,11 @@ class ChefDetailController extends Controller
                 $resume->favorite_chef = $request->favorite_chef;
                 $resume->favorite_dishes = $request->favorite_dishes;
                 $resume->love_cooking = $request->love_cooking;
-                // $resume->facebook_link = $request->facebook_link;
-                // $resume->instagram_link = $request->instagram_link;
-                // $resume->twitter_link = $request->twitter_link;
-                // $resume->linkedin_link = $request->linkedin_link;
-                // $resume->youtube_link = $request->youtube_link;
+                $resume->facebook_link = $request->facebook_link;
+                $resume->instagram_link = $request->instagram_link;
+                $resume->twitter_link = $request->twitter_link;
+                $resume->linkedin_link = $request->linkedin_link;
+                $resume->youtube_link = $request->youtube_link;
                 $savedata = $resume->save();
 
                 // $resume = User::find($request->id);
@@ -226,6 +230,7 @@ class ChefDetailController extends Controller
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
+                
                 ->where(function ($query) use ($searchTerm) {
                     $query->where('users.name', 'LIKE', "%$searchTerm%")
                           ->orWhere('users.surname', 'LIKE', "%$searchTerm%");
@@ -705,7 +710,7 @@ class ChefDetailController extends Controller
     public function get_all_location(Request $request)
     {
         try {
-            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos','Chandigarh'];
+            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos','Crete','Corfu','Lefkada','Zakynthos','Porto Heli','Paros','Antiparos','Diaporos'];
             $users = User::select('id','address','location_pic')
             ->whereIn('address', $desiredLocations)
             ->where('role','chef')
