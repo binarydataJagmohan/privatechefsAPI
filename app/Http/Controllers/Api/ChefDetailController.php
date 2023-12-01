@@ -16,6 +16,7 @@ use App\Models\Cuisine;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Support\Facades\Validator;
 use Mail;
+use Illuminate\Support\Str;
 
 class ChefDetailController extends Controller
 {
@@ -32,9 +33,26 @@ class ChefDetailController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+    private function generateUniqueSlug($first_name)
+    {
+        $baseSlug = Str::slug("$first_name");
+        $slug = $baseSlug;
+        $count = 1;
+        while (User::where('slug', $slug)->exists()) {
+            $slug = "{$baseSlug}-{$count}";
+            $count++;
+
+        }
+        return $slug;
+    }
+
     public function update_chef_profile(Request $request)
     {
         try {
+
+            $slug = $this->generateUniqueSlug($request->name);
+
             $user = User::find($request->id);
             $user->name = $request->name;
             $user->surname = $request->surname;
@@ -51,6 +69,7 @@ class ChefDetailController extends Controller
             $user->tax_id = $request->tax_id;
             $user->lat = $request->lat;
             $user->lng = $request->lng;
+            $user->slug = $slug;
             $user->profile_status = 'completed';
 
             if ($request->hasFile('image')) {

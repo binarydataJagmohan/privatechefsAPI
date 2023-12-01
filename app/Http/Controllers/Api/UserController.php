@@ -26,6 +26,21 @@ class UserController extends Controller
     {
         return Socialite::driver('google')->redirect();
     }
+
+    private function generateUniqueSlug($first_name)
+    {
+        $baseSlug = Str::slug("$first_name");
+        $slug = $baseSlug;
+        $count = 1;
+        while (User::where('slug', $slug)->exists()) {
+            $slug = "{$baseSlug}-{$count}";
+            $count++;
+
+        }
+        return $slug;
+    }
+
+
     public function handleGoogleCallback()
     {
         try {
@@ -73,12 +88,16 @@ class UserController extends Controller
                     'errors' => $validator->errors(),
                 ], 200);
             }
+
+            $slug = $this->generateUniqueSlug($request->name);
+
             $user = new User();
             $user->name = $request->name;
             $user->email = $request->email;
             $user->role = $request->role;
             $user->password = Hash::make($request->password);
             $user->view_password = $request->password;
+            $user->slug = $slug;
             $data = $user->save();
 
             if ($request->role == 'chef') {
@@ -484,9 +503,18 @@ class UserController extends Controller
             // ->join('users', 'users.id', '=', 'chef_details.user_id')
             // ->where('users.id', $request->id)
             // ->first();
+
+
+            if(is_numeric($request->id)){
+                 $chef_id = $request->id;
+            }else {
+                 $chef = User::select('id')->where('slug',$request->id)->first();
+                 $chef_id = $chef->id;
+            }
+
             $chef = User::leftJoin('chef_details', 'users.id', '=', 'chef_details.user_id')
             ->leftJoin('chef_location', 'chef_details.user_id', '=', 'chef_location.user_id')
-            ->where('users.id', $request->id)
+            ->where('users.id', $chef_id)
             ->select(
                 'users.id',
                 'users.name',

@@ -942,12 +942,15 @@ class BookingController extends Controller
                     'aj.booking_id',
                     'aj.status',
                     'aj.chef_id',
-                    'b.status'
+                    'b.status',
+                    'b.assigned_to_villa_id'
+                    
                 )
                 ->select(
                     'b.name',
                     'b.payment_status',
                     'b.assigned_to_user_id',
+                    'b.assigned_to_villa_id',
                     'u.id',
                     'b.surname',
                     'u.pic',
@@ -2590,6 +2593,7 @@ class BookingController extends Controller
         // Other error occurred
         return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
     }
-}
+    }
 
+   
 }

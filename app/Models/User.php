@@ -35,7 +35,8 @@ class User extends Authenticatable implements JWTSubject
         'email_verified',
         'created_by',
         'linkedin_id',
-        'login_type'
+        'login_type',
+        'slug'
     ];
 
     /**

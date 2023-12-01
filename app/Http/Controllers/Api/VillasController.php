@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Villas;
 use App\Models\VillaImages;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Facades\DB;
 
 class VillasController extends Controller
 {
@@ -20,6 +21,8 @@ class VillasController extends Controller
             $villa->email = $request->input('email');
             $villa->phone = $request->input('phone');
             $villa->address = $request->input('address');
+            $villa->lat = $request->input('lat');
+            $villa->lng = $request->input('lng');
             $villa->city = $request->input('city');
             $villa->state = $request->input('state');
             $villa->partner_owner = $request->input('partner_owner');
@@ -91,6 +94,8 @@ class VillasController extends Controller
             $villas->twitter_link = $request->input('twitter_link');
             $villas->linkedin_link = $request->input('linkedin_link');
             $villas->youtube_link = $request->input('youtube_link');
+            $villas->lat = $request->input('lat');
+            $villas->lng = $request->input('lng');
             $villas->save();
 
 
@@ -212,6 +217,128 @@ class VillasController extends Controller
                 'status' => false,
                 'message' => $e->getMessage()
             ]);
+        }
+    }
+
+       public function AssignedVillaByBooking(Request $request)
+    {
+        try {
+            if ($request->booking_id) {
+                $booking = Booking::where('id', $request->booking_id)->update([
+                    'assigned_to_villa_id' => $request->assigned_to_villa_id,
+                ]);
+
+                if ($booking) {
+                    return response()->json(['status' => true, 'message' => 'Villa has been assigned successfully']);
+                } else {
+                    return response()->json(['status' => false, 'message' => 'There has been an error in assigning the villa']);
+                }
+            } else {
+                return response()->json(['status' => false, 'message' => 'Booking id not found']);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+
+      public function get_admin_villa_by_booking(Request $request,$id)
+    {
+        try {
+            $adminchefuserbookings = DB::table('users as u')
+                ->join('bookings as b', 'u.id', '=', 'b.user_id')
+                ->join('booking_meals as bm', 'b.id', '=', 'bm.booking_id')
+                ->join('service_choices as sc', 'sc.id', '=', 'b.service_id')
+                ->leftJoin('applied_jobs as aj', function ($join) {
+                    $join->on('b.id', '=', 'aj.booking_id')
+                        ->where('aj.status', '=', 'hired');
+                })
+                ->whereNull('aj.booking_id')
+                ->where('b.status', '=', 'active') // Add the condition here
+                ->groupBy(
+                    'b.name',
+                    'b.assigned_to_user_id',
+                    'b.payment_status',
+                    'u.id',
+                    'b.surname',
+                    'u.pic',
+                    'b.location',
+                    'b.booking_status',
+                    'bm.category',
+                    'b.id',
+                    'aj.booking_id',
+                    'aj.status',
+                    'aj.chef_id',
+                    'b.status',
+                    'b.assigned_to_villa_id'
+                    
+                )
+                ->select(
+                    'b.name',
+                    'b.payment_status',
+                    'b.assigned_to_user_id',
+                    'b.assigned_to_villa_id',
+                    'u.id',
+                    'b.surname',
+                    'u.pic',
+                    'b.location',
+                    'b.booking_status',
+                    'bm.category',
+                    DB::raw('GROUP_CONCAT(bm.date) AS dates'),
+                    DB::raw('MAX(bm.created_at) AS latest_created_at'),
+                    'b.id AS booking_id',
+                    'aj.status AS applied_jobs_status',
+                    'aj.chef_id',
+                    'b.status'
+                )
+                ->where('b.status', '!=', 'deleted')
+                ->where('b.assigned_to_villa_id',$id)
+                ->orderBy('b.id', 'DESC')
+                ->get();
+            if (!$adminchefuserbookings) {
+                return response()->json(['message' => 'Booking not found', 'status' => true], 404);
+            }
+            // foreach ($adminchefuserbookings as $booking) {
+            //     $dates = explode(',', $booking->dates);
+            //     $bookingStatus = 'Expired';
+            //     foreach ($dates as $date) {
+            //         $dateObject = new \DateTime($date);
+            //         $today = new \DateTime();
+            //         $dateObject->setTime(0, 0, 0);
+            //         $today->setTime(0, 0, 0);
+            //         if ($dateObject >= $today) {
+            //             $bookingStatus = 'Upcoming';
+            //             break;
+            //         }
+            //     }
+            //     $booking->booking_status = $bookingStatus;
+            // }
+            foreach ($adminchefuserbookings as $booking) {
+                $dates = explode(',', $booking->dates);
+                // $bookingStatus = 'Expired';
+                foreach ($dates as $date) {
+                    $dateObject = new \DateTime($date);
+                    $today = new \DateTime();
+
+                    $dateObject->setTime(0, 0, 0);
+                    $today->setTime(0, 0, 0);
+
+                    if ($dateObject >= $today) {
+                        if ($dateObject->format('Y-m-d') === $today->format('Y-m-d')) {
+                            $bookingStatus = 'Today';
+                        } else {
+                            $bookingStatus = 'Upcoming';
+                        }
+                        break;
+                    } else {
+                        $bookingStatus = 'Expired';
+                    }
+                }
+                $booking->booking_status = $bookingStatus;
+            }
+            return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $adminchefuserbookings]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
         }
     }
 }
