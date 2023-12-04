@@ -48,7 +48,7 @@ class VillasController extends Controller
                 foreach ($request->file('image') as $image) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
                     $imageName = $randomNumber . $image->getClientOriginalName();
-                    $image->move('images/villas/images', $imageName);
+                    $image->move(public_path('images/villas/images'), $imageName); 
                      $villa_img = new VillaImages();
                      $villa_img->villa_id = $villa->id;
                      $villa_img->image = $imageName;
@@ -107,7 +107,7 @@ class VillasController extends Controller
                 foreach ($request->file('image') as $image) {
                     $randomNumber = mt_rand(1000000000, 9999999999);
                     $imageName = $randomNumber . $image->getClientOriginalName();
-                    $image->move('images/villas/images', $imageName);
+                    $image->move(public_path('images/villas/images'), $imageName); 
                      $villa_img = new VillaImages();
                      $villa_img->villa_id = $request->id;
                      $villa_img->image = $imageName;
