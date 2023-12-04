@@ -107,7 +107,15 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/fetch-dish-category-by-id', [DishesController::class, 'fetch_dish_category_by_id']);
 
     Route::get('/get-item-by-category/{id}', [DishesController::class, 'get_item_by_category']);
+
+    Route::post('/save-chef-dish-images', [App\Http\Controllers\Api\DishesController::class, 'saveChefDishImages']);
+     Route::get('/delete-chef-dish-image/{id}', [DishesController::class, 'deleteChefDishImage']);
+
 });
+
+Route::get('/get-all-dish-gallery/{id}', [DishesController::class, 'getAllChefDishGallery']);
+    
+
 //chef edit profile
 //user edit profile
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -362,6 +370,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::post('hired-assigned-booking-by-admin', [App\Http\Controllers\Api\BookingController::class, 'hired_assigned_booking_by_admin']);
 
+    Route::post('add-reviews', [App\Http\Controllers\Api\ReviewController::class, 'addReviews']);
+
 
 });
 
@@ -383,5 +393,7 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('subscribe/{email}',[App\Http\Controllers\Api\SettingController::class,'Subscribe']);
 
     Route::get('/get-all-chef-by-location-onfronted', [App\Http\Controllers\Api\UserController::class, 'get_chef_by_location_onfronted']);
+
+    Route::get('get-all-chef-reviews/{id}', [App\Http\Controllers\Api\ReviewController::class, 'getAllChefReview']);
     
 });

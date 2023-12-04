@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 use App\Models\Dishes;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Http\Request;
+use App\Models\DisheGallery;
+use App\Models\User;
 
 class DishesController extends Controller
 {
@@ -180,6 +182,102 @@ class DishesController extends Controller
         }
     }
 
+    public function saveChefDishImages(Request $request)
+    {
+        try {
 
+        if($request->id){
+
+            $dish = DisheGallery::find($request->id);
+            $dish->user_id = $request->user_id;
+
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imageName = $randomNumber . $file->getClientOriginalName();
+                $file->move(public_path('images/chef/dishes'), $imageName); // Save to 'public/images/userprofileImg'
+                $dish->img = $imageName;
+            }
+
+            if($dish->save()){
+
+                 return response()->json(['status' => true, 'message' => 'Dish Image has been updated successfully', 'error' => '']);
+            }else {
+
+                 return response()->json(['status' => true, 'message' => 'There has been error for updating the dish', 'error' => '', 'data' => '']);
+            }
+
+
+        }else {
+
+            $dish = new DisheGallery();
+            $dish->user_id = $request->user_id;
+
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imageName = $randomNumber . $file->getClientOriginalName();
+                $file->move(public_path('images/chef/dishes'), $imageName); // Save to 'public/images/userprofileImg'
+                $dish->img = $imageName;
+            }
+
+            if($dish->save()){
+
+                 return response()->json(['status' => true, 'message' => 'Dish Image has been save successfully', 'error' => '']);
+            }else {
+ 
+                 return response()->json(['status' => true, 'message' => 'There has been error for updating the dish', 'error' => '', 'data' => '']);
+            }
+
+        }
+
+                       
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+
+    }
+
+    public function getAllChefDishGallery($id)
+    {
+        try{
+
+
+         if(is_numeric($id)){
+                 $chef_id = $id;
+            }else {
+                 $chef = User::select('id')->where('slug',$id)->first();
+                 $chef_id = $chef->id;
+            }
+            
+        $categories = DisheGallery::where('status','active')->where('user_id',$chef_id)->orderBy('id','desc')->get();
+         return response()->json([
+            'status' => true,
+            'message' => "Dishes details fetched successfully",
+            'data' => $categories
+        ], 200);
+     }
+     catch (\Exception $e) {
+        throw new HttpException(500, $e->getMessage());
+    }
+  }
+
+   public function deleteChefDishImage($id)
+   {
+
+    try{
+        $dish = DisheGallery::where('id', $id)->update([
+                'status' => 'deleted'
+        ]);
+        if ($dish) {
+                return response()->json(['message' => 'Dish Image has been deleted successfully','status'=>true], 200);
+            } else {
+                return response()->json(['erroe' => 'error', 'message' => 'There has been error for deleting the dish iamge','status'=>false], 200);
+        }
+    }
+            catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 
 }

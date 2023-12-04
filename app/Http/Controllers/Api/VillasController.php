@@ -9,6 +9,7 @@ use App\Models\Villas;
 use App\Models\VillaImages;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Support\Facades\DB;
+use App\Models\Booking;
 
 class VillasController extends Controller
 {
