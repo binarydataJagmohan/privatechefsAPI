@@ -1529,20 +1529,20 @@ class UserChatController extends Controller
                 // Handle image file
                 $path = $file;
                 $name = $randomNumber . $path->getClientOriginalName();
-                $path->move('public/images/chat/images', $name);
+                $path->move(public_path('images/chat/images'), $name);
                    
                 } elseif ($type === 'pdf') {
                     // Handle PDF file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/pdf', $name);
+                    $path->move(public_path('images/chat/pdf'), $name);
 
                    
                 } elseif ($type === 'video') {
                     // Handle video file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/video', $name);
+                    $path->move(public_path('images/chat/video'), $name);
                     
                 }
                 $messgae->type =  $type;
@@ -1576,20 +1576,20 @@ class UserChatController extends Controller
                 // Handle image file
                 $path = $file;
                 $name = $randomNumber . $path->getClientOriginalName();
-                $path->move('public/images/chat/images', $name);
+                $path->move(public_path('images/chat/images'), $name);
                    
                 } elseif ($type === 'pdf') {
                     // Handle PDF file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/pdf', $name);
+                    $path->move(public_path('images/chat/pdf'), $name);
 
                    
                 } elseif ($type === 'video') {
                     // Handle video file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/video', $name);
+                    $path->move(public_path('images/chat/video'), $name);
                     
                 }
                 $messgae->type =  $type;
@@ -1616,20 +1616,20 @@ class UserChatController extends Controller
                 // Handle image file
                 $path = $file;
                 $name = $randomNumber . $path->getClientOriginalName();
-                $path->move('public/images/chat/images', $name);
+                $path->move(public_path('images/chat/images'), $name);
                    
                 } elseif ($type === 'pdf') {
                     // Handle PDF file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/pdf', $name);
+                    $path->move(public_path('images/chat/pdf'), $name);
 
                    
                 } elseif ($type === 'video') {
                     // Handle video file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/video', $name);
+                    $path->move(public_path('images/chat/video'), $name);
                     
                 }
                 $messgae->type =  $type;

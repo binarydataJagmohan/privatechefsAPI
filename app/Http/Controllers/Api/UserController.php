@@ -319,13 +319,15 @@ class UserController extends Controller
     public function update_users_image(Request $request)
     {
         try {
+
             $user = User::find($request->id);
 
-            if ($request->hasFile('image')) {
+             if ($request->hasFile('image')) {
+                $file = $request->file('image');
                 $randomNumber = mt_rand(1000000000, 9999999999);
-                $imagePath = $request->file('image');
-                $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('/images/chef/users', $imageName);
+                $imageName = $randomNumber . $file->getClientOriginalName();
+
+                $file->move(public_path('images/chef/users'), $imageName); // Save to 'public/images/userprofileImg'
                 $user->pic = $imageName;
             }
 

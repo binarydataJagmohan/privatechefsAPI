@@ -63,7 +63,8 @@ class ServiceChoiceController extends Controller
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imagePath = $request->file('image');
                 $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                $imagePath->move('images/admin/service', $imageName);
+                $imagePath->move(public_path('images/admin/service'), $imageName); // Save to 'public/images/userprofileImg'
+
                 $service->image = $imageName;
             } 
 
@@ -126,7 +127,7 @@ class ServiceChoiceController extends Controller
         $randomNumber = mt_rand(1000000000, 9999999999);
         $imagePath = $request->file('image');
         $imageName = $randomNumber . $imagePath->getClientOriginalName();
-        $imagePath->move('images/admin/service', $imageName);
+        $imagePath->move(public_path('images/admin/service'), $imageName); 
         $service->image = $imageName;
     } 
     $service->save();

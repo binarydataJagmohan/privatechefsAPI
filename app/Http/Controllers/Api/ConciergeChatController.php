@@ -129,8 +129,8 @@ class ConciergeChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhere(function ($subquery) use ($userId) {
                         $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
                             ->whereExists(function ($innerSubquery) use ($userId) {
@@ -538,8 +538,8 @@ class ConciergeChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhere(function ($subquery) use ($userId) {
                         $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
                             ->whereExists(function ($innerSubquery) use ($userId) {
@@ -815,8 +815,8 @@ class ConciergeChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhere(function ($subquery) use ($userId) {
                         $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
                             ->whereExists(function ($innerSubquery) use ($userId) {
@@ -1095,8 +1095,8 @@ class ConciergeChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhere(function ($subquery) use ($userId) {
                         $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
                             ->whereExists(function ($innerSubquery) use ($userId) {
@@ -1391,8 +1391,8 @@ class ConciergeChatController extends Controller
             ->where(function ($query) use ($userId) {
                 $query->where('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", sender.id)"))
                     ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(" . $userId . ", receiver.id)"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(receiver.id," . $userId . ")"))
-                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw("CONCAT(sender.id," . $userId . ")"))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(sender.id, '.$userId.')'))
+                    ->orWhere('chat_messages.single_chat_id', '=', DB::raw('CONCAT(receiver.id, '.$userId.')'))
                     ->orWhere(function ($subquery) use ($userId) {
                         $subquery->where('chat_messages.unique_booking_id', '=', DB::raw("CONCAT(sender.id, receiver.id)"))
                             ->whereExists(function ($innerSubquery) use ($userId) {
@@ -1604,20 +1604,20 @@ class ConciergeChatController extends Controller
                 // Handle image file
                 $path = $file;
                 $name = $randomNumber . $path->getClientOriginalName();
-                $path->move('public/images/chat/images', $name);
+                $path->move(public_path('images/chat/images'), $name);
                    
                 } elseif ($type === 'pdf') {
                     // Handle PDF file
                     $path = $file;
                     $name = $randomNumberandomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/pdf', $name);
+                    $path->move(public_path('images/chat/pdf'), $name);
 
                    
                 } elseif ($type === 'video') {
                     // Handle video file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/video', $name);
+                     $path->move(public_path('images/chat/video'), $name);
                     
                 }
                 $messgae->type =  $type;
@@ -1645,20 +1645,20 @@ class ConciergeChatController extends Controller
                 // Handle image file
                 $path = $file;
                 $name = $randomNumber . $path->getClientOriginalName();
-                $path->move('public/images/chat/images', $name);
+                $path->move(public_path('images/chat/images'), $name);
                    
                 } elseif ($type === 'pdf') {
                     // Handle PDF file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/pdf', $name);
+                    $path->move(public_path('images/chat/pdf'), $name);
 
                    
                 } elseif ($type === 'video') {
                     // Handle video file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/video', $name);
+                    $path->move(public_path('images/chat/video'), $name);
                     
                 }
                 $messgae->type =  $type;
@@ -1685,20 +1685,20 @@ class ConciergeChatController extends Controller
                 // Handle image file
                 $path = $file;
                 $name = $randomNumber . $path->getClientOriginalName();
-                $path->move('public/images/chat/images', $name);
+                $path->move(public_path('images/chat/images'), $name);
                    
                 } elseif ($type === 'pdf') {
                     // Handle PDF file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/pdf', $name);
+                    $path->move(public_path('images/chat/pdf'), $name);
 
                    
                 } elseif ($type === 'video') {
                     // Handle video file
                     $path = $file;
                     $name = $randomNumber . $path->getClientOriginalName();
-                    $path->move('public/images/chat/video', $name);
+                     $path->move(public_path('images/chat/video'), $name);
                     
                 }
                 $messgae->type =  $type;
