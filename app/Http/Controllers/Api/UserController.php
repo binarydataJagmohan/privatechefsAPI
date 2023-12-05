@@ -1259,7 +1259,7 @@ class UserController extends Controller
         try {
             $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos', 'Italy', 'Norway', 'Sweden', 'Spain'];
             // Fetch chef details based on desired locations
-            $users = User::select('id', 'name', 'pic', 'address')
+            $users = User::select('id', 'name', 'pic', 'address','slug')
                 ->whereIn('address', $desiredLocations)
                 ->where('role', 'chef')
                 ->where('status', '!=', 'deleted')
@@ -1276,6 +1276,7 @@ class UserController extends Controller
                         'chef_id' => $chef->id,
                         'name' => $chef->name,
                         'pic' => $chef->pic,
+                        'slug' => $chef->slug,
                     ];
                 });
 
