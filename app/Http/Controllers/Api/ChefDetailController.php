@@ -249,12 +249,12 @@ class ChefDetailController extends Controller
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                
+
                 ->where(function ($query) use ($searchTerm) {
                     $query->where('users.name', 'LIKE', "%$searchTerm%")
                           ->orWhere('users.surname', 'LIKE', "%$searchTerm%");
                 })
-                ->select('users.id', 'users.name', 'users.profile_status', 'applied_jobs.amount', 'users.address', 'users.pic', 'users.approved_by_admin', 'users.email','users.slug')
+                ->select('users.id', 'users.name', 'users.profile_status', 'applied_jobs.amount', 'users.address', 'users.email','users.phone', 'users.pic', 'users.approved_by_admin', 'users.email','users.slug')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->orderby('users.id', 'desc')

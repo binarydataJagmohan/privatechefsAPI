@@ -55,7 +55,7 @@
                                     <tr>
                                         <td style="text-align: center">
                                            <a href="#" style="display: block; margin-bottom: 10px;">
-                                              <img src="{{ config('app.url') }}/public/images/logo.png" height="100" alt="logo" />
+                                              <img src="{{ config('app.url') }}/public/images/logo.png" width="100" height="100" alt="logo" />
                                             </a>
                                         </td>
                                     </tr>
@@ -84,8 +84,8 @@
 
                                         </td>
                                     </tr>
-                                    
-                                   
+
+
                                     <tr
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                         <td class="content-block"

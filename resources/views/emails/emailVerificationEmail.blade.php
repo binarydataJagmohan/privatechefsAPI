@@ -39,7 +39,7 @@
                        itemtype="http://schema.org/ConfirmAction"
                        style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; margin: 0; border: none;"
                        >
-                    
+
                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                         <td class="content-wrap"
                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; display: inline-block; font-size: 14px; vertical-align: top; margin: 0; padding: 30px;border: 3px solid #ff4e00;border-radius: 7px; background-color: #fff;"
@@ -51,11 +51,11 @@
                                 <tr>
                                      <td style="text-align: center">
                                            <a href="#" style="display: block; margin-bottom: 10px;">
-                                              <img src="{{ config('app.url') }}/public/images/logo.png" height="100" alt="logo" />
+                                              <img src="{{ config('app.url') }}/public/images/logo.png"  width="100" height="100" alt="logo" />
                                             </a>
                                         </td>
                                 </tr>
-            
+
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
@@ -76,7 +76,7 @@
                                         itemtype="http://schema.org/HttpActionHandler"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                 
+
 
                                             <a href="{{ env('NEXT_URL') }}/?id={{ $user_id }}&hash={{ $token }}" class="btn-primary" itemprop="url"
                                            style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #ff4e00; margin: 0; border-color: #ff4e00; border-style: solid; border-width: 8px 16px;">Verify Email</a>
