@@ -74,7 +74,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Congratulations and welcome to the enchanting world of Private Chefs Worldwide! 🍽️✨
+                                        Congratulations and welcome to the enchanting world of Private Chefs World! 🍽️✨
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -89,7 +89,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Get ready to embark on a journey filled with mouthwatering dishes, talented chefs, and unforgettable moments. At Private Chefs Worldwide, we believe in the power of gastronomy to create extraordinary memories. Whether you're looking to savor gourmet breakfasts, relish delightful lunches, or indulge in magnificent dinners, we have an array of culinary wonders awaiting you.
+                                        Get ready to embark on a journey filled with mouthwatering dishes, talented chefs, and unforgettable moments. At Private Chefs World, we believe in the power of gastronomy to create extraordinary memories. Whether you're looking to savor gourmet breakfasts, relish delightful lunches, or indulge in magnificent dinners, we have an array of culinary wonders awaiting you.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -103,7 +103,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Stay tuned for updates, special offers, and exclusive experiences that will make your culinary journey with Private Chefs Worldwide truly magical.
+                                        Stay tuned for updates, special offers, and exclusive experiences that will make your culinary journey with Private Chefs World truly magical.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -143,7 +143,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        The Private Chefs Worldwide Team 🌍👨‍🍳
+                                        The Private Chefs World Team 🌍👨‍🍳
                                     </td>
                                 </tr>
                             </table>

@@ -234,14 +234,6 @@ class ChefDetailController extends Controller
     {
         try {
 
-            // $users = User::where('users.role', 'chef')
-            // ->where('users.status', 'active')
-            // ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
-            // ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-            // ->select('users.id', 'users.name', 'users.address','cuisine.name')
-            // ->groupBy('users.id', 'users.name', 'users.address')
-            // ->get();
-
             $searchTerm =  $request->name;
 
             $users = User::where('users.role', 'chef')

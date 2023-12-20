@@ -147,21 +147,21 @@ class UserController extends Controller
                 Mail::send('emails.registerEmailforuser', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
                     $message->bcc($data['admin_email']);
-                    $message->subject('Welcome to the Culinary Magic of Private Chefs Worldwide!');
+                    $message->subject('Welcome to the Culinary Magic of Private Chefs World!');
                 });
             }
             if ($request->role == 'chef') {
                 Mail::send('emails.registerEmailforchef', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
                     $message->bcc($data['admin_email']);
-                    $message->subject('Registration Received - Welcome to Private Chefs Worldwide!');
+                    $message->subject('Registration Received - Welcome to Private Chefs World!');
                 });
             }
             if ($request->role == 'concierge') {
                 Mail::send('emails.registerEmailforconcierge', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
                     $message->bcc($data['admin_email']);
-                    $message->subject('Welcome to the Private Chefs Worldwide Partnership!');
+                    $message->subject('Welcome to the Private Chefs World Partnership!');
                 });
             }
             $payload = Auth::getPayload($token);
@@ -622,7 +622,7 @@ class UserController extends Controller
         try {
 
             $userdata = User::select('allergy_id','additional_notes','cuisine_id')->where('id',$user_id)->first();
-            
+
             if($userdata){
 
               return response()->json([
@@ -639,7 +639,7 @@ class UserController extends Controller
                 ]);
 
             }
-           
+
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
             return response()->json([
@@ -677,7 +677,7 @@ class UserController extends Controller
             }
 
 
-           
+
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
             return response()->json([
@@ -710,7 +710,7 @@ class UserController extends Controller
 
 
                 $user = Auth::user();
-    
+
                 return response()->json(['status' => true, 'message' => 'User Loggedin successfully', 'data' => ['user' => $user, 'token' => $token, 'expiration' => $expirationTime]], 200);
 
             } else {
@@ -986,7 +986,7 @@ class UserController extends Controller
                     'vat_no' => $user->vat_no,
                     'tax_id' => $user->tax_id
                 ];
-                
+
 
                 Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
                     $message->from(config('mail.from.address'), "Private Chefs");
@@ -1246,7 +1246,7 @@ class UserController extends Controller
                     return response()->json(['status' => true, 'message' => "Concierge profile unapproved successfully", 'data' => $user], 200);
                 }
 
-                
+
             } else {
                 return response()->json(['status' => false, 'message' => "There has been error for approving the concierge profile", 'data' => ""], 400);
             }

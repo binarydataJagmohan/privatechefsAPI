@@ -60,7 +60,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Subject: Registration Received - Welcome to Private Chefs Worldwide!
+                                        Subject: Registration Received - Welcome to Private Chefs World!
                                     </td>
                                 </tr> --}}
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -74,7 +74,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Thank you for taking the first step towards becoming a part of Private Chefs Worldwide! 🍽️✨
+                                        Thank you for taking the first step towards becoming a part of Private Chefs World! 🍽️✨
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -89,7 +89,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Our mission is to curate a team of exceptional culinary professionals, and your skills and expertise have piqued our interest. You're just a step away from potentially joining Private Chefs Worldwide and becoming a part of our global culinary family.
+                                        Our mission is to curate a team of exceptional culinary professionals, and your skills and expertise have piqued our interest. You're just a step away from potentially joining Private Chefs World and becoming a part of our global culinary family.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -143,7 +143,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        The Private Chefs Worldwide Team 🌍👨‍🍳
+                                        The Private Chefs World Team 🌍👨‍🍳
                                     </td>
                                 </tr>
                             </table>

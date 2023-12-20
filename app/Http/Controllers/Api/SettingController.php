@@ -65,10 +65,10 @@ class SettingController extends Controller
         }
     }
 
- 
+
     public function Subscribe(Request $request,$email)
     {
-       
+
         if (Newsletter::isSubscribed($email)) {
             return response()->json(['status' => false, 'message' => 'Email is already subscribed please choose different email.'], 200);
         } else {
@@ -77,7 +77,7 @@ class SettingController extends Controller
 
             Mail::send('emails.subscriptionEmail', [], function ($message) use ($email) {
                 $message->from(config('mail.from.address'), "Private Chefs");
-                $message->subject('Thank you for subscribing to Private Chefs Worldwide!');
+                $message->subject('Thank you for subscribing to Private Chefs World!');
                 $message->to($email);
             });
 

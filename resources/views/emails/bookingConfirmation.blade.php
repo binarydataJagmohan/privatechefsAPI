@@ -53,12 +53,14 @@
                                 <table width="100%" cellpadding="0" cellspacing="0"
                                     style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <tr>
-                                       <td style="text-align: center">
-                                           <a href="#" style="display: block; margin-bottom: 10px;">
-                                              <img src="{{ config('app.url') }}/public/images/logo.png" height="100"  width="100" alt="logo" />
-                                            </a>
-                                        </td>
-                                    </tr>
+                                        <td style="text-align: center">
+                                          <a href="#" style="display: block; margin-bottom: 10px;">
+                                             <img src="{{ config('app.url') }}/public/images/logo.png" height="100"  width="100" alt="logo" />
+                                           </a>
+                                       </td>
+                                   </tr>
+
+
 
                                     <tr>
                                         <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"

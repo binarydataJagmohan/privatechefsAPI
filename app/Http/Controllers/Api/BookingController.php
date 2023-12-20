@@ -157,6 +157,7 @@ class BookingController extends Controller
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject('Booking Confirmation');
                         $message->to($booking->email);
+                        $message->cc('confirmations@privatechefsworld.com');
                         $message->bcc(User::select('email')->where('role', 'admin')->first()->email); // Add admin email as BCC
                     });
 
@@ -166,6 +167,7 @@ class BookingController extends Controller
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject("We've Received Your Booking Request!");
                         $message->to($booking->email);
+                        $message->cc('confirmations@privatechefsworld.com');
                         $message->bcc(User::select('email')->where('role', 'admin')->first()->email); // Add admin email as BCC
                     });
                 }
@@ -843,7 +845,7 @@ class BookingController extends Controller
 
             } else {
 
-                
+
                 if($request->payment_status == 'pending'){
                       $updatebooking = AppliedJobs::where('id', $request->id)->update([
                         'status' => 'discussion'
@@ -944,7 +946,7 @@ class BookingController extends Controller
                     'aj.chef_id',
                     'b.status',
                     'b.assigned_to_villa_id'
-                    
+
                 )
                 ->select(
                     'b.name',
@@ -2252,7 +2254,7 @@ class BookingController extends Controller
 
         if (!empty($intersectedDates)) {
             // Chef is already booked between these dates
-          
+
             return response()->json(['status' => false, 'message' => 'This Chef is already booked between these date',]);
 
 
@@ -2328,7 +2330,6 @@ class BookingController extends Controller
 
 
 
-    // public function savePayment(Request $request)
     // {
     //     Stripe::setApiKey(env('STRIPE_SECRET'));
 
@@ -2577,6 +2578,7 @@ class BookingController extends Controller
                 $message->from(config('mail.from.address'), "Private Chefs");
                 $message->to($data['user_email']);  // Send it to the client's email address
                 $message->bcc($data['admin_email']);
+                $message->cc('confirmations@privatechefsworld.com');
                 $message->subject(' Your Culinary Experience Awaits – Booking Confirmation');
             });
 
@@ -2595,5 +2597,5 @@ class BookingController extends Controller
     }
     }
 
-   
+
 }

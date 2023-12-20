@@ -82,7 +82,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        At Private Chefs Worldwide, we believe in the power of exceptional cuisine to create unforgettable memories. Your skills, creativity, and expertise will now have the opportunity to shine, delighting clients from around the world. Whether you're a maestro of international cuisine or a specialist in a particular culinary style, your unique offerings will captivate discerning palates.
+                                        At Private Chefs World, we believe in the power of exceptional cuisine to create unforgettable memories. Your skills, creativity, and expertise will now have the opportunity to shine, delighting clients from around the world. Whether you're a maestro of international cuisine or a specialist in a particular culinary style, your unique offerings will captivate discerning palates.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -103,7 +103,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Once again, welcome to Private Chefs Worldwide, and here's to a future filled with delectable moments!
+                                        Once again, welcome to Private Chefs World, and here's to a future filled with delectable moments!
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -117,7 +117,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        The Private Chefs Worldwide Team 🌍👨‍🍳
+                                        The Private Chefs World Team 🌍👨‍🍳
                                     </td>
                                 </tr>
                             </table>
