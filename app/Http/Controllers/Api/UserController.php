@@ -132,7 +132,6 @@ class UserController extends Controller
 
             Mail::send('emails.emailVerificationEmail', ['token' => $email_token, 'user_id' => $user->id], function ($message) use ($request) {
                 $message->to($request->email);
-                // $message->bcc(['recipient1@example.com', 'recipient2@example.com']);
                 $message->subject('Email Verification Mail');
             });
 
@@ -146,21 +145,21 @@ class UserController extends Controller
             if ($request->role == 'user') {
                 Mail::send('emails.registerEmailforuser', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
-                    $message->bcc($data['admin_email']);
+                    $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
                     $message->subject('Welcome to the Culinary Magic of Private Chefs World!');
                 });
             }
             if ($request->role == 'chef') {
                 Mail::send('emails.registerEmailforchef', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
-                    $message->bcc($data['admin_email']);
+                    $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
                     $message->subject('Registration Received - Welcome to Private Chefs World!');
                 });
             }
             if ($request->role == 'concierge') {
                 Mail::send('emails.registerEmailforconcierge', ['data' => $data, 'token' => $email_token, 'user_id' => $user->id], function ($message) use ($request, $data) {
                     $message->to($request->email);
-                    $message->bcc($data['admin_email']);
+                    $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
                     $message->subject('Welcome to the Private Chefs World Partnership!');
                 });
             }

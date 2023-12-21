@@ -504,6 +504,7 @@ class ChefDetailController extends Controller
             Mail::send('emails.chefconfirmingapproval', ['user' => $user], function ($message) use ($user) {
                 $message->from(config('mail.from.address'), "Private Chefs");
                 $message->to($user->email);
+                $message->bcc('info@privatechefsworld.com');
                 $message->subject("Welcome Aboard, " . $user->name);
             });
         }
