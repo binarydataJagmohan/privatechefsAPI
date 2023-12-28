@@ -890,11 +890,23 @@ class UserController extends Controller
                 $user = new User();
                 $user->name = $request->name;
                 $user->email = $request->email;
+                $user->slug = Str::slug($request->name);
                 $user->password = Hash::make($password);
                 $user->view_password = $password;
                 $user->created_by = $request->created_by;
                 $user->role = 'chef';
-                $savedata = $user->save();
+                if ($request->created_by == '1') {
+                    $user->approved_by_admin = 'yes';
+                }
+
+                $user->save();
+
+
+                if ($user->role == 'chef') {
+                    $detail = new ChefDetail();
+                    $detail->user_id = $user->id;
+                    $detail->save();
+                }
 
                 $data = [
                     'name'   => $user->name,
@@ -931,8 +943,6 @@ class UserController extends Controller
     {
         try {
 
-            // return $request->all();
-
             $checkemail = User::where('email', $request->email)->count();
 
             if ($checkemail <= 0) {
@@ -953,6 +963,7 @@ class UserController extends Controller
                 $user->lat = $request->lat;
                 $user->lng = $request->lng;
                 $user->approved_by_admin = 'yes';
+                $user->slug = Str::slug($request->name);
 
                 $user->password = Hash::make($request->password);
                 $user->view_password = $request->password;
@@ -968,6 +979,12 @@ class UserController extends Controller
                 }
 
                 $savedata = $user->save();
+
+                if ($user->role == 'chef') {
+                    $detail = new ChefDetail();
+                    $detail->user_id = $user->id;
+                    $detail->save();
+                }
 
                 $data = [
                     'name'   => $user->name,

@@ -114,7 +114,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 });
 
 Route::get('/get-all-dish-gallery/{id}', [DishesController::class, 'getAllChefDishGallery']);
-    
+
 
 //chef edit profile
 //user edit profile
@@ -231,9 +231,9 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::post('/assigned-booking-by-admin-without-db', [App\Http\Controllers\Api\BookingController::class, 'AssignedBookingByAdminWithoutDatabse']);
 
-   Route::post('/assigned-villa-by-booking', [App\Http\Controllers\Api\VillasController::class, 'AssignedVillaByBooking']);    
+   Route::post('/assigned-villa-by-booking', [App\Http\Controllers\Api\VillasController::class, 'AssignedVillaByBooking']);
 
-   Route::get('/get-admin-villa-by-booking/{id}', [App\Http\Controllers\Api\VillasController::class, 'get_admin_villa_by_booking']); 
+   Route::get('/get-admin-villa-by-booking/{id}', [App\Http\Controllers\Api\VillasController::class, 'get_admin_villa_by_booking']);
 
 
 });
@@ -395,5 +395,5 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('/get-all-chef-by-location-onfronted', [App\Http\Controllers\Api\UserController::class, 'get_chef_by_location_onfronted']);
 
     Route::get('get-all-chef-reviews/{id}', [App\Http\Controllers\Api\ReviewController::class, 'getAllChefReview']);
-    
+
 });

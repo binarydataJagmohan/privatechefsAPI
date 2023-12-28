@@ -100,7 +100,7 @@
                                     </tr>
                                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                         <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                            2.Use your email address ([Your Email Address]) as your username.
+                                            2.Use your email address {{$data['email']}} as your username.
                                         </td>
                                     </tr>
                                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -115,7 +115,7 @@
                                     </tr>
                                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                         <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                            We're excited to have you on board and can't wait to see the magic you bring to our platform. If you have any questions, concerns, or need assistance, please don't hesitate to reach out to us at [Your Contact Email].
+                                            We're excited to have you on board and can't wait to see the magic you bring to our platform. If you have any questions, concerns, or need assistance, please don't hesitate to reach out to us at <a href="mailto:info@privatechefsworld.com">info@privatechefsworld.com</a>.
                                         </td>
                                     </tr>
                         </tr>

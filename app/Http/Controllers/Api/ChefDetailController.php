@@ -145,26 +145,15 @@ class ChefDetailController extends Controller
     public function update_chef_resume(Request $request)
     {
         try {
-            $chef = ChefDetail::where('user_id', $request->id)->first();
+            // $chef = ChefDetail::where('user_id', $request->id)->first();
+            $chef = ChefDetail::where('user_id', $request->route('id'))->first();
+
             if ($chef) {
                 $resume = ChefDetail::find($chef->id);
                 $resume->about = $request->about;
                 $resume->description = $request->description;
                 $resume->services_type = $request->services_type;
-                // $resume->employment_status = $request->employment_status;
-                // $resume->website = $request->website;
                 $resume->languages = $request->languages;
-
-                // $resume->service_title_1 = $request->service_title_1;
-                // $resume->service_description_1 = $request->service_description_1;
-                // $resume->service_title_2 = $request->service_title_2;
-                // $resume->service_description_2 = $request->service_description_2;
-                // $resume->service_title_3 = $request->service_title_3;
-                // $resume->service_description_3 = $request->service_description_3;
-                // $resume->service_title_4 = $request->service_title_4;
-                // $resume->service_description_4 = $request->service_description_4;
-
-
                 $resume->experience = $request->experience;
                 $resume->skills = $request->skills;
                 $resume->favorite_chef = $request->favorite_chef;
@@ -177,14 +166,6 @@ class ChefDetailController extends Controller
                 $resume->youtube_link = $request->youtube_link;
                 $savedata = $resume->save();
 
-                // $resume = User::find($request->id);
-                // if ($request->hasFile('image')) {
-                //     $randomNumber = mt_rand(1000000000, 9999999999);
-                //     $imagePath = $request->file('image');
-                //     $imageName = $randomNumber . $imagePath->getClientOriginalName();
-                //     $imagePath->move('images/chef/users', $imageName);
-                //     $resume->pic = $imageName;
-                // }
 
                 $resume->save();
 
