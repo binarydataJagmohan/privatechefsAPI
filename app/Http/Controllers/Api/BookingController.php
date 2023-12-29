@@ -20,7 +20,7 @@ use Stripe\Customer;
 use Stripe\Token;
 use Stripe\Charge;
 use Stripe\Exception\CardException;
-
+use Auth;
 
 class BookingController extends Controller
 {
@@ -471,6 +471,8 @@ class BookingController extends Controller
     {
         try {
 
+            $today = now()->toDateString();
+
             $chefuserbookings = DB::table('users')
                 ->join('bookings', 'users.id', '=', 'bookings.user_id')
                 ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
@@ -495,6 +497,7 @@ class BookingController extends Controller
                 )
                 ->groupBy('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id', 'applied_jobs.status')
                 ->where('bookings.status', '=', 'active')
+                // ->where('booking_meals.date', '>=', $today)
                 ->whereNotExists(function ($query) {
                     $query->select(DB::raw(1))
                         ->from('applied_jobs')
@@ -504,9 +507,9 @@ class BookingController extends Controller
                 ->orderBy('bookings.id', 'DESC')
                 ->get();
 
+
             foreach ($chefuserbookings as $booking) {
                 $dates = explode(',', $booking->dates);
-                // $bookingStatus = 'Expired';
                 foreach ($dates as $date) {
                     $dateObject = new \DateTime($date);
                     $today = new \DateTime();
@@ -526,8 +529,8 @@ class BookingController extends Controller
                     }
                 }
                 $booking->booking_status = $bookingStatus;
-            }
 
+        }
 
             if (!$chefuserbookings) {
                 return response()->json(['message' => 'Booking not found', 'status' => true], 404);
@@ -958,21 +961,7 @@ class BookingController extends Controller
             if (!$adminchefuserbookings) {
                 return response()->json(['message' => 'Booking not found', 'status' => true], 404);
             }
-            // foreach ($adminchefuserbookings as $booking) {
-            //     $dates = explode(',', $booking->dates);
-            //     $bookingStatus = 'Expired';
-            //     foreach ($dates as $date) {
-            //         $dateObject = new \DateTime($date);
-            //         $today = new \DateTime();
-            //         $dateObject->setTime(0, 0, 0);
-            //         $today->setTime(0, 0, 0);
-            //         if ($dateObject >= $today) {
-            //             $bookingStatus = 'Upcoming';
-            //             break;
-            //         }
-            //     }
-            //     $booking->booking_status = $bookingStatus;
-            // }
+
             foreach ($adminchefuserbookings as $booking) {
                 $dates = explode(',', $booking->dates);
                 // $bookingStatus = 'Expired';
@@ -2025,16 +2014,6 @@ class BookingController extends Controller
                 ->whereNull('applied_jobs.booking_id')
                 ->count();
 
-            // $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
-            //     ->leftJoin('applied_jobs', function ($join) {
-            //         $join->on('bookings.id', '=', 'applied_jobs.booking_id')
-            //             ->where('applied_jobs.status', '=', 'hired');
-            //     })
-            //     ->where('users.status', '!=', 'deleted')
-            //     ->where('bookings.status', '!=', 'deleted')
-            //     ->whereNull('applied_jobs.booking_id')
-            //     ->count();
-
 
             $allBookings = DB::table('users')
                 ->join('bookings', 'users.id', '=', 'bookings.user_id')
@@ -2072,6 +2051,8 @@ class BookingController extends Controller
     public function get_applied_chef_bookings_count(Request $request)
     {
         try {
+            $today = now()->toDateString();
+
             $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
                 ->leftJoin('applied_jobs', function ($join) use ($request) {
                     $join->on('applied_jobs.booking_id', '=', 'bookings.id')
@@ -2087,6 +2068,7 @@ class BookingController extends Controller
                         ->where('applied_jobs.status', 'hired');
                 })
                 ->count();
+
             $applied_booking = User::join('bookings', 'users.id', 'bookings.user_id')
                 ->join('applied_jobs', function ($join) use ($request) {
                     $join->on('applied_jobs.booking_id', '=', 'bookings.id')
