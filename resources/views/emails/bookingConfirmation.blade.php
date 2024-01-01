@@ -93,7 +93,7 @@
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
                                             We are looking forward to providing you with an exceptional culinary
-                                            experience on {{ $booking['created_at'] }}. Our team of talented chefs is dedicated to
+                                            experience on. Our team of talented chefs is dedicated to
                                             creating a memorable dining experience for you and your guests.
                                         </td>
                                     </tr>
