@@ -371,8 +371,6 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('hired-assigned-booking-by-admin', [App\Http\Controllers\Api\BookingController::class, 'hired_assigned_booking_by_admin']);
 
     Route::post('add-reviews', [App\Http\Controllers\Api\ReviewController::class, 'addReviews']);
-
-
 });
 
 Route::group(['middleware' => ['api']], function ($router) {
@@ -395,5 +393,9 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('/get-all-chef-by-location-onfronted', [App\Http\Controllers\Api\UserController::class, 'get_chef_by_location_onfronted']);
 
     Route::get('get-all-chef-reviews/{id}', [App\Http\Controllers\Api\ReviewController::class, 'getAllChefReview']);
+
+    Route::get('/chefDelete/{id}', [App\Http\Controllers\Api\UserController::class, 'chefDelete']);
+    Route::get('/userDelete/{id}', [App\Http\Controllers\Api\UserController::class, 'userDelete']);
+
 
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BookingMeals;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -19,6 +20,7 @@ use App\Models\PasswordReset;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\DB;
 use App\Models\Notification;
+use App\Models\Booking;
 
 class UserController extends Controller
 {
@@ -123,9 +125,9 @@ class UserController extends Controller
             $admin = User::select('id', 'email')->where('role', 'admin')->get();
 
             $notify_by = $user->id;
-            $notify_to =  $admin;
+            $notify_to = $admin;
             $description = 'Thank you for registering. We hope you enjoy using our website.';
-            $description1 = $user->name .'('.$user->role.')'.' registered on our website.'. $user->id.'.'.$user->role;
+            $description1 = $user->name . '(' . $user->role . ')' . ' registered on our website.' . $user->id . '.' . $user->role;
             $type = 'Register';
 
             createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
@@ -138,8 +140,8 @@ class UserController extends Controller
             $admindata = User::select('email')->where('role', 'admin')->first();
 
             $data = [
-                'name'   => $request->name,
-                'admin_email' =>  $admindata->email,
+                'name' => $request->name,
+                'admin_email' => $admindata->email,
             ];
 
             if ($request->role == 'user') {
@@ -184,7 +186,7 @@ class UserController extends Controller
             $email = $request->input('email');
             $password = $request->input('password');
 
-            $user = User::where('email', $email)->first();
+            $user = User::where('email', $email)->where('status', 'active ')->first();
 
             if (!$user) {
                 return response()->json([
@@ -260,10 +262,10 @@ class UserController extends Controller
     {
         try {
             $user = User::find($request->id);
-            $user->name =  $request->name;
-            $user->surname =  $request->surname;
+            $user->name = $request->name;
+            $user->surname = $request->surname;
             $user->phone = $request->phone;
-            $user->birthday =  date('Y-m-d', strtotime($request->birthday));
+            $user->birthday = date('Y-m-d', strtotime($request->birthday));
             $user->address = $request->address;
             $user->timezone = $request->timezone;
             $user->currency = $request->currency;
@@ -288,7 +290,7 @@ class UserController extends Controller
             $concierge = User::select('id', 'created_by')->where('id', $request->id)->first();
 
             $notify_by = $user->id;
-            $notify_to =  $admin;
+            $notify_to = $admin;
             $description = 'Your profile has been successfully updated.';
             $description1 = $user->name . ' has just updated their profile.';
             $type = 'update_profile';
@@ -297,7 +299,7 @@ class UserController extends Controller
 
             if ($concierge->created_by) {
                 $notify_by1 = $concierge->id;
-                $notify_to1 =  $concierge->created_by;
+                $notify_to1 = $concierge->created_by;
                 $description1 = $user->name . ' has just updated their profile.';
                 $type1 = 'update_profile';
 
@@ -321,7 +323,7 @@ class UserController extends Controller
 
             $user = User::find($request->id);
 
-             if ($request->hasFile('image')) {
+            if ($request->hasFile('image')) {
                 $file = $request->file('image');
                 $randomNumber = mt_rand(1000000000, 9999999999);
                 $imageName = $randomNumber . $file->getClientOriginalName();
@@ -345,7 +347,7 @@ class UserController extends Controller
     {
         // return $request->all();
         try {
-            $user =  User::where('email', $request->email)->first();
+            $user = User::where('email', $request->email)->first();
             if ($user) {
                 $token = Str::random(40);
                 $domain = env('NEXT_URL');
@@ -373,7 +375,7 @@ class UserController extends Controller
 
                 if ($concierge && $concierge->created_by) {
                     $notify_by1 = $concierge->id;
-                    $notify_to1 =  $concierge->created_by;
+                    $notify_to1 = $concierge->created_by;
                     $description1 = $user->name . ', has just requested to reset their password.';
                     $type1 = 'forget_password';
 
@@ -381,7 +383,7 @@ class UserController extends Controller
                 }
 
                 $notify_by = $user->id;
-                $notify_to =  $admin;
+                $notify_to = $admin;
                 $description = 'Please follow the link sent to your email to reset your password';
                 $description1 = $user->name . ', has just requested to reset their password.';
                 $type = 'forget_password';
@@ -506,45 +508,45 @@ class UserController extends Controller
             // ->first();
 
 
-            if(is_numeric($request->id)){
-                 $chef_id = $request->id;
-            }else {
-                 $chef = User::select('id')->where('slug',$request->id)->first();
-                 $chef_id = $chef->id;
+            if (is_numeric($request->id)) {
+                $chef_id = $request->id;
+            } else {
+                $chef = User::select('id')->where('slug', $request->id)->first();
+                $chef_id = $chef->id;
             }
 
             $chef = User::leftJoin('chef_details', 'users.id', '=', 'chef_details.user_id')
-            ->leftJoin('chef_location', 'chef_details.user_id', '=', 'chef_location.user_id')
-            ->where('users.id', $chef_id)
-            ->select(
-                'users.id',
-                'users.name',
-                'users.surname',
-                'users.phone',
-                'users.email',
-                'users.BIC',
-                'users.IBAN',
-                'users.address',
-                'users.bank_address',
-                'users.bank_name',
-                'users.holder_name',
-                'users.passport_no',
-                'users.pic',
-                'users.tax_id',
-                'users.vat_no',
-                'chef_details.about',
-                'chef_details.description',
-                'chef_details.services_type',
-                'chef_details.favorite_dishes',
-                'chef_details.languages',
-                'chef_details.love_cooking',
-                'chef_details.experience',
-                'chef_details.favorite_chef',
-                'chef_details.skills',
-                DB::raw('GROUP_CONCAT(chef_location.address SEPARATOR ", ") as addresses')
-            )
-            ->groupBy('users.id')
-            ->first();
+                ->leftJoin('chef_location', 'chef_details.user_id', '=', 'chef_location.user_id')
+                ->where('users.id', $chef_id)
+                ->select(
+                    'users.id',
+                    'users.name',
+                    'users.surname',
+                    'users.phone',
+                    'users.email',
+                    'users.BIC',
+                    'users.IBAN',
+                    'users.address',
+                    'users.bank_address',
+                    'users.bank_name',
+                    'users.holder_name',
+                    'users.passport_no',
+                    'users.pic',
+                    'users.tax_id',
+                    'users.vat_no',
+                    'chef_details.about',
+                    'chef_details.description',
+                    'chef_details.services_type',
+                    'chef_details.favorite_dishes',
+                    'chef_details.languages',
+                    'chef_details.love_cooking',
+                    'chef_details.experience',
+                    'chef_details.favorite_chef',
+                    'chef_details.skills',
+                    DB::raw('GROUP_CONCAT(chef_location.address SEPARATOR ", ") as addresses')
+                )
+                ->groupBy('users.id')
+                ->first();
 
 
             if ($chef) {
@@ -616,23 +618,23 @@ class UserController extends Controller
     // }
 
 
-    public function getAllergyAdditonalInfo(Request $request,$user_id)
+    public function getAllergyAdditonalInfo(Request $request, $user_id)
     {
         try {
 
-            $userdata = User::select('allergy_id','additional_notes','cuisine_id')->where('id',$user_id)->first();
+            $userdata = User::select('allergy_id', 'additional_notes', 'cuisine_id')->where('id', $user_id)->first();
 
-            if($userdata){
+            if ($userdata) {
 
-              return response()->json([
-                'status' => true,
-                'data' => $userdata,
-                'message' => 'Additonal information data fetch successsfully',
+                return response()->json([
+                    'status' => true,
+                    'data' => $userdata,
+                    'message' => 'Additonal information data fetch successsfully',
                 ]);
 
-            }else {
+            } else {
 
-                 return response()->json([
+                return response()->json([
                     'status' => false,
                     'message' => 'failed to fetch additional information',
                 ]);
@@ -654,21 +656,21 @@ class UserController extends Controller
         try {
 
             $user = User::find($request->user_id);
-            $user->allergy_id =$request->allergy_id;
-            $user->cuisine_id =$request->cuisine_id;
+            $user->allergy_id = $request->allergy_id;
+            $user->cuisine_id = $request->cuisine_id;
             $user->additional_notes = $request->additional_notes;
             $user->save();
 
-            if($user->save()){
+            if ($user->save()) {
 
-              return response()->json([
-                'status' => true,
-                'message' => 'Additonal information update successsfully',
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Additonal information update successsfully',
                 ]);
 
-            }else {
+            } else {
 
-                 return response()->json([
+                return response()->json([
                     'status' => false,
                     'message' => 'failed to save additional information',
                 ]);
@@ -726,7 +728,7 @@ class UserController extends Controller
                 $data['profile_status'] = "pending";
                 $data['created_by'] = null;
                 $user = new User();
-                $register  = $user->create($data);
+                $register = $user->create($data);
                 // return $register;
 
                 if ($register) {
@@ -809,10 +811,10 @@ class UserController extends Controller
                 $admindata = User::select('email')->where('role', 'admin')->first();
 
                 $data = [
-                    'name'   => $user->name,
+                    'name' => $user->name,
                     'password' => $password,
-                    'email'   => $user->email,
-                    'admin_email' =>  $admindata->email,
+                    'email' => $user->email,
+                    'admin_email' => $admindata->email,
                 ];
 
                 if ($request->created_by != '1') {
@@ -909,9 +911,9 @@ class UserController extends Controller
                 }
 
                 $data = [
-                    'name'   => $user->name,
+                    'name' => $user->name,
                     'password' => $password,
-                    'email'   => $user->email,
+                    'email' => $user->email,
                 ];
                 if ($request->created_by != '1') {
                     Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
@@ -987,9 +989,9 @@ class UserController extends Controller
                 }
 
                 $data = [
-                    'name'   => $user->name,
+                    'name' => $user->name,
                     'password' => $request->password,
-                    'email'   => $user->email,
+                    'email' => $user->email,
                     'surname' => $user->surname,
                     'phone' => $user->phone,
                     'address' => $user->address,
@@ -1085,7 +1087,7 @@ class UserController extends Controller
 
             $resource = '/v2/me';
             $params = ['oauth2_access_token' => $accessToken];
-            $url =  $accessToken;
+            $url = $accessToken;
             $options = [
                 'http' => [
                     'method' => 'GET',
@@ -1097,7 +1099,7 @@ class UserController extends Controller
             $data = json_decode($response);
 
             return response()->json([
-                'data' =>  $data
+                'data' => $data
             ]);
         } catch (Exception $e) {
             return 'Unable to get user details';
@@ -1127,7 +1129,7 @@ class UserController extends Controller
             $users = User::select('id', 'address', 'lat')->where('role', 'user')
                 ->whereNotNull('users.address')
                 ->where('status', 'active')
-                 ->groupBy('address')
+                ->groupBy('address')
                 ->get();
             return response()->json([
                 'status' => true,
@@ -1145,12 +1147,12 @@ class UserController extends Controller
             $selectedLocationArray = explode(',', $selectedLocation);
 
             $users = User::where('role', 'user')
-            ->where('status', 'active')
-            // ->whereIn('address', $selectedLocationArray)
-            ->whereIn('users.lat', $selectedLocationArray)
-            ->where('status', '!=', 'deleted')
-            ->select('id', 'address', 'lat', 'name', 'profile_status')
-            ->get();
+                ->where('status', 'active')
+                // ->whereIn('address', $selectedLocationArray)
+                ->whereIn('users.lat', $selectedLocationArray)
+                ->where('status', '!=', 'deleted')
+                ->select('id', 'address', 'lat', 'name', 'profile_status')
+                ->get();
 
             return response()->json([
                 'status' => true,
@@ -1166,7 +1168,7 @@ class UserController extends Controller
             $users = User::where('created_by', $request->id)->select('id', 'address', 'lat')->where('role', 'chef')
                 ->whereNotNull('users.address')
                 ->where('status', 'active')
-                 ->groupBy('address')
+                ->groupBy('address')
                 ->get();
             return response()->json([
                 'status' => true,
@@ -1178,24 +1180,24 @@ class UserController extends Controller
     }
 
 
-     public function sendMessageToUserByAdmin(Request $request)
+    public function sendMessageToUserByAdmin(Request $request)
     {
         try {
 
-            foreach ($request->user_id as $id){
+            foreach ($request->user_id as $id) {
 
-                $user = User::select('email','name')->where('id', $id)->first();
+                $user = User::select('email', 'name')->where('id', $id)->first();
 
                 $data = [
-                    'email'   => $user->email,
-                    'name' =>  $user->name,
-                    'message'=> $request->message,
+                    'email' => $user->email,
+                    'name' => $user->name,
+                    'message' => $request->message,
                 ];
 
                 Mail::send('emails.SpecialMessageToUser', ["data" => $data], function ($message) use ($data) {
-                        $message->from(config('mail.from.address'), "Private Chefs");
-                        $message->subject('The PrivateChefs team has a special message for you:');
-                        $message->to($data['email']);
+                    $message->from(config('mail.from.address'), "Private Chefs");
+                    $message->subject('The PrivateChefs team has a special message for you:');
+                    $message->to($data['email']);
                 });
             }
 
@@ -1217,7 +1219,7 @@ class UserController extends Controller
             $users = User::where('created_by', $request->id)->select('id', 'address', 'lat')->where('role', 'chef')
                 ->whereNotNull('users.address')
                 ->where('status', 'active')
-                 ->groupBy('address')
+                ->groupBy('address')
                 ->get();
             return response()->json([
                 'status' => true,
@@ -1253,11 +1255,11 @@ class UserController extends Controller
 
             if ($user) {
 
-                if($request->approved_by_admin == 'yes'){
+                if ($request->approved_by_admin == 'yes') {
 
                     return response()->json(['status' => true, 'message' => "Concierge profile approved successfully", 'data' => $user], 200);
 
-                }else {
+                } else {
 
                     return response()->json(['status' => true, 'message' => "Concierge profile unapproved successfully", 'data' => $user], 200);
                 }
@@ -1277,7 +1279,7 @@ class UserController extends Controller
         try {
             $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos', 'Italy', 'Norway', 'Sweden', 'Spain'];
             // Fetch chef details based on desired locations
-            $users = User::select('id', 'name', 'pic', 'address','slug')
+            $users = User::select('id', 'name', 'pic', 'address', 'slug')
                 ->whereIn('address', $desiredLocations)
                 ->where('role', 'chef')
                 ->where('status', '!=', 'deleted')
@@ -1313,5 +1315,97 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+    public function chefDelete($id)
+    {
+        try {
+            // $chef = User::find($id);
+            $chef = User::where('id', $id)->where('role', 'chef')->first();
+            if (!$chef) {
+                return response()->json(['status' => 'Chef not found'], 404);
+            }
+            $chef->status = 'deleted'; // Change the status to 'inactive'
+            $chef->save();
+            return response()->json(['status' => true, 'message' => 'chef deleted', 'data' => $chef]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    // public function userDelete($id)
+    // {
+    //     try {
+    //         $user = User::where('id', $id)->where('role', 'user')->first();
+
+    //         if (!$user) {
+    //             return response()->json(['status' => 'User not found'], 404);
+    //         }
+    //         $user->status = 'deleted';
+    //         $user->save();
+    //         return response()->json(['status' => true, 'message' => 'user deleted', 'data' => $user]);
+    //     } catch (\Exception $e) {
+    //         throw new HttpException(500, $e->getMessage());
+    //     }
+    // }
+
+    //     public function userDelete($id)
+// {
+//     try {
+//         $user = User::where('id', $id)->where('role', 'user')->first();
+
+    //         if (!$user) {
+//             return response()->json(['status' => 'User not found'], 404);
+//         }
+
+    //         // Update user status
+//         $user->status = 'deleted';
+//         $user->save();
+
+    //         // Find related bookings and update their status
+//         $bookings = Booking::where('user_id', $id)->where('status', '!=', 'deleted')->get();
+//         foreach ($bookings as $booking) {
+//             $booking->status = 'deleted';
+//             $booking->save();
+//         }
+
+    //         return response()->json(['status' => true, 'message' => 'User and related bookings deleted', 'data' => $user]);
+//     } catch (\Exception $e) {
+//         throw new HttpException(500, $e->getMessage());
+//     }
+// }
+    public function userDelete($id)
+    {
+        try {
+            $user = User::where('id', $id)->where('role', 'user')->first();
+
+            if (!$user) {
+                return response()->json(['status' => 'User not found'], 404);
+            }
+
+            // Update user status
+            $user->status = 'deleted';
+            $user->save();
+
+            // Find related bookings and update their status
+            $bookings = Booking::where('user_id', $id)->where('status', '!=', 'deleted')->get();
+            foreach ($bookings as $booking) {
+                $booking->status = 'deleted';
+                $booking->save();
+
+                // Find related booking meals and update their status
+                $bookingMeals = BookingMeals::where('booking_id', $booking->id)->where('status', '!=', 'deleted')->get();
+                foreach ($bookingMeals as $bookingMeal) {
+                    $bookingMeal->status = 'deleted';
+                    $bookingMeal->save();
+                }
+            }
+
+            return response()->json(['status' => true, 'message' => 'User, bookings, and related booking meals deleted', 'data' => $user]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+
 
 }
