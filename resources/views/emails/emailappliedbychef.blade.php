@@ -100,13 +100,13 @@
                                         Chef Email: {{$data['chef_email']}}
                                     </td>
                                 </tr>
-                                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                {{-- <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
                                         Chef Contact Number: {{$data['chef_phone']}}
                                     </td>
-                                </tr>
+                                </tr> --}}
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
@@ -121,11 +121,26 @@
                                         If you have any questions or need assistance regarding this chef application, please feel free to contact our customer support team, and we will be happy to help.
                                     </td>
                                 </tr>
+
+                                <tr
+                                style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                {{-- <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0;">
+                                    <a href="{{ env('NEXT_URL') }}user/booking"
+                                    style="display: inline-block; background-color: #007bff; color: #fff; text-align: center; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">View Booking</a>
+                                </td> --}}
+
+                                <td class="content-block" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0;">
+                                    <a href="{{ env('NEXT_URL') }}user/booking"
+                                        style="display: inline-block; background-color: #007bff; color: #fff; text-align: center; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">View Booking</a>
+                                </td>
+
+                            </tr>
+
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Thank you for choosing our booking platform, and we wish you a successful and memorable event.
+                                        Thank you for choosing Private Chefs, and we wish you a successful and memorable event.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
