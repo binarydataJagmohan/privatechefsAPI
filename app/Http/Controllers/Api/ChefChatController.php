@@ -38,6 +38,7 @@ class ChefChatController extends Controller
                 'chat_messages.message_status',
                 'chat_messages.chat_type AS latest_chat_type',
                 'sender.is_online',
+                'chat_messages.id AS chat_message_id',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                 DB::raw('CASE 
                     WHEN chat_messages.chat_type = "booking" THEN (
@@ -138,6 +139,7 @@ class ChefChatController extends Controller
                            
                     });
             })
+            ->where('chat_messages.status', 'active')
             ->groupBy(
                 'chat_messages.booking_id',
                 'chat_messages.single_chat_id',
@@ -158,12 +160,17 @@ class ChefChatController extends Controller
                 $unquie = $first.$second;
                 $unquie_two = $second.$first;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select('chat_messages.id AS chat_message_id', 'message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 
-                ->where('chat_messages.single_chat_id', $unquie)
-                ->orWhere('chat_messages.single_chat_id', $unquie_two)
+                // ->where('chat_messages.single_chat_id', $unquie)
+                // ->orWhere('chat_messages.single_chat_id', $unquie_two)
+                ->where(function($query) use ($unquie, $unquie_two) {
+                    $query->where('chat_messages.single_chat_id', $unquie)
+                          ->orWhere('chat_messages.single_chat_id', $unquie_two);
+                })
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = 0;
@@ -192,6 +199,7 @@ class ChefChatController extends Controller
                     'receiver.id AS receiver_id',
                     'chat_messages.created_at as chatdate',
                     'type',
+                    'chat_messages.id AS chat_message_id',
                     DB::raw('CASE 
                         WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
                             SELECT (
@@ -247,8 +255,13 @@ class ChefChatController extends Controller
                 )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                ->where('chat_messages.unique_booking_id', $unquie)
-                ->orWhere('chat_messages.unique_booking_id', $unquie_two)
+                // ->where('chat_messages.unique_booking_id', $unquie)
+                // ->orWhere('chat_messages.unique_booking_id', $unquie_two)
+                ->where(function($query) use ($unquie, $unquie_two) {
+                    $query->where('chat_messages.unique_booking_id', $unquie)
+                          ->orWhere('chat_messages.unique_booking_id', $unquie_two);
+                })
+                ->where('chat_messages.status', 'active')
                 ->get();
 
 
@@ -260,9 +273,10 @@ class ChefChatController extends Controller
 
                 $group_id = $userSideMessages[0]->group_id;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select('chat_messages.id as chat_message_id', 'message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->Where('chat_messages.group_id', $group_id)
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = Chat_group_member::select(
@@ -435,6 +449,7 @@ class ChefChatController extends Controller
                 'chat_messages.message_status',
                 'chat_messages.chat_type AS latest_chat_type',
                 'sender.is_online',
+                'chat_messages.id AS chat_message_id',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                     DB::raw('CASE 
                     WHEN chat_messages.chat_type = "booking" THEN (
@@ -535,6 +550,7 @@ class ChefChatController extends Controller
                            
                     });
             })
+            ->where('chat_messages.status', 'active')
             ->groupBy(
                 'chat_messages.booking_id',
                 'chat_messages.single_chat_id',
@@ -550,12 +566,13 @@ class ChefChatController extends Controller
 
             if($chat_type == 'single'){
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select('chat_messages.id as chat_message_id', 'message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 
               
                 ->Where('chat_messages.single_chat_id', $request->single_chat_id)
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = 0;
@@ -578,6 +595,7 @@ class ChefChatController extends Controller
                     'receiver.id AS receiver_id',
                     'chat_messages.created_at as chatdate',
                     'type',
+                    'chat_messages.id AS chat_message_id',
                     DB::raw('CASE 
                         WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
                             SELECT (
@@ -634,6 +652,7 @@ class ChefChatController extends Controller
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 ->where('chat_messages.unique_booking_id', $request->unique_booking_id)
+                ->where('chat_messages.status', 'active')
                 ->get();
 
 
@@ -645,9 +664,10 @@ class ChefChatController extends Controller
 
                 $group_id = $request->group_id;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select('chat_messages.id as chat_message_id', 'message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->Where('chat_messages.group_id', $group_id)
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = Chat_group_member::select(
@@ -701,6 +721,7 @@ class ChefChatController extends Controller
                 'chat_messages.message_status',
                 'chat_messages.chat_type AS latest_chat_type',
                 'sender.is_online',
+                'chat_messages.id AS chat_message_id',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                     DB::raw('CASE 
                     WHEN chat_messages.chat_type = "booking" THEN (
@@ -801,6 +822,7 @@ class ChefChatController extends Controller
                            
                     });
             })
+            ->where('chat_messages.status', 'active')
             ->groupBy(
                 'chat_messages.booking_id',
                 'chat_messages.single_chat_id',
@@ -828,6 +850,7 @@ class ChefChatController extends Controller
                     'receiver.id AS receiver_id',
                     'chat_messages.created_at as chatdate',
                     'type',
+                    'chat_messages.id as chat_message_id',
                     DB::raw('CASE 
                         WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
                             SELECT (
@@ -884,6 +907,7 @@ class ChefChatController extends Controller
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 ->where('chat_messages.unique_booking_id', $request->unique_booking_id)
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = 0;
@@ -892,12 +916,12 @@ class ChefChatController extends Controller
             
             if($chat_type == 'booking'){
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id','chat_messages.bookig_send_by', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type')
+                $userChatMessages = Chat_message::select('chat_messages.id AS chat_message_id', 'message', 'chat_messages.booking_id','chat_messages.bookig_send_by', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                 
                 ->where('chat_messages.unique_booking_id', $request->unique_booking_id)
-                
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                  $chat_member = 0 ;
@@ -908,9 +932,10 @@ class ChefChatController extends Controller
 
                 $group_id = $request->group_id;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select('chat_messages.id as chat_message_id', 'message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->Where('chat_messages.group_id', $group_id)
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = Chat_group_member::select(
@@ -962,6 +987,7 @@ class ChefChatController extends Controller
                 'chat_messages.message_status',
                 'chat_messages.chat_type AS latest_chat_type',
                 'sender.is_online',
+                'chat_messages.id AS chat_message_id',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                     DB::raw('CASE 
                     WHEN chat_messages.chat_type = "booking" THEN (
@@ -1062,6 +1088,7 @@ class ChefChatController extends Controller
                            
                     });
             })
+            ->where('chat_messages.status', 'active')
             ->groupBy(
                 'chat_messages.booking_id',
                 'chat_messages.single_chat_id',
@@ -1083,11 +1110,16 @@ class ChefChatController extends Controller
                 $unquie = $first.$second;
                 $unquie_two = $second.$first;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select('chat_messages.id as chat_message_id', 'message', 'chat_messages.booking_id', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                ->Where('chat_messages.single_chat_id', $unquie)
-                ->orWhere('chat_messages.single_chat_id', $unquie_two)
+                // ->Where('chat_messages.single_chat_id', $unquie)
+                // ->orWhere('chat_messages.single_chat_id', $unquie_two)
+                ->where(function($query) use ($unquie, $unquie_two) {
+                    $query->where('chat_messages.single_chat_id', $unquie)
+                          ->orWhere('chat_messages.single_chat_id', $unquie_two);
+                })
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = 0;
@@ -1116,6 +1148,7 @@ class ChefChatController extends Controller
                     'receiver.id AS receiver_id',
                     'chat_messages.created_at as chatdate',
                     'type',
+                    'chat_messages.id AS chat_message_id',
                     DB::raw('CASE 
                         WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
                             SELECT (
@@ -1171,8 +1204,13 @@ class ChefChatController extends Controller
                 )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                ->where('chat_messages.unique_booking_id', $unquie)
-                ->orWhere('chat_messages.unique_booking_id', $unquie_two)
+                // ->where('chat_messages.unique_booking_id', $unquie)
+                // ->orWhere('chat_messages.unique_booking_id', $unquie_two)
+                ->where(function($query) use ($unquie, $unquie_two) {
+                    $query->where('chat_messages.unique_booking_id', $unquie)
+                          ->orWhere('chat_messages.unique_booking_id', $unquie_two);
+                })
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                  $chat_member = 0 ;
@@ -1183,9 +1221,10 @@ class ChefChatController extends Controller
 
                 $group_id = $userSideMessages[0]->group_id;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select('chat_messages.id as chat_message_id', 'message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->Where('chat_messages.group_id', $group_id)
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = Chat_group_member::select(
@@ -1238,6 +1277,7 @@ class ChefChatController extends Controller
                 'chat_messages.message_status',
                 'chat_messages.chat_type AS latest_chat_type',
                 'sender.is_online',
+                'chat_messages.id AS chat_message_id',
                     DB::raw('(SELECT COUNT(*) FROM chat_messages WHERE chat_messages.message_status = "unread" AND chat_messages.receiver_id = '.$userId.' AND chat_messages.sender_id = sender.id) as unreadcount'),
                     DB::raw('CASE 
                     WHEN chat_messages.chat_type = "booking" THEN (
@@ -1338,6 +1378,7 @@ class ChefChatController extends Controller
                            
                     });
             })
+            ->where('chat_messages.status', 'active')
             ->groupBy(
                 'chat_messages.booking_id',
                 'chat_messages.single_chat_id',
@@ -1374,6 +1415,7 @@ class ChefChatController extends Controller
                     'receiver.id AS receiver_id',
                     'chat_messages.created_at as chatdate',
                     'type',
+                    'chat_messages.id as chat_message_id',
                     DB::raw('CASE 
                         WHEN chat_messages.bookig_send_by IS NOT NULL THEN (
                             SELECT (
@@ -1429,8 +1471,13 @@ class ChefChatController extends Controller
                 )
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                ->where('chat_messages.unique_booking_id', $unquie)
-                ->orWhere('chat_messages.unique_booking_id', $unquie_two)
+                // ->where('chat_messages.unique_booking_id', $unquie)
+                // ->orWhere('chat_messages.unique_booking_id', $unquie_two)
+                ->where(function($query) use ($unquie, $unquie_two) {
+                    $query->where('chat_messages.unique_booking_id', $unquie)
+                          ->orWhere('chat_messages.unique_booking_id', $unquie_two);
+                })
+                ->where('chat_messages.status', 'active')
                 ->get();
                 
                 $chat_member = 0;
@@ -1445,12 +1492,16 @@ class ChefChatController extends Controller
                 $unquie = $first.$second;
                 $unquie_two = $second.$first;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id','chat_messages.bookig_send_by', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type')
+                $userChatMessages = Chat_message::select('chat_messages.id AS chat_message_id', 'message', 'chat_messages.booking_id','chat_messages.bookig_send_by', 'sender.name AS sender_name', 'receiver.name AS receiver_name', 'sender.pic AS sender_pic', 'receiver.pic AS receiver_pic', 'sender.role AS sender_role', 'receiver.role AS receiver_role', 'sender.id AS sender_id', 'receiver.id AS receiver_id', 'chat_messages.created_at as chatdate', 'type')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
-                ->where('chat_messages.unique_booking_id', $unquie)
-                ->orWhere('chat_messages.unique_booking_id', $unquie_two)
-                
+                // ->where('chat_messages.unique_booking_id', $unquie)
+                // ->orWhere('chat_messages.unique_booking_id', $unquie_two)
+                ->where(function($query) use ($unquie, $unquie_two) {
+                    $query->where('chat_messages.unique_booking_id', $unquie)
+                          ->orWhere('chat_messages.unique_booking_id', $unquie_two);
+                })
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                  $chat_member = 0 ;
@@ -1461,9 +1512,10 @@ class ChefChatController extends Controller
 
                 $group_id = $userSideMessages[0]->group_id;
 
-                $userChatMessages = Chat_message::select('message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
+                $userChatMessages = Chat_message::select('chat_messages.id as chat_message_id', 'message', 'chat_messages.booking_id', 'sender.name AS sender_name','sender.pic AS sender_pic', 'sender.role AS sender_role', 'sender.id AS sender_id', 'chat_messages.created_at as chatdate', 'type','bookig_send_by')
                 ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                 ->Where('chat_messages.group_id', $group_id)
+                ->where('chat_messages.status', 'active')
                 ->get();
 
                 $chat_member = Chat_group_member::select(
@@ -1667,6 +1719,22 @@ class ChefChatController extends Controller
            
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function delete_chat_message(Request $request, $id){
+        $delete_messgae = Chat_message::where('id', $id)->update(['status' => 'deleted']);
+        if($delete_messgae){
+            return response()->json(['status' => true, 'message' => 'message has been deleted successfully'], 200);
+        } else {
+            return response()->json(['status' => false, 'message' => 'message has been not deleted successfully'], 200);
+        }
+        try {
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch user messages',
+            ], 500);
         }
     }
 

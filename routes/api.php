@@ -258,6 +258,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/contact-chef-by-user-with-share-file/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user_with_share_file']);
 
     Route::post('/contact-chef-by-user-with-single-booking/', [App\Http\Controllers\Api\UserChatController::class, 'contact_chef_by_user_with_single_booking']);
+
+    Route::post('delete-chat-message/{id}', [App\Http\Controllers\Api\UserChatController::class, 'delete_chat_message']);
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
@@ -267,6 +269,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/get-click-chef-user-chat-data/', [App\Http\Controllers\Api\ChefChatController::class, 'get_click_chef_user_chat_data']);
     Route::post('/contact-user-by-chef-with-share-file/', [App\Http\Controllers\Api\ChefChatController::class, 'contact_user_by_chef_with_share_file']);
     Route::get('/get-admin-data', [App\Http\Controllers\Api\ChefChatController::class, 'get_admin_data']);
+
+    Route::post('delete-chat-message/{id}', [App\Http\Controllers\Api\ChefChatController::class, 'delete_chat_message']);
 });
 
 Route::group(['middleware' => ['api']], function ($router) {
@@ -350,6 +354,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('send-message-to-user-by-concierge', [App\Http\Controllers\Api\ConciergeChatController::class, 'send_message_to_user_by_concierge']);
     Route::post('create-group-by-concierge', [App\Http\Controllers\Api\ConciergeChatController::class, 'create_group_by_concierge']);
     Route::get('get-all-concierge-user-data/{id}', [App\Http\Controllers\Api\ConciergeChatController::class, 'get_all_concierge_user_data']);
+
+    Route::post('delete-chat-message/{id}', [App\Http\Controllers\Api\ConciergeChatController::class, 'delete_chat_message']);  
 });
 
 // Concierge chat api end
