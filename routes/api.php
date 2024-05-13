@@ -321,6 +321,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/create-group-by-admin', [App\Http\Controllers\Api\AdminChatController::class, 'create_group_by_admin']);
     Route::post('/get-admin-message-data-by-filter/', [App\Http\Controllers\Api\AdminChatController::class, 'get_admin_message_data_by_filter']);
     Route::get('get-all-concierge-user-data/{id}', [App\Http\Controllers\Api\AdminChatController::class, 'get_all_concierge_user_data']);
+
+    Route::post('delete-chat-message/{id}', [App\Http\Controllers\Api\AdminChatController::class, 'delete_chat_message']);
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
