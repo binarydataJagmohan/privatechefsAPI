@@ -256,8 +256,8 @@ class AdminChatController extends Controller
                     ->join('users AS sender', 'chat_messages.sender_id', '=', 'sender.id')
                     ->join('users AS receiver', 'chat_messages.receiver_id', '=', 'receiver.id')
                     ->where(function($query) use ($unquie, $unquie_two) {
-                        $query->where('chat_messages.single_chat_id', $unquie)
-                              ->orWhere('chat_messages.single_chat_id', $unquie_two);
+                        $query->where('chat_messages.unique_booking_id', $unquie)
+                              ->orWhere('chat_messages.unique_booking_id', $unquie_two);
                     })
                     // ->where('chat_messages.unique_booking_id', $unquie)
                     // ->orWhere('chat_messages.unique_booking_id', $unquie_two)
@@ -1176,8 +1176,8 @@ class AdminChatController extends Controller
                             // ->where('chat_messages.unique_booking_id', $unquie)
                             // ->orWhere('chat_messages.unique_booking_id', $unquie_two)
                             ->where(function($query) use ($unquie, $unquie_two) {
-                                $query->where('chat_messages.single_chat_id', $unquie)
-                                      ->orWhere('chat_messages.single_chat_id', $unquie_two);
+                                $query->where('chat_messages.unique_booking_id', $unquie)
+                                      ->orWhere('chat_messages.unique_booking_id', $unquie_two);
                             })
                             ->where('chat_messages.status', 'active')
                             ->get();
@@ -1459,8 +1459,8 @@ class AdminChatController extends Controller
                             // ->where('chat_messages.unique_booking_id', $unquie)
                             // ->orWhere('chat_messages.unique_booking_id', $unquie_two)
                             ->where(function($query) use ($unquie, $unquie_two) {
-                                $query->where('chat_messages.single_chat_id', $unquie)
-                                      ->orWhere('chat_messages.single_chat_id', $unquie_two);
+                                $query->where('chat_messages.unique_booking_id', $unquie)
+                                      ->orWhere('chat_messages.unique_booking_id', $unquie_two);
                             })
                             ->where('chat_messages.status', 'active')
                             ->get();
