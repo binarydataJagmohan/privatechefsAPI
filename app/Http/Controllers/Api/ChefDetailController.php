@@ -227,7 +227,7 @@ class ChefDetailController extends Controller
                     $query->where('users.name', 'LIKE', "%$searchTerm%")
                           ->orWhere('users.surname', 'LIKE', "%$searchTerm%");
                 })
-                ->select('users.id', 'users.name', 'users.profile_status', 'applied_jobs.amount', 'users.address', 'users.email','users.phone', 'users.pic', 'users.approved_by_admin', 'users.email','users.slug')
+                ->select('users.id', 'users.name', 'users.profile_status', 'applied_jobs.amount', 'users.address', 'users.email','users.phone', 'users.pic', 'users.approved_by_admin', 'users.email','users.slug', 'menus.menu_name')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->orderby('users.id', 'desc')
