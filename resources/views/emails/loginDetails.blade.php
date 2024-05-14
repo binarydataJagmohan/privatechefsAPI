@@ -76,7 +76,7 @@
                                 <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        We are delighted to inform you that your recent order on Privatechef has been successfully processed. To enhance your future experience, we have created an account for you using the email address you provided during the booking process. We highly recommend logging in to enjoy personalized features and faster checkout in the future.
+                                        We are delighted to inform you that your recent order on Private Chefs has been successfully processed. To enhance your future experience, we have created an account for you using the email address you provided during the booking process. We highly recommend logging in to enjoy personalized features and faster checkout in the future.
                                     </td>
                                     </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">

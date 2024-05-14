@@ -2341,7 +2341,7 @@ class BookingController extends Controller
 
                 Mail::send('emails.bookingPayment', ['data' => $dataAdmin], function ($message) use ($dataAdmin) {
                     $message->from(config('mail.from.address'), "Private Chefs");
-                    $message->subject('Booking Confirmation');
+                    $message->subject('Booking Payment Confirmation');
                     $message->to([$dataAdmin['admin_email'], 'confirmations@privatechefsworld.com']);
                 });
 

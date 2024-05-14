@@ -821,7 +821,7 @@ class UserController extends Controller
                     Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->bcc($data['admin_email']);
-                        $message->subject(' Your Account Password for Private Chef');
+                        $message->subject(' Your Account Password for Private Chefs');
                         $message->to($data['email']);
                     });
                 } else {
@@ -918,7 +918,7 @@ class UserController extends Controller
                 if ($request->created_by != '1') {
                     Mail::send('emails.chefuserRegistrationMail', ["data" => $data], function ($message) use ($data) {
                         $message->from(config('mail.from.address'), "Private Chefs");
-                        $message->subject(' Your Account Password for Private Chef');
+                        $message->subject(' Your Account Password for Private Chefs');
                         $message->to($data['email']);
                     });
                 } else {
@@ -1196,7 +1196,7 @@ class UserController extends Controller
 
                 Mail::send('emails.SpecialMessageToUser', ["data" => $data], function ($message) use ($data) {
                     $message->from(config('mail.from.address'), "Private Chefs");
-                    $message->subject('The PrivateChefs team has a special message for you:');
+                    $message->subject('The Private Chefs team has a special message for you:');
                     $message->to($data['email']);
                 });
             }

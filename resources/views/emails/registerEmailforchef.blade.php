@@ -81,7 +81,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        We've successfully received your registration, and our team is excited to have you on board. Your application as a private chef will now be reviewed by one of our HR specialists to ensure we're bringing the best talent into our community.
+                                        We've successfully received your registration, and our team is excited to have you on board. Your application as a Private Chefs will now be reviewed by one of our HR specialists to ensure we're bringing the best talent into our community.
                                     </td>
                                 </tr>
 
@@ -96,7 +96,7 @@
                                     <td class="content-block"
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                         valign="top">
-                                        Please keep an eye on your inbox for a confirmation email, which will signify your successful selection as a Private Chef. This is the beginning of an exciting culinary journey, where you'll have the opportunity to create extraordinary dining experiences and showcase your culinary artistry to clients from around the world.
+                                        Please keep an eye on your inbox for a confirmation email, which will signify your successful selection as a Private Chefs. This is the beginning of an exciting culinary journey, where you'll have the opportunity to create extraordinary dining experiences and showcase your culinary artistry to clients from around the world.
                                     </td>
                                 </tr>
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
