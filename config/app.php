@@ -183,7 +183,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         Laravel\Socialite\SocialiteServiceProvider::class,
         Spatie\Newsletter\NewsletterServiceProvider::class,
-        
+
 
         /*
          * Package Service Providers...
