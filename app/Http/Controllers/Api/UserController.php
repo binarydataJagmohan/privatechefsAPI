@@ -1406,6 +1406,19 @@ class UserController extends Controller
         }
     }
 
-
+    public function userDeactivate($id)
+    {
+        try {
+            $user = User::find($id);
+            $user->status = 'deactive';
+            if ($user->save()) {
+                return response()->json(['status' => true, 'message' => "User Deactivated Successfully"], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error"]);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 
 }

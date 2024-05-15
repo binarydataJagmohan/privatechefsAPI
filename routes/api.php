@@ -235,7 +235,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
    Route::get('/get-admin-villa-by-booking/{id}', [App\Http\Controllers\Api\VillasController::class, 'get_admin_villa_by_booking']);
 
-
+   Route::get('/get-user-booking-payment/{userid}', [App\Http\Controllers\Api\BookingController::class, 'getUserBookingPayment']);
 });
 Route::post('/update-allergy-additonal-info', [App\Http\Controllers\Api\UserController::class, 'updateAllergyAdditonalInfo']);
 
@@ -404,6 +404,6 @@ Route::group(['middleware' => ['api']], function ($router) {
 
     Route::get('/chefDelete/{id}', [App\Http\Controllers\Api\UserController::class, 'chefDelete']);
     Route::get('/userDelete/{id}', [App\Http\Controllers\Api\UserController::class, 'userDelete']);
-
+    Route::get('/userDeactivate/{id}', [App\Http\Controllers\Api\UserController::class, 'userDeactivate']);
 
 });

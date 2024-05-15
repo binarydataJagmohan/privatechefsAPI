@@ -2488,5 +2488,31 @@ class BookingController extends Controller
         }
     }
 
+    public function getUserBookingPayment($id)
+    {
+        try {
+
+            $userbookings = DB::table('users')
+                ->join('bookings', 'users.id', '=', 'bookings.user_id')
+                // ->leftJoin('applied_jobs', 'applied_jobs.booking_id', '=', 'bookings.id')
+                // ->leftJoin('users as u1', 'u1.id', '=', 'applied_jobs.chef_id')
+                // ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
+                // ->join('service_choices', 'service_choices.id', '=', 'bookings.service_id')
+                ->select('bookings.*')
+                ->where('bookings.status', '=', 'active')
+                ->where('bookings.payment_status', '=', 'completed')
+                ->where('bookings.user_id', $id)
+                ->orderBy('bookings.id', 'DESC')
+                ->get();
+
+            if (!$userbookings) {
+                return response()->json(['message' => 'Booking not found', 'status' => true], 404);
+            }
+
+            return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $userbookings]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
 
 }
