@@ -190,19 +190,9 @@ class ChefReminderEmail extends Command
                     }
                 }
             }
-            // if ($emailSent) {
-            //     // Email sent successfully
-            //     $this->info('Invitation emails sent successfully.');
-            // } else {
-            //     // No emails were sent
-            //     $this->info('No invitation emails sent.');
-            // }
 
         }
 
-        //Emamil to these users who did not applied yet which records of data is avaialble in $results variable
-        // Looop of all results
-        // email reminder
 
 
         $this->info('Invitation emails sent successfully.');
