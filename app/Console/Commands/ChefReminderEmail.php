@@ -53,7 +53,11 @@ class ChefReminderEmail extends Command
 
             $results = DB::table('invite_for_proposal')
                 ->join('bookings', 'invite_for_proposal.booking_id', '=', 'bookings.id')
-                ->join('users', 'invite_for_proposal.chef_id', '=', 'users.id')
+                // ->join('users', 'invite_for_proposal.chef_id', '=', 'users.id')
+                ->join('users', function ($join) {
+                    $join->on('invite_for_proposal.chef_id', '=', 'users.id')
+                        ->where('users.role', '=', 'chef');
+                })
                 ->select(
                     'bookings.location',
                     'bookings.notes',
@@ -64,8 +68,8 @@ class ChefReminderEmail extends Command
                     'invite_for_proposal.user_id as user_id',
                     'bookings.id'
                 )
-                ->where('booking_id', $bookingId)
-                ->where('users.role', 'chef')
+                ->where('bookings.id', $bookingId)
+                // ->where('users.role', 'chef')
                 ->whereNotIn('chef_id', function ($query) use ($bookingId) {
                     $query->select('chef_id')
                         ->from('applied_jobs')
@@ -181,16 +185,15 @@ class ChefReminderEmail extends Command
                         $notification = new Notification();
                         $notification->notify_to = $chef->id;
                         $notification->notify_by = $result->user_id;
-                        ;
+                        $notifier = User::where('id', $result->user_id)->first(); // Assume the User model is used here
+                        $notifierName = $notifier ? $notifier->name : 'Unknown';
                         $notification->description = "New Booking Alert!
-                        There is one new job in your dashboard. Kindly review  to ensure you don't miss out on this opportunity";
+                        There is one new job in your dashboard. Kindly review  to ensure you don't miss out on this opportunity.";
                         $notification->type = 'location_notification';
                         $notification->save();
-
                     }
                 }
             }
-
         }
 
 

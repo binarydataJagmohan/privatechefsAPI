@@ -226,7 +226,7 @@
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;">
-                                            <a href="https://privatechefsworld.com/chef/bookings?booking_id={{ $data['booking_id'] }}"
+                                            <a href="{{ env('NEXT_URL') }}chef/bookings?booking_id={{ $data['booking_id'] }}"
                                                 style="display: inline-block; background-color: #FF6E2E; color: #fff; text-align: center; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">Send
                                                 Proposal</a>
                                         </td>
