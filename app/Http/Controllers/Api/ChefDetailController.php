@@ -42,7 +42,6 @@ class ChefDetailController extends Controller
         while (User::where('slug', $slug)->exists()) {
             $slug = "{$baseSlug}-{$count}";
             $count++;
-
         }
         return $slug;
     }
@@ -222,12 +221,11 @@ class ChefDetailController extends Controller
                 ->where('users.status', 'active')
                 ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                 ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-
                 ->where(function ($query) use ($searchTerm) {
                     $query->where('users.name', 'LIKE', "%$searchTerm%")
-                          ->orWhere('users.surname', 'LIKE', "%$searchTerm%");
+                        ->orWhere('users.surname', 'LIKE', "%$searchTerm%");
                 })
-                ->select('users.id', 'users.name', 'users.profile_status', 'applied_jobs.amount', 'users.address', 'users.email','users.phone', 'users.pic', 'users.approved_by_admin', 'users.email','users.slug', 'menus.menu_name')
+                ->select('users.id', 'users.name', 'users.profile_status', 'applied_jobs.amount', 'users.address', 'users.email', 'users.phone', 'users.pic', 'users.approved_by_admin', 'users.email', 'users.slug', 'menus.menu_name', 'applied_jobs.status as job_status', 'applied_jobs.client_amount as clientamount', 'applied_jobs.admin_amount as adminamount')
                 ->selectRaw('GROUP_CONCAT(cuisine.name) as cuisine_name')
                 ->groupBy('users.id', 'users.name', 'users.address')
                 ->orderby('users.id', 'desc')
@@ -482,13 +480,13 @@ class ChefDetailController extends Controller
             }
 
             if ($user->approved_by_admin == 'yes') {
-            Mail::send('emails.chefconfirmingapproval', ['user' => $user], function ($message) use ($user) {
-                $message->from(config('mail.from.address'), "Private Chefs");
-                $message->to($user->email);
-                $message->bcc('info@privatechefsworld.com');
-                $message->subject("Welcome Aboard, " . $user->name);
-            });
-        }
+                Mail::send('emails.chefconfirmingapproval', ['user' => $user], function ($message) use ($user) {
+                    $message->from(config('mail.from.address'), "Private Chefs");
+                    $message->to($user->email);
+                    $message->bcc('info@privatechefsworld.com');
+                    $message->subject("Welcome Aboard, " . $user->name);
+                });
+            }
 
             if ($user) {
                 return response()->json(['status' => true, 'message' => "Profile Approved successfully", 'data' => $user], 200);
@@ -587,7 +585,7 @@ class ChefDetailController extends Controller
             $users = User::select('id', 'address', 'lat')->where('role', 'chef')
                 ->whereNotNull('users.address')
                 ->where('status', 'active')
-                 ->groupBy('address')
+                ->groupBy('address')
                 ->get();
             return response()->json([
                 'status' => true,
@@ -634,7 +632,7 @@ class ChefDetailController extends Controller
                     ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                     ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
                     ->where('applied_jobs.amount', '<', 250)
-                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status','applied_jobs.amount',DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
                     ->where('users.status', '!=', 'deleted')
                     ->groupBy('users.id', 'users.name', 'users.address')
                     ->get();
@@ -645,7 +643,7 @@ class ChefDetailController extends Controller
                     ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                     ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
                     ->where('applied_jobs.amount', '>=', 2000)
-                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount',DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
                     ->where('users.status', '!=', 'deleted')
                     ->groupBy('users.id', 'users.name', 'users.address')
                     ->get();
@@ -655,8 +653,8 @@ class ChefDetailController extends Controller
                     ->where('users.status', 'active')
                     ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                     ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
-                    ->whereBetween('applied_jobs.amount', [ 250, 499])
-                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status','applied_jobs.amount', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                    ->whereBetween('applied_jobs.amount', [250, 499])
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
                     ->where('users.status', '!=', 'deleted')
                     ->groupBy('users.id', 'users.name', 'users.address')
                     ->get();
@@ -667,7 +665,7 @@ class ChefDetailController extends Controller
                     ->leftJoin('menus', 'users.id', '=', 'menus.user_id')
                     ->leftJoin('cuisine', 'cuisine.id', '=', 'menus.cuisine_id')
                     ->whereBetween('applied_jobs.amount', [500, 1000])
-                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount',DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
+                    ->select('users.id', 'users.address', 'users.lat', 'users.name', 'users.address', 'users.profile_status', 'applied_jobs.amount', DB::raw('GROUP_CONCAT(cuisine.name) as cuisine_name', 'applied_jobs.status as appliedstatus'))
                     ->where('users.status', '!=', 'deleted')
                     ->groupBy('users.id', 'users.name', 'users.address')
                     ->get();
@@ -682,8 +680,7 @@ class ChefDetailController extends Controller
                     ->where('users.status', '!=', 'deleted')
                     ->groupBy('users.id', 'users.name', 'users.address')
                     ->get();
-            }
-            else {
+            } else {
                 return response()->json([
                     'status' => true,
                     'data' => '',
@@ -694,8 +691,6 @@ class ChefDetailController extends Controller
                 'status' => true,
                 'data' => $users
             ], 200);
-
-
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -703,13 +698,13 @@ class ChefDetailController extends Controller
     public function get_all_location(Request $request)
     {
         try {
-            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos','Crete','Corfu','Lefkada','Zakynthos','Porto Heli','Paros','Antiparos','Diaporos'];
-            $users = User::select('id','address','location_pic','slug','name','pic')
-            ->whereIn('address', $desiredLocations)
-            ->where('role','chef')
-            ->where('status','!=','deleted')
-            ->groupBy('address')
-            ->get();
+            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos', 'Crete', 'Corfu', 'Lefkada', 'Zakynthos', 'Porto Heli', 'Paros', 'Antiparos', 'Diaporos'];
+            $users = User::select('id', 'address', 'location_pic', 'slug', 'name', 'pic')
+                ->whereIn('address', $desiredLocations)
+                ->where('role', 'chef')
+                ->where('status', '!=', 'deleted')
+                ->groupBy('address')
+                ->get();
 
             return response()->json([
                 'status' => true,
@@ -722,11 +717,11 @@ class ChefDetailController extends Controller
     public function get_location_by_slug(Request $request)
     {
         try {
-            $users = User::select('id','address','name','location_pic','slug')
-            ->where('role','chef')
-            ->where('status','!=','deleted')
-            ->where('address',$request->slug)
-            ->get();
+            $users = User::select('id', 'address', 'name', 'location_pic', 'slug')
+                ->where('role', 'chef')
+                ->where('status', '!=', 'deleted')
+                ->where('address', $request->slug)
+                ->get();
 
             return response()->json([
                 'status' => true,
@@ -737,7 +732,7 @@ class ChefDetailController extends Controller
         }
     }
 
-     public function getChefDetailByLocation(Request $request)
+    public function getChefDetailByLocation(Request $request)
     {
         try {
 
@@ -759,7 +754,7 @@ class ChefDetailController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'No chefs found within the specified 50km radius',
-                     'data' => []
+                    'data' => []
                 ], 200);
             }
 
@@ -768,8 +763,6 @@ class ChefDetailController extends Controller
                 'status' => true,
                 'data' => $chefs
             ], 200);
-
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',

@@ -188,7 +188,7 @@ class ChefReminderEmail extends Command
                         $notifier = User::where('id', $result->user_id)->first(); // Assume the User model is used here
                         $notifierName = $notifier ? $notifier->name : 'Unknown';
                         $notification->description = "New Booking Alert!
-                        There is one new job in your dashboard. Kindly review  to ensure you don't miss out on this opportunity.";
+                        There is one new job in your dashboard. Kindly review  to ensure you don't miss out on this opportunity";
                         $notification->type = 'location_notification';
                         $notification->save();
                     }
