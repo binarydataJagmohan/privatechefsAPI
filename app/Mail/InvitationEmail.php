@@ -30,7 +30,7 @@ class InvitationEmail extends Mailable
             ->from(config('mail.from.address'), 'Private Chefs')
             ->subject("New Booking Alert: Opportunity in {$this->data['booking_location']}")
             ->to($this->data['email'])
-            // ->bcc([$this->data['admin_email'], 'bookings@privatechefsworld.com'])
+            // ->bcc([$this->data['admin_email'], 'info@privatechefsworld.com'])
             ->with([
                 'data' => $this->data,
                 'dateMeals' => $this->dateMeals,

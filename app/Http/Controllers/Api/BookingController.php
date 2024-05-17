@@ -128,7 +128,7 @@ class BookingController extends Controller
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject('Booking Confirmation');
                         $message->to($booking->email);
-                        $message->cc('bookings@privatechefsworld.com');
+                        $message->cc('info@privatechefsworld.com');
                         $message->bcc(User::select('email')->where('role', 'admin')->first()->email); // Add admin email as BCC
                     });
                 } else {
@@ -136,7 +136,7 @@ class BookingController extends Controller
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->subject("We've Received Your Booking Request!");
                         $message->to($booking->email);
-                        $message->cc('bookings@privatechefsworld.com');
+                        $message->cc('info@privatechefsworld.com');
                         $message->bcc(User::select('email')->where('role', 'admin')->first()->email); // Add admin email as BCC
                     });
                 }
@@ -575,7 +575,7 @@ class BookingController extends Controller
             Mail::send('emails.emailappliedbychef', ['data' => $data], function ($message) use ($data) {
                 $message->from(config('mail.from.address'), "Private Chefs");
                 $message->to($data['email']);
-                $message->bcc([$data['admin_email'], 'bookings@privatechefsworld.com']);
+                $message->bcc([$data['admin_email'], 'info@privatechefsworld.com']);
                 $message->subject('Booking Request: Chef Application Received');
             });
         }
@@ -815,7 +815,7 @@ class BookingController extends Controller
                     Mail::send('emails.hiredchefMailToUser', ['data' => $data], function ($message) use ($data) {
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->to($data['user_email']);
-                        $message->bcc([$data['admin_email'], 'bookings@privatechefsworld.com']);
+                        $message->bcc([$data['admin_email'], 'info@privatechefsworld.com']);
                         $message->subject('Culinary Experience Tailored Just for You! ');
                     });
 
@@ -826,7 +826,7 @@ class BookingController extends Controller
                     Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
                         $message->from(config('mail.from.address'), "Private Chefs");
                         $message->to($data['email']);
-                        $message->bcc([$data['admin_email'], 'bookings@privatechefsworld.com']);
+                        $message->bcc([$data['admin_email'], 'info@privatechefsworld.com']);
                         $message->subject('You have Been Chosen to Create Culinary Magic! ');
                     });
 
@@ -2473,7 +2473,7 @@ class BookingController extends Controller
 
             // Mail::send('emails.chefLocation', ['data' => $data, 'dateMeals' => $dateMeals], function ($message) use ($data) {
             //     $message->from(config('mail.from.address'), "Private Chefs");
-            //     // $message->bcc([$data['admin_email'], 'bookings@privatechefsworld.com']);
+            //     // $message->bcc([$data['admin_email'], 'info@privatechefsworld.com']);
             //     $message->subject("New Booking Alert: Opportunity in {$data['booking_location']}");
             //     $message->to($data['email']);
             // });
