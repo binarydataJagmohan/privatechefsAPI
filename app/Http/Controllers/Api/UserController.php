@@ -534,6 +534,8 @@ class UserController extends Controller
                     'users.pic',
                     'users.tax_id',
                     'users.vat_no',
+                    'users.role',
+                    'users.city',
                     'chef_details.about',
                     'chef_details.description',
                     'chef_details.services_type',

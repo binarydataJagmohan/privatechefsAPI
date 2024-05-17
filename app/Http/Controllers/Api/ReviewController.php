@@ -60,7 +60,7 @@ class ReviewController extends Controller
                      $chef_id = $chef->id;
                 }
                     
-                $reviews = Reviews::Select('name','pic','stars','comment')->join('users','reviews.given_by_id','=','users.id')->where('given_to_id',$chef_id)->orderBy('reviews.id','desc')->get();
+                $reviews = Reviews::Select('name','pic','stars','comment', 'reviews.created_at')->join('users','reviews.given_by_id','=','users.id')->where('given_to_id',$chef_id)->orderBy('reviews.id','desc')->get();
 
                 if (!$reviews->isEmpty()) {
 
