@@ -545,6 +545,8 @@ class UserController extends Controller
                     'chef_details.experience',
                     'chef_details.favorite_chef',
                     'chef_details.skills',
+                    'chef_details.cooking_secret',
+                    'chef_details.know_me_better',
                     DB::raw('GROUP_CONCAT(chef_location.address SEPARATOR ", ") as addresses')
                 )
                 ->groupBy('users.id')
