@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('favorite_chef')->nullable();
             $table->string('favorite_dishes')->nullable();
             $table->string('cooking_des')->nullable();
+            $table->string('cooking_secret')->nullable();
+            $table->string('know_me_better')->nullable();
             $table->string('facebook_link')->nullable();
             $table->string('instagram_link')->nullable();
             $table->string('twitter_link')->nullable();

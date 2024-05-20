@@ -158,6 +158,8 @@ class ChefDetailController extends Controller
                 $resume->favorite_chef = $request->favorite_chef;
                 $resume->favorite_dishes = $request->favorite_dishes;
                 $resume->love_cooking = $request->love_cooking;
+                $resume->cooking_secret = $request->cooking_secret;
+                $resume->know_me_better = $request->know_me_better;
                 $resume->facebook_link = $request->facebook_link;
                 $resume->instagram_link = $request->instagram_link;
                 $resume->twitter_link = $request->twitter_link;
