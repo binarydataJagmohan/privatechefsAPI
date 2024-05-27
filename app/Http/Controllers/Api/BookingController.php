@@ -572,12 +572,12 @@ class BookingController extends Controller
                 'chef_phone' => $chef->phone,
                 'admin_email' => $admindata->email,
             ];
-            Mail::send('emails.emailappliedbychef', ['data' => $data], function ($message) use ($data) {
-                $message->from(config('mail.from.address'), "Private Chefs");
-                $message->to($data['email']);
-                $message->bcc([$data['admin_email'], 'info@privatechefsworld.com']);
-                $message->subject('Booking Request: Chef Application Received');
-            });
+            // Mail::send('emails.emailappliedbychef', ['data' => $data], function ($message) use ($data) {
+            //     $message->from(config('mail.from.address'), "Private Chefs");
+            //     $message->to($data['email']);
+            //     $message->bcc([$data['admin_email'], 'info@privatechefsworld.com']);
+            //     $message->subject('Booking Request: Chef Application Received');
+            // });
         }
 
         if ($appliedJobs) {
@@ -2276,7 +2276,7 @@ class BookingController extends Controller
             // Create a charge
             $charge = Charge::create([
                 'amount' => $amount,
-                'currency' => 'aed',
+                'currency' => 'eur',
                 'customer' => $customer->id,
                 'source' => $customer->default_source,
             ]);
