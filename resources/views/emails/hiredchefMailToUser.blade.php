@@ -55,7 +55,8 @@
                                     <tr>
                                         <td style="text-align: center">
                                            <a href="#" style="display: block; margin-bottom: 10px;">
-                                              <img src="{{ config('app.url') }}/public/images/logo.png" height="100"  width="100" alt="logo" />
+                                              <!-- <img src="{{ config('app.url') }}/public/images/logo.png" height="100"  width="100" alt="logo" /> -->
+                                              <img src="{{ $message->embed(public_path().'/images/logo.png')}}" height="100"  width="100" alt="logo" />
                                             </a>
                                         </td>
                                     </tr>
@@ -98,7 +99,7 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            Chef name is  {{ $data['chef_name'] }} and their prices  ${{ $data['client_amount'] }}
+                                            Chef name is  {{ $data['chef_name'] }} and their prices  €{{ $data['client_amount'] }}
                                         </td>
                                     </tr>
                                     <tr
@@ -106,7 +107,7 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            We understand the importance of pricing transparency. The cost for your chosen experience is ${{ $data['client_amount'] }}. This includes the chef's service, ingredients, and the unforgettable dining experience.
+                                            We understand the importance of pricing transparency. The cost for your chosen experience is €{{ $data['client_amount'] }}. This includes the chef's service, ingredients, and the unforgettable dining experience.
                                         </td>
                                     </tr>
                                     <tr

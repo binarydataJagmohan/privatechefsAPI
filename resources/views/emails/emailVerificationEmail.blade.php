@@ -51,7 +51,8 @@
                                 <tr>
                                      <td style="text-align: center">
                                            <a href="#" style="display: block; margin-bottom: 10px;">
-                                              <img src="{{ config('app.url') }}/public/images/logo.png"  width="100" height="100" alt="logo" />
+                                              <!-- <img src="{{ config('app.url') }}/public/images/logo.png"  width="100" height="100" alt="logo" /> -->
+                                              <img src="{{ $message->embed(public_path().'/images/logo.png')}}" height="100"  width="100" alt="logo" />
                                             </a>
                                         </td>
                                 </tr>
