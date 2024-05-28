@@ -439,7 +439,8 @@ class BookingController extends Controller
                     $query->select(DB::raw(1))
                         ->from('applied_jobs')
                         ->whereColumn('applied_jobs.booking_id', '=', 'bookings.id')
-                        ->where('applied_jobs.status', '=', 'hired');
+                        //->where('applied_jobs.status', '=', 'hired');
+                        ->whereIn('applied_jobs.status', ['hired', 'discussion']);
                 })
                 ->orderBy('bookings.id', 'DESC')
                 ->get();
@@ -603,17 +604,43 @@ class BookingController extends Controller
                 ->where('applied_jobs.chef_id', $id)
                 ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
                 ->groupBy(
-                    'bookings.name',
-                    'users.id',
-                    'bookings.surname',
-                    'users.pic',
-                    'bookings.location',
-                    'bookings.booking_status',
-                    'booking_meals.category',
-                    'bookings.id',
-                )->where('bookings.status', '=', 'active')
+                    'bookings.name', 
+                    'users.id', 
+                    'bookings.surname', 
+                    'users.pic', 
+                    'bookings.location', 
+                    'bookings.booking_status', 
+                    'booking_meals.category', 
+                    'bookings.id', 
+                    'applied_jobs.status'
+                )
+                ->where('bookings.status', '=', 'active')
                 ->orderBy('applied_jobs.id', 'DESC')
                 ->get();
+
+            // $chefuserbookings = DB::table('users')
+            //     ->join('bookings', 'users.id', '=', 'bookings.user_id')
+            //     ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
+            //     ->join('service_choices', 'service_choices.id', '=', 'bookings.service_id')
+            //     ->join('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+            //     ->leftJoin('menus', function ($join) {
+            //         $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
+            //     })
+            //     ->where('applied_jobs.chef_id', $id)
+            //     ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
+            //     ->groupBy(
+            //         'bookings.name',
+            //         'users.id',
+            //         'bookings.surname',
+            //         'users.pic',
+            //         'bookings.location',
+            //         'bookings.booking_status',
+            //         'booking_meals.category',
+            //         'bookings.id',
+            //     )
+            //     ->where('bookings.status', '=', 'active')
+            //     ->orderBy('applied_jobs.id', 'DESC')
+            //     ->get();
 
 
 
@@ -852,7 +879,8 @@ class BookingController extends Controller
                 ->join('service_choices as sc', 'sc.id', '=', 'b.service_id')
                 ->leftJoin('applied_jobs as aj', function ($join) {
                     $join->on('b.id', '=', 'aj.booking_id')
-                        ->where('aj.status', '=', 'hired');
+                        //->where('aj.status', '=', 'hired');
+                        ->whereIn('aj.status', ['hired', 'discussion']);
                 })
                 ->whereNull('aj.booking_id')
                 ->where('b.status', '=', 'active') // Add the condition here
@@ -872,7 +900,6 @@ class BookingController extends Controller
                     'aj.chef_id',
                     'b.status',
                     'b.assigned_to_villa_id'
-
                 )
                 ->select(
                     'b.name',
@@ -890,7 +917,8 @@ class BookingController extends Controller
                     'b.id AS booking_id',
                     'aj.status AS applied_jobs_status',
                     'aj.chef_id',
-                    'b.status'
+                    'b.status',
+                    'aj.id as assigned_job_id'
                 )
                 ->where('b.status', '!=', 'deleted')
                 ->orderBy('b.id', 'DESC')
@@ -939,7 +967,8 @@ class BookingController extends Controller
                 ->join('service_choices as sc', 'sc.id', '=', 'b.service_id')
                 ->leftJoin('applied_jobs as aj', function ($join) {
                     $join->on('b.id', '=', 'aj.booking_id')
-                        ->where('aj.status', '=', 'hired');
+                        //->where('aj.status', '=', 'hired');
+                        ->whereIn('aj.status', ['hired', 'discussion']);
                 })
                 ->whereNull('aj.booking_id')
                 ->where('b.booking_status', $type)
@@ -958,7 +987,8 @@ class BookingController extends Controller
                     'aj.booking_id',
                     'aj.status',
                     'aj.chef_id',
-                    'b.status'
+                    'b.status',
+                    'aj.id'
                 )
                 ->select(
                     'b.name',
@@ -975,7 +1005,8 @@ class BookingController extends Controller
                     'b.id AS booking_id',
                     'aj.status AS applied_jobs_status',
                     'aj.chef_id',
-                    'b.status'
+                    'b.status',
+                    'aj.id AS assigned_job_id',
                 )
                 ->where('b.status', '!=', 'deleted')
                 ->orderBy('b.id', 'DESC')
@@ -998,7 +1029,8 @@ class BookingController extends Controller
                 ->join('service_choices as sc', 'sc.id', '=', 'b.service_id')
                 ->leftJoin('applied_jobs as aj', function ($join) {
                     $join->on('b.id', '=', 'aj.booking_id')
-                        ->where('aj.status', '=', 'hired');
+                       // ->where('aj.status', '=', 'hired');
+                        ->whereIn('aj.status', ['hired', 'discussion']);
                 })
                 ->whereNull('aj.booking_id')
                 ->where('b.booking_status', $type)
@@ -1016,7 +1048,8 @@ class BookingController extends Controller
                     'aj.booking_id',
                     'aj.status',
                     'aj.chef_id',
-                    'b.status'
+                    'b.status',
+                    'aj.id'
                 )
                 ->select(
                     'b.name',
@@ -1033,7 +1066,8 @@ class BookingController extends Controller
                     'b.id AS booking_id',
                     'aj.status AS applied_jobs_status',
                     'aj.chef_id',
-                    'b.status'
+                    'b.status',
+                    'aj.id As assigned_job_id',
                 )
                 ->where('b.status', '!=', 'deleted')
                 ->orderBy('b.id', 'DESC')
@@ -1099,7 +1133,7 @@ class BookingController extends Controller
                 ->leftJoin('menus', function ($join) {
                     $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
                 })
-                ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'applied_jobs.chef_id as applied_chef_id', 'amount', 'client_amount', 'admin_amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'), 'users_chef.name as applied_chef_name')
+                ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'applied_jobs.chef_id as applied_chef_id', 'amount', 'client_amount', 'admin_amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'), 'users_chef.name as applied_chef_name', 'bookings.payment_status', 'applied_jobs.id as assigned_job_id')
                 ->groupBy(
                     'bookings.name',
                     'users.id',
@@ -1110,10 +1144,14 @@ class BookingController extends Controller
                     'booking_meals.category',
                     'bookings.id',
                     'applied_jobs.chef_id',
-                    'users_chef.name'
+                    'users_chef.name',
+                    'applied_jobs.id',
                 )
                 ->leftJoin('users as users_chef', 'users_chef.id', '=', 'applied_jobs.chef_id') // Join with users table to get chef's name
-                ->where('bookings.status', '=', 'active')->where('applied_jobs.status', 'hired')
+                ->where('bookings.status', '=', 'active')
+                ->whereIn('applied_jobs.status', ['hired', 'discussion'])
+                //->whereIn('aj.status', ['applied', 'hired', 'discussion']);
+                //->whereIn('bookings.payment_status', ['pending', 'complete'])
                 ->orderBy('applied_jobs.id', 'DESC')
                 ->get();
 
@@ -1139,8 +1177,8 @@ class BookingController extends Controller
                 ->leftJoin('menus', function ($join) {
                     $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
                 })
-                ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'amount', 'client_amount', 'admin_amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
-                ->groupBy('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id', 'applied_jobs.status')->where('bookings.status', '=', 'active')->where('applied_jobs.status', 'hired')->where('bookings.booking_status', $type)
+                ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'amount', 'client_amount', 'admin_amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'), 'bookings.payment_status', 'applied_jobs.id as assigned_job_id')
+                ->groupBy('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id', 'applied_jobs.status', 'applied_jobs.id')->where('bookings.status', '=', 'active')->whereIn('applied_jobs.status', ['hired', 'discussion'])->where('bookings.booking_status', $type)
                 ->orderBy('applied_jobs.id', 'DESC')
                 ->get();
 
@@ -1945,7 +1983,8 @@ class BookingController extends Controller
             $admin_available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
                 ->leftJoin('applied_jobs', function ($join) {
                     $join->on('bookings.id', '=', 'applied_jobs.booking_id')
-                        ->where('applied_jobs.status', '=', 'hired');
+                        //->where('applied_jobs.status', '=', 'hired');
+                        ->whereIn('applied_jobs.status', ['hired', 'discussion']);
                 })
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
@@ -1957,7 +1996,8 @@ class BookingController extends Controller
                 ->join('bookings', 'users.id', '=', 'bookings.user_id')
                 ->leftJoin('applied_jobs', function ($join) {
                     $join->on('bookings.id', '=', 'applied_jobs.booking_id')
-                        ->where('applied_jobs.status', '=', 'hired');
+                        //->where('applied_jobs.status', '=', 'hired');
+                        ->whereIn('applied_jobs.status', ['hired', 'discussion']);
                 })
                 ->where('users.status', '!=', 'deleted')
                 ->whereNull('applied_jobs.booking_id')
@@ -1967,7 +2007,8 @@ class BookingController extends Controller
                 ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
-                ->where('applied_jobs.status', 'hired')
+                //->where('applied_jobs.status', 'hired')
+                ->whereIn('applied_jobs.status', ['hired', 'discussion'])
                 ->count();
 
             return response()->json([
@@ -2003,7 +2044,8 @@ class BookingController extends Controller
                     $query->select(DB::raw(1))
                         ->from('applied_jobs')
                         ->whereColumn('applied_jobs.booking_id', '=', 'bookings.id')
-                        ->where('applied_jobs.status', 'hired');
+                        //->where('applied_jobs.status', 'hired');
+                        ->whereIn('applied_jobs.status', ['hired', 'discussion']);
                 })
                 ->count();
 
@@ -2248,8 +2290,8 @@ class BookingController extends Controller
 
     public function savePayment(Request $request)
     {
-        Stripe::setApiKey(env('STRIPE_SECRET'));
-
+        //Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey('sk_test_8yTMfGjWta7zVzyhB6S3N2ws');
         try {
             $client = User::select('name', 'email')->where('id', $request->user_id)->first();
             $chef = User::select('name', 'email')->where('id', $request->chef_id)->first();
@@ -2510,6 +2552,76 @@ class BookingController extends Controller
             }
 
             return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $userbookings]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function ResendPaymentLink(Request $request){
+        try {
+            $chef = User::select('name', 'email')->where('id', $request->chef_id)->first();
+            $booking = Booking::select('name', 'location', 'id', 'email')->where('id', $request->booking_id)->first();
+
+            $bookingDate = Booking::select('booking_meals.category', 'bookings.user_id as client_id', DB::raw('GROUP_CONCAT(DISTINCT booking_meals.date) AS dates'))
+                ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
+                ->where('bookings.id', $request->booking_id)
+                ->groupBy('booking_meals.booking_id')
+                ->first();
+
+            $admindata = User::select('email')->where('role', 'admin')->first();
+            // Get chef IDs or chefs data
+
+            $appliedJob = AppliedJobs::where('booking_id', $request->booking_id)
+                ->where('chef_id', $request->chef_id)
+                ->first();
+            if ($appliedJob) {
+                $amount = $appliedJob->amount;
+            } else {
+                // Handle the case where the amount is not found or handle default amount
+                $amount = 0; // Assuming a default value
+            }
+            $chefs = User::where('id', $request->chef_id)->get();
+            $this->sendLocationNotification($chefs, $booking, $admindata, $request, $amount);
+
+            $data = [
+                'chef_id' => $request->chef_id,
+                'chef_name' => $chef->name,
+                'email' => $chef->email,
+                'booking_id' => $request->booking_id,
+                'user_name' => $booking->name,
+                'user_location' => $booking->location,
+                'booking_type' => $bookingDate->category,
+                'booking_date' => $bookingDate->dates,
+                'admin_email' => $admindata->email,
+                'user_email' => $booking->email,
+                'client_amount' => $request->client_amount,
+                'client_id' => $bookingDate->client_id,
+                'applied_id' => $request->applied_id
+            ];
+
+
+            if ($request->payment_status == 'pending') {
+
+                Mail::send('emails.hiredchefMailToUser', ['data' => $data], function ($message) use ($data) {
+                    $message->from(config('mail.from.address'), "Private Chefs");
+                    $message->to($data['user_email']);
+                    $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
+                    $message->subject('Culinary Experience Tailored Just for You! ');
+                });
+
+                return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
+
+            } else {
+
+                Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
+                    $message->from(config('mail.from.address'), "Private Chefs");
+                    $message->to($data['email']);
+                    $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
+                    $message->subject('You have Been Chosen to Create Culinary Magic!');
+                });
+
+                return response()->json(['message' => 'Hired mail has been successfully sent to chef', 'status' => true]);
+            }
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
