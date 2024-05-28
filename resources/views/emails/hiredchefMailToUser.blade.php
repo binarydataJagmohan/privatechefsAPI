@@ -113,7 +113,7 @@
                                     <tr
                                         style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                         <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0;">
-                                            <a href="{{ env('NEXT_URL') }}user/payment?booking_id={{ $data['booking_id'] }}&amount={{ $data['client_amount'] }}&chef_id={{ $data['chef_id'] }}&client_id={{ $data['client_id'] }}"
+                                            <a href="{{ env('NEXT_URL') }}user/payment?booking_id={{ $data['booking_id'] }}&amount={{ $data['client_amount'] }}&chef_id={{ $data['chef_id'] }}&client_id={{ $data['client_id'] }}&applied_id={{ $data['applied_id'] }}"
                                             style="display: inline-block; background-color: #007bff; color: #fff; text-align: center; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">Confirm Booking</a>
                                         </td>
                                     </tr>
