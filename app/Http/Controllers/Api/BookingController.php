@@ -835,6 +835,7 @@ class BookingController extends Controller
                     'user_email' => $booking->email,
                     'client_amount' => $request->client_amount,
                     'client_id' => $bookingDate->client_id,
+                    'applied_id' => $request->applied_id,
                 ];
 
                 if ($request->payment_status == 'pending') {
