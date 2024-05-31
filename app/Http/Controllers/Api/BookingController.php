@@ -2236,9 +2236,11 @@ class BookingController extends Controller
                     ->first();
                 if ($appliedJob) {
                     $amount = $appliedJob->amount;
+                    $appliedId = $appliedJob->id;
                 } else {
                     // Handle the case where the amount is not found or handle default amount
                     $amount = 0; // Assuming a default value
+                    $appliedId = '';
                 }
                 $chefs = User::where('id', $request->chef_id)->get();
                 $this->sendLocationNotification($chefs, $booking, $admindata, $request, $amount);
@@ -2256,6 +2258,7 @@ class BookingController extends Controller
                     'user_email' => $booking->email,
                     'client_amount' => $request->client_amount,
                     'client_id' => $bookingDate->client_id,
+                    'applied_id' => $appliedId,
                 ];
 
 
