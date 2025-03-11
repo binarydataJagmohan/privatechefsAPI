@@ -992,31 +992,30 @@ class UserController extends Controller
                     $detail->save();
                 }
 
-                $data = [
-                    'name' => $user->name,
-                    'password' => $request->password,
-                    'email' => $user->email,
-                    'surname' => $user->surname,
-                    'phone' => $user->phone,
-                    'address' => $user->address,
-                    'passport_no' => $user->passport_no,
-                    'IBAN' => $user->IBAN,
-                    'BIC' => $user->BIC,
-                    'bank_name' => $user->bank_name,
-                    'holder_name' => $user->holder_name,
-                    'bank_address' => $user->bank_address,
-                    'vat_no' => $user->vat_no,
-                    'tax_id' => $user->tax_id
-                ];
+                // $data = [
+                //     'name' => $user->name,
+                //     'password' => $request->password,
+                //     'email' => $user->email,
+                //     'surname' => $user->surname,
+                //     'phone' => $user->phone,
+                //     'address' => $user->address,
+                //     'passport_no' => $user->passport_no,
+                //     'IBAN' => $user->IBAN,
+                //     'BIC' => $user->BIC,
+                //     'bank_name' => $user->bank_name,
+                //     'holder_name' => $user->holder_name,
+                //     'bank_address' => $user->bank_address,
+                //     'vat_no' => $user->vat_no,
+                //     'tax_id' => $user->tax_id
+                // ];
 
+                // Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
+                //     $message->from(config('mail.from.address'), "Private Chefs");
+                //     $message->subject(' Your Account Login Details for Private Chefs');
+                //     $message->to($data['email']);
+                // });
 
-                Mail::send('emails.loginDetails', ["data" => $data], function ($message) use ($data) {
-                    $message->from(config('mail.from.address'), "Private Chefs");
-                    $message->subject(' Your Account Login Details for Private Chefs');
-                    $message->to($data['email']);
-                });
-
-                return response()->json(['status' => true, 'message' => "Chef created successfully", 'data' => $user], 200);
+                return response()->json(['status' => true, 'message' => "Chef created successfully", 'data' => $user,'chef_id' => $user->id ], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
             }
@@ -1025,6 +1024,244 @@ class UserController extends Controller
         }
     }
 
+    public function admin_update_chef_profile(Request $request)
+    {
+        try {
+
+            $slug = $this->generateUniqueSlug($request->name);
+
+            $user = User::find($request->id);
+            $user->name = $request->name;
+            $user->surname = $request->surname;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->address = $request->address;
+            $user->passport_no = $request->passport_no;
+            $user->BIC = $request->BIC;
+            $user->IBAN = $request->IBAN;
+            $user->bank_name = $request->bank_name;
+            $user->holder_name = $request->holder_name;
+            $user->bank_address = $request->bank_address;
+            $user->vat_no = $request->vat_no;
+            $user->tax_id = $request->tax_id;
+            $user->lat = $request->lat;
+            $user->lng = $request->lng;
+            $user->slug = $slug;
+            $user->profile_status = 'completed';
+
+            $user->password = Hash::make($request->password);
+            $user->view_password = $request->password;
+
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $randomNumber = mt_rand(1000000000, 9999999999);
+                $imageName = $randomNumber . $file->getClientOriginalName();
+                $file->move(public_path('images/chef/users'), $imageName); // Save to 'public/images/userprofileImg'
+                $user->pic = $imageName;
+            }
+
+
+            $admin = User::select('id')->where('role', 'admin')->get();
+
+            $concierge = User::select('id', 'created_by')->where('id', $request->id)->first();
+
+            if ($concierge->created_by) {
+                $notify_by1 = $concierge->id;
+                $notify_to1 =  $concierge->created_by;
+                $description1 = $user->name . ' has just updated their profile.';
+                $type1 = 'update_profile';
+                createNotificationForConcierge($notify_by1, $notify_to1, $description1, $type1);
+            }
+
+            $notify_by = $user->id;
+            $notify_to =  $admin;
+            $description = 'Profile has been successfully updated.';
+            $description1 = $user->name . ' has just updated their profile.';
+            $type = 'update_profile';
+
+
+            createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
+            $savedata = $user->save();
+            if ($savedata) {
+                return response()->json(['status' => true, 'message' => "Profile has been updated succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for updating the profile", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function get_chef_location(Request $request)
+    {
+        try {
+            $user = ChefLocation::where('user_id', $request->id)->where('status', 'active')->orderby('id', 'DESC')->get();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function get_chef_detail(Request $request)
+    {
+        try {
+            $user = User::where('id', $request->id)->first();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef detail fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef detail", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function get_chef_resume(Request $request)
+    {
+        try {
+            $user = ChefDetail::where('user_id', $request->id)->first();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef resume fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef resume", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function get_current_location(Request $request)
+    {
+        try {
+            $user = User::where('id', $request->id)->select('id', 'address', 'lat', 'lng')->where('status', 'active')->first();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function update_chef_resume(Request $request)
+    {
+        try {
+            $chef = ChefDetail::where('user_id', $request->route('id'))->first();
+
+            if ($chef) {
+                $resume = ChefDetail::find($chef->id);
+                $resume->about = $request->about;
+                $resume->description = $request->description;
+                $resume->services_type = $request->services_type;
+                $resume->languages = $request->languages;
+                $resume->experience = $request->experience;
+                $resume->skills = $request->skills;
+                $resume->favorite_chef = $request->favorite_chef;
+                $resume->favorite_dishes = $request->favorite_dishes;
+                $resume->love_cooking = $request->love_cooking;
+                $resume->cooking_secret = $request->cooking_secret;
+                $resume->know_me_better = $request->know_me_better;
+                $resume->facebook_link = $request->facebook_link;
+                $resume->instagram_link = $request->instagram_link;
+                $resume->twitter_link = $request->twitter_link;
+                $resume->linkedin_link = $request->linkedin_link;
+                $resume->youtube_link = $request->youtube_link;
+                $savedata = $resume->save();
+
+
+                $resume->save();
+
+                if ($savedata) {
+                    return response()->json(['status' => true, 'message' => "Resume has been updated successfully", 'data' => $resume], 200);
+                } else {
+                    return response()->json(['status' => false, 'message' => "There was an error updating the resume", 'data' => ""], 400);
+                }
+            } else {
+                return response()->json(['status' => false, 'message' => "User not found", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function save_chef_location(Request $request)
+    {
+        try {
+            $locationCount = ChefLocation::where('user_id', $request->user_id)->count();
+
+            if ($locationCount >= 10) {
+                return response()->json(['status' => false, 'message' => 'You have reached the maximum limit of locations', 'data' => null], 400);
+            }
+
+            $location = new ChefLocation();
+            $location->user_id = $request->user_id;
+            $location->address = $request->address;
+            $location->lat = $request->lat;
+            $location->lng = $request->lng;
+            $savedata = $location->save();
+
+            if ($savedata) {
+                return response()->json(['status' => true, 'message' => 'Location has been stored successfully', 'data' => $location], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => 'There was an error storing the location', 'data' => null], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+    public function update_chef_location(Request $request)
+    {
+        try {
+            $location = ChefLocation::find($request->id);
+            $location->user_id = $request->user_id;
+            $location->address = $request->address;
+            $location->lat = $request->lat;
+            $location->lng = $request->lng;
+            $savedata = $location->save();
+            if ($savedata) {
+                return response()->json(['status' => true, 'message' => "location has been updated successfully", 'data' => $location], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There was an error updating the location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+
+    public function get_single_location(Request $request)
+    {
+        try {
+            $user = ChefLocation::where('id', $request->id)->where('status', 'active')->first();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Chef location fetched succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for fetching the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
+
+    public function delete_single_location(Request $request)
+    {
+        try {
+            $user = ChefLocation::find($request->id);
+            $user->status = 'deleted';
+            $user->save();
+            if ($user) {
+                return response()->json(['status' => true, 'message' => "Single location deleted succesfully", 'data' => $user], 200);
+            } else {
+                return response()->json(['status' => false, 'message' => "There has been error for deleting the chef location", 'data' => ""], 400);
+            }
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+        }
+    }
     public function delete_chef(Request $request)
     {
         try {

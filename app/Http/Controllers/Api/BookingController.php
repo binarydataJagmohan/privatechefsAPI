@@ -21,6 +21,7 @@ use Stripe\Charge;
 use Stripe\Exception\CardException;
 use Illuminate\Mail\Mailable;
 use App\Mail\InvitationEmail;
+use Illuminate\Support\Facades\Log;
 
 
 class BookingController extends Controller
@@ -120,6 +121,9 @@ class BookingController extends Controller
                     $description1 = $booking->name . ' has successfully done booking with booking id ' . '#' . $booking->id;
                     $type = 'booking';
                     createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
+
+                    $chefs = User::where('role', 'chef')->where('status', 'active')->get();
+                    createNotificationForChefs($notify_by, $description1, $chefs, $type);
                 }
 
                 //mail send to user own booking
@@ -434,7 +438,7 @@ class BookingController extends Controller
                 )
                 ->groupBy('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', 'bookings.id', 'applied_jobs.status')
                 ->where('bookings.status', '=', 'active')
-                // ->where('booking_meals.date', '>=', $today)
+                ->where('booking_meals.date', '>=', $today)
                 ->whereNotExists(function ($query) {
                     $query->select(DB::raw(1))
                         ->from('applied_jobs')
@@ -468,6 +472,8 @@ class BookingController extends Controller
                 }
                 $booking->booking_status = $bookingStatus;
 
+                $appliedCount = DB::table('applied_jobs')->where('chef_id', $id)->count();
+                $booking->isMenuOptional = $appliedCount >= 1 ? true : false;
             }
 
             if (!$chefuserbookings) {
@@ -530,12 +536,20 @@ class BookingController extends Controller
 
     public function save_chef_applied_booking_job(Request $request)
     {
+        $previousApplication = AppliedJobs::where('chef_id', $request->chef_id)
+            ->select('menu') 
+            ->first();
+        $menu = $request->menu ?? ($previousApplication ? $previousApplication->menu : null);
+        if (!$menu) {
+            return response()->json(['message' => 'No menu found'], 404);
+        }
 
         $booking = new AppliedJobs();
         $booking->booking_id = $request->booking_id;
         $booking->chef_id = $request->chef_id;
         $booking->amount = $request->amount;
-        $booking->menu = $request->menu;
+        // $booking->menu = $request->menu;
+        $booking->menu = $menu;
         $booking->user_show = 'visible';
         $appliedJobs = $booking->save();
 
@@ -604,14 +618,14 @@ class BookingController extends Controller
                 ->where('applied_jobs.chef_id', $id)
                 ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
                 ->groupBy(
-                    'bookings.name', 
-                    'users.id', 
-                    'bookings.surname', 
-                    'users.pic', 
-                    'bookings.location', 
-                    'bookings.booking_status', 
-                    'booking_meals.category', 
-                    'bookings.id', 
+                    'bookings.name',
+                    'users.id',
+                    'bookings.surname',
+                    'users.pic',
+                    'bookings.location',
+                    'bookings.booking_status',
+                    'booking_meals.category',
+                    'bookings.id',
                     'applied_jobs.status'
                 )
                 ->where('bookings.status', '=', 'active')
@@ -763,18 +777,15 @@ class BookingController extends Controller
         if ($updatebooking) {
 
             return response()->json(['message' => 'done', 'status' => true]);
-
         } else {
             return response()->json(['message' => 'There has been error', 'status' => false]);
         }
-
-
     }
 
 
     public function AssignedBookingByAdminWithoutDatabse(Request $request)
     {
-
+        // return ($request->all());
 
         if ($request->booking_id) {
 
@@ -795,17 +806,20 @@ class BookingController extends Controller
             if (!empty($intersectedDates)) {
 
                 return response()->json(['message' => 'THis Chef is already booked between these dates', 'status' => false]);
-
             } else {
 
 
                 if ($request->payment_status == 'pending') {
-                    $updatebooking = AppliedJobs::where('id', $request->id)->update([
-                        'status' => 'discussion'
+                    AppliedJobs::where('id', $request->id)->update([
+                        'status' => 'discussion',
+                        'client_amount' => $request->client_amount,
+                        'admin_amount' => $request->admin_amount
                     ]);
                 } else {
-                    $updatebooking = AppliedJobs::where('id', $request->id)->update([
-                        'status' => 'hired'
+                    AppliedJobs::where('id', $request->id)->update([
+                        'status' => 'hired',
+                        'client_amount' => $request->client_amount,
+                        'admin_amount' => $request->admin_amount
                     ]);
                 }
 
@@ -848,7 +862,6 @@ class BookingController extends Controller
                     });
 
                     return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
-
                 } else {
 
                     Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
@@ -861,15 +874,117 @@ class BookingController extends Controller
                     return response()->json(['message' => 'Hired mail has been successfully sent to chef', 'status' => true]);
                 }
             }
-
-
         } else {
             return response()->json(['message' => 'There has been error', 'status' => false]);
         }
-
-
     }
 
+    public function assigned_booking_by_admin(Request $request)
+    {
+        // return($request->all());
+        $bookingdatecheck = BookingMeals::select('date')->where('booking_id', $request->booking_id)->get();
+        $bokking = Booking::select('date')
+            ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
+            ->where('bookings.assigned_to_user_id', $request->chef_id)
+            ->where('bookings.id', '!=', $request->booking_id)
+            ->get();
+
+        // Extract dates from the result sets
+        $datesFromBookingDateCheck = $bookingdatecheck->pluck('date')->toArray();
+        $datesFromBokking = $bokking->pluck('date')->toArray();
+
+        // Check if any date from $bokking matches with $bookingdatecheck
+        $intersectedDates = array_intersect($datesFromBokking, $datesFromBookingDateCheck);
+
+        if (!empty($intersectedDates)) {
+            // Chef is already booked between these dates
+
+            return response()->json(['status' => false, 'message' => 'This Chef is already booked between these date',]);
+        } else {
+            $booking = new AppliedJobs();
+            $booking->booking_id = $request->booking_id;
+            $booking->chef_id = $request->chef_id;
+            $booking->amount = $request->amount;
+            $booking->client_amount = $request->client_amount;
+            $booking->admin_amount = $request->admin_amount;
+            $booking->user_show = 'visible';
+            $booking->menu = $request->menu;
+            // $booking->status = $request->payment_status == 'pending' ? 'applied' : 'hired';
+            $booking->status = $request->payment_status == 'pending' ? 'hired' : 'applied';
+            $appliedJobs = $booking->save();
+
+            if ($appliedJobs) {
+
+                $chef = User::select('name', 'email')->where('id', $request->chef_id)->first();
+                $booking = Booking::select('name', 'location', 'id', 'email')->where('id', $request->booking_id)->first();
+
+                $bookingDate = Booking::select('booking_meals.category', 'bookings.user_id as client_id', DB::raw('GROUP_CONCAT(DISTINCT booking_meals.date) AS dates'))
+                    ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
+                    ->where('bookings.id', $request->booking_id)
+                    ->groupBy('booking_meals.booking_id')
+                    ->first();
+
+                $admindata = User::select('email')->where('role', 'admin')->first();
+                // Get chef IDs or chefs data
+
+                $appliedJob = AppliedJobs::where('booking_id', $request->booking_id)
+                    ->where('chef_id', $request->chef_id)
+                    ->first();
+                if ($appliedJob) {
+                    $amount = $appliedJob->amount;
+                    $appliedId = $appliedJob->id;
+                } else {
+                    // Handle the case where the amount is not found or handle default amount
+                    $amount = 0; // Assuming a default value
+                    $appliedId = '';
+                }
+                $chefs = User::where('id', $request->chef_id)->get();
+                $this->sendLocationNotification($chefs, $booking, $admindata, $request, $amount);
+
+
+                $data = [
+                    'chef_id' => $request->chef_id,
+                    'chef_name' => $chef->name,
+                    'email' => $chef->email,
+                    'booking_id' => $request->booking_id,
+                    'user_name' => $booking->name,
+                    'user_location' => $booking->location,
+                    'booking_type' => $bookingDate->category,
+                    'booking_date' => $bookingDate->dates,
+                    'admin_email' => $admindata->email,
+                    'user_email' => $booking->email,
+                    'client_amount' => $request->client_amount,
+                    'client_id' => $bookingDate->client_id,
+                    'applied_id' => $appliedId,
+                ];
+
+
+                if ($request->payment_status == 'pending') {
+
+                    Mail::send('emails.hiredchefMailToUser', ['data' => $data], function ($message) use ($data) {
+                        $message->from(config('mail.from.address'), "Private Chefs");
+                        $message->to($data['user_email']);
+                        $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
+                        $message->subject('Culinary Experience Tailored Just for You! ');
+                    });
+
+                    return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
+                } else {
+
+                    Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
+                        $message->from(config('mail.from.address'), "Private Chefs");
+                        $message->to($data['email']);
+                        $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
+                        $message->subject('You have Been Chosen to Create Culinary Magic!');
+                    });
+
+                    return response()->json(['message' => 'Hired mail has been successfully sent to chef', 'status' => true]);
+                }
+            } else {
+                return response()->json(['status' => false, 'message' => 'There has been error in saving the booking',]);
+            }
+        }
+    }
 
     public function get_admin_chef_by_booking(Request $request)
     {
@@ -880,10 +995,16 @@ class BookingController extends Controller
                 ->join('service_choices as sc', 'sc.id', '=', 'b.service_id')
                 ->leftJoin('applied_jobs as aj', function ($join) {
                     $join->on('b.id', '=', 'aj.booking_id')
-                        //->where('aj.status', '=', 'hired');
                         ->whereIn('aj.status', ['hired', 'discussion']);
                 })
                 ->whereNull('aj.booking_id')
+                // ->leftJoin('applied_jobs as aj', function ($join) {
+                //     $join->on('b.id', '=', 'aj.booking_id');
+                // })
+                // ->where(function ($query) {
+                //     $query->whereNull('aj.booking_id') // Ensure bookings without applied_jobs are included
+                //           ->orWhereIn('aj.status', ['hired', 'discussion','applied']); // Only allow these statuses
+                // })
                 ->where('b.status', '=', 'active') // Add the condition here
                 ->groupBy(
                     'b.name',
@@ -900,7 +1021,7 @@ class BookingController extends Controller
                     'aj.status',
                     'aj.chef_id',
                     'b.status',
-                    'b.assigned_to_villa_id'
+                    'b.assigned_to_villa_id',
                 )
                 ->select(
                     'b.name',
@@ -1030,7 +1151,7 @@ class BookingController extends Controller
                 ->join('service_choices as sc', 'sc.id', '=', 'b.service_id')
                 ->leftJoin('applied_jobs as aj', function ($join) {
                     $join->on('b.id', '=', 'aj.booking_id')
-                       // ->where('aj.status', '=', 'hired');
+                        // ->where('aj.status', '=', 'hired');
                         ->whereIn('aj.status', ['hired', 'discussion']);
                 })
                 ->whereNull('aj.booking_id')
@@ -1118,7 +1239,64 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
+    }
 
+    public function get_bookings_count(Request $request)
+    {
+        try {
+            $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
+                ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
+                ->where('users.status', '!=', 'deleted')
+                ->where('bookings.status', '!=', 'deleted')
+                ->whereNull('applied_jobs.booking_id')
+                ->count();
+
+            $admin_available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
+                ->leftJoin('applied_jobs', function ($join) {
+                    $join->on('bookings.id', '=', 'applied_jobs.booking_id')
+                        //->where('applied_jobs.status', '=', 'hired');
+                        ->whereIn('applied_jobs.status', ['hired', 'discussion']);
+                })
+                ->where('users.status', '!=', 'deleted')
+                ->where('bookings.status', '!=', 'deleted')
+                ->whereNull('applied_jobs.booking_id')
+                ->count();
+
+
+            $allBookings = DB::table('users')
+                ->join('bookings', 'users.id', '=', 'bookings.user_id')
+                ->leftJoin('applied_jobs', function ($join) {
+                    $join->on('bookings.id', '=', 'applied_jobs.booking_id')
+                        //->where('applied_jobs.status', '=', 'hired');
+                        ->whereIn('applied_jobs.status', ['hired', 'discussion']);
+                })
+                ->where('users.status', '!=', 'deleted')
+                ->whereNull('applied_jobs.booking_id')
+                ->count();
+
+            $hired_booking = User::join('bookings', 'users.id', 'bookings.user_id')
+                ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
+                ->where('users.status', '!=', 'deleted')
+                ->where('bookings.status', '!=', 'deleted')
+                //->where('applied_jobs.status', 'hired')
+                ->whereIn('applied_jobs.status', ['hired', 'discussion'])
+                ->count();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'All chef fetched successfully.',
+                'available_booking' => $available_booking,
+                'allbooking' => $allBookings,
+                'hired_booking' => $hired_booking,
+                'admin_available_booking' => $admin_available_booking
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpException(500, $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     public function get_admin_assigned_booking(Request $request)
@@ -1329,7 +1507,6 @@ class BookingController extends Controller
                         $bookingmeals->category = $request->category;
                         $savebookingmeals = $bookingmeals->save();
                     }
-
                 }
             }
 
@@ -1971,63 +2148,7 @@ class BookingController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-    public function get_bookings_count(Request $request)
-    {
-        try {
-            $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
-                ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
-                ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status', '!=', 'deleted')
-                ->whereNull('applied_jobs.booking_id')
-                ->count();
 
-            $admin_available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
-                ->leftJoin('applied_jobs', function ($join) {
-                    $join->on('bookings.id', '=', 'applied_jobs.booking_id')
-                        //->where('applied_jobs.status', '=', 'hired');
-                        ->whereIn('applied_jobs.status', ['hired', 'discussion']);
-                })
-                ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status', '!=', 'deleted')
-                ->whereNull('applied_jobs.booking_id')
-                ->count();
-
-
-            $allBookings = DB::table('users')
-                ->join('bookings', 'users.id', '=', 'bookings.user_id')
-                ->leftJoin('applied_jobs', function ($join) {
-                    $join->on('bookings.id', '=', 'applied_jobs.booking_id')
-                        //->where('applied_jobs.status', '=', 'hired');
-                        ->whereIn('applied_jobs.status', ['hired', 'discussion']);
-                })
-                ->where('users.status', '!=', 'deleted')
-                ->whereNull('applied_jobs.booking_id')
-                ->count();
-
-            $hired_booking = User::join('bookings', 'users.id', 'bookings.user_id')
-                ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
-                ->where('users.status', '!=', 'deleted')
-                ->where('bookings.status', '!=', 'deleted')
-                //->where('applied_jobs.status', 'hired')
-                ->whereIn('applied_jobs.status', ['hired', 'discussion'])
-                ->count();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'All chef fetched successfully.',
-                'available_booking' => $available_booking,
-                'allbooking' => $allBookings,
-                'hired_booking' => $hired_booking,
-                'admin_available_booking' => $admin_available_booking
-            ]);
-        } catch (\Exception $e) {
-            throw new HttpException(500, $e->getMessage());
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
-        }
-    }
     public function get_applied_chef_bookings_count(Request $request)
     {
         try {
@@ -2056,7 +2177,8 @@ class BookingController extends Controller
                         ->where('applied_jobs.chef_id', '=', $request->id);
                 })
                 ->where('users.status', '!=', 'deleted')
-                ->where('applied_jobs.status', 'applied')
+                // ->where('applied_jobs.status', 'applied')
+                ->where('applied_jobs.status', 'discussion')
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('applied_jobs.chef_id', $request->id)
                 ->count();
@@ -2183,114 +2305,7 @@ class BookingController extends Controller
         }
     }
 
-    public function assigned_booking_by_admin(Request $request)
-    {
-        $bookingdatecheck = BookingMeals::select('date')->where('booking_id', $request->booking_id)->get();
-        $bokking = Booking::select('date')
-            ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
-            ->where('bookings.assigned_to_user_id', $request->chef_id)
-            ->where('bookings.id', '!=', $request->booking_id)
-            ->get();
 
-        // Extract dates from the result sets
-        $datesFromBookingDateCheck = $bookingdatecheck->pluck('date')->toArray();
-        $datesFromBokking = $bokking->pluck('date')->toArray();
-
-        // Check if any date from $bokking matches with $bookingdatecheck
-        $intersectedDates = array_intersect($datesFromBokking, $datesFromBookingDateCheck);
-
-        if (!empty($intersectedDates)) {
-            // Chef is already booked between these dates
-
-            return response()->json(['status' => false, 'message' => 'This Chef is already booked between these date',]);
-
-
-        } else {
-            $booking = new AppliedJobs();
-            $booking->booking_id = $request->booking_id;
-            $booking->chef_id = $request->chef_id;
-            $booking->amount = $request->amount;
-            $booking->client_amount = $request->client_amount;
-            $booking->admin_amount = $request->admin_amount;
-            $booking->user_show = 'visible';
-            $booking->menu = $request->menu;
-            $booking->status = $request->payment_status == 'pending' ? 'applied' : 'hired';
-            $appliedJobs = $booking->save();
-
-            if ($appliedJobs) {
-
-                $chef = User::select('name', 'email')->where('id', $request->chef_id)->first();
-                $booking = Booking::select('name', 'location', 'id', 'email')->where('id', $request->booking_id)->first();
-
-                $bookingDate = Booking::select('booking_meals.category', 'bookings.user_id as client_id', DB::raw('GROUP_CONCAT(DISTINCT booking_meals.date) AS dates'))
-                    ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
-                    ->where('bookings.id', $request->booking_id)
-                    ->groupBy('booking_meals.booking_id')
-                    ->first();
-
-                $admindata = User::select('email')->where('role', 'admin')->first();
-                // Get chef IDs or chefs data
-
-                $appliedJob = AppliedJobs::where('booking_id', $request->booking_id)
-                    ->where('chef_id', $request->chef_id)
-                    ->first();
-                if ($appliedJob) {
-                    $amount = $appliedJob->amount;
-                    $appliedId = $appliedJob->id;
-                } else {
-                    // Handle the case where the amount is not found or handle default amount
-                    $amount = 0; // Assuming a default value
-                    $appliedId = '';
-                }
-                $chefs = User::where('id', $request->chef_id)->get();
-                $this->sendLocationNotification($chefs, $booking, $admindata, $request, $amount);
-
-                $data = [
-                    'chef_id' => $request->chef_id,
-                    'chef_name' => $chef->name,
-                    'email' => $chef->email,
-                    'booking_id' => $request->booking_id,
-                    'user_name' => $booking->name,
-                    'user_location' => $booking->location,
-                    'booking_type' => $bookingDate->category,
-                    'booking_date' => $bookingDate->dates,
-                    'admin_email' => $admindata->email,
-                    'user_email' => $booking->email,
-                    'client_amount' => $request->client_amount,
-                    'client_id' => $bookingDate->client_id,
-                    'applied_id' => $appliedId,
-                ];
-
-
-                if ($request->payment_status == 'pending') {
-
-                    Mail::send('emails.hiredchefMailToUser', ['data' => $data], function ($message) use ($data) {
-                        $message->from(config('mail.from.address'), "Private Chefs");
-                        $message->to($data['user_email']);
-                        $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
-                        $message->subject('Culinary Experience Tailored Just for You! ');
-                    });
-
-                    return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
-
-                } else {
-
-                    Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
-                        $message->from(config('mail.from.address'), "Private Chefs");
-                        $message->to($data['email']);
-                        $message->bcc([$data['admin_email'], 'confirmations@privatechefsworld.com']);
-                        $message->subject('You have Been Chosen to Create Culinary Magic!');
-                    });
-
-                    return response()->json(['message' => 'Hired mail has been successfully sent to chef', 'status' => true]);
-                }
-
-
-            } else {
-                return response()->json(['status' => false, 'message' => 'There has been error in saving the booking',]);
-            }
-        }
-    }
 
     public function savePayment(Request $request)
     {
@@ -2408,7 +2423,6 @@ class BookingController extends Controller
 
                 return response()->json(['status' => true, 'message' => 'Payment successful'], 200);
             }
-
         } catch (CardException $e) {
             // Card error occurred
             $body = $e->getJsonBody();
@@ -2425,14 +2439,14 @@ class BookingController extends Controller
     private function sendLocationNotification($chefs, $booking, $admin, $request, $amount)
     {
         foreach ($chefs as $chef) {
-
             // Save to invite_for_proposal table
             $invite = new InviteProposal();
             $invite->user_id = $request->user_id;
             $invite->booking_id = $booking->id;
-            $invite->chef_id = $chef->user_id;
+            $invite->chef_id = $chef->id;
             $invite->status = 'active';
-            $invite->save();
+            $invite->save();;
+
 
             $totalGuests = $booking->adults + $booking->childrens + $booking->teens;
             $bookingId = $booking->id;
@@ -2561,7 +2575,8 @@ class BookingController extends Controller
         }
     }
 
-    public function ResendPaymentLink(Request $request){
+    public function ResendPaymentLink(Request $request)
+    {
         try {
             $chef = User::select('name', 'email')->where('id', $request->chef_id)->first();
             $booking = Booking::select('name', 'location', 'id', 'email')->where('id', $request->booking_id)->first();
@@ -2614,7 +2629,6 @@ class BookingController extends Controller
                 });
 
                 return response()->json(['message' => 'Booking mail and along with payment link  send to user', 'status' => true]);
-
             } else {
 
                 Mail::send('emails.hiredchefMail', ['data' => $data], function ($message) use ($data) {
@@ -2630,5 +2644,4 @@ class BookingController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-
 }

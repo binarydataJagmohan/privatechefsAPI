@@ -300,6 +300,18 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('/create-chef', [App\Http\Controllers\Api\UserController::class, 'create_chef']);
     Route::post('/admin-create-chef', [App\Http\Controllers\Api\UserController::class, 'admin_create_chef']);
 
+    Route::get('/get-chef-location-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'get_chef_location']);
+
+    Route::get('/get-single-location-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'get_single_location']);
+    Route::post('/delete-single-location-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'delete_single_location']);
+    Route::post('/update-chef-profile-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'admin_update_chef_profile']);
+    Route::get('/get-chef-detail-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'get_chef_detail']);
+    Route::get('/get-current-location-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'get_current_location']);
+    Route::get('/get-chef-resume-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'get_chef_resume']);
+
+    Route::post('/update-chef-resume-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'update_chef_resume']);
+    Route::post('/update-chef-location-by-admin/{id}', [App\Http\Controllers\Api\UserController::class, 'update_chef_location']);
+    Route::post('/save-chef-location-by-admin', [App\Http\Controllers\Api\UserController::class, 'save_chef_location']);
 
 
     Route::post('/delete-chef/{id}', [App\Http\Controllers\Api\UserController::class, 'delete_chef']);
