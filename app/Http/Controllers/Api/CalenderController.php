@@ -47,6 +47,7 @@ class CalenderController extends Controller
                 ->select('users.pic', 'users.name', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), 'bookings.id', 'booking_meals.category')
                 ->groupBy('users.pic', 'bookings.location', 'users.name')
                 ->where('applied_jobs.chef_id', $request->id)
+                ->where('applied_jobs.status', 'hired')
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('users.status', '!=', 'deleted')
                 ->get();
@@ -59,6 +60,7 @@ class CalenderController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+    
     public function get_concierge_calender_bookings(Request $request)
     {
         try {
@@ -73,7 +75,7 @@ class CalenderController extends Controller
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('users.status', '!=', 'deleted')
                 ->get();
-                
+
             return response()->json([
                 'status' => true,
                 'bookings' => $bookings

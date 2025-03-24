@@ -192,6 +192,8 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 });
 
 Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
+    Route::post('/admin-cancel-and-reopen-booking/{id}', [App\Http\Controllers\Api\BookingController::class, 'admin_cancel_and_reopen_booking']);
+
     Route::get('/get-User-By-Booking/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_User_By_Booking_Id']);
     Route::get('/get-user-chef-by-booking/{userid}', [App\Http\Controllers\Api\BookingController::class, 'get_user_chef_by_booking']);
     Route::get('/get-user-chef-filter-by-booking/{userid}/{type}', [App\Http\Controllers\Api\BookingController::class, 'get_user_chef_filter_by_booking']);
@@ -221,7 +223,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::post('/resend-payment-link', [App\Http\Controllers\Api\BookingController::class, 'ResendPaymentLink']);
 
-    Route::post('/updated-applied-booking-job/', [App\Http\Controllers\Api\BookingController::class, 'updated_applied_booking_job']);
+    Route::post('/updated-applied-booking-job', [App\Http\Controllers\Api\BookingController::class, 'updated_applied_booking_job']);
 
     Route::get('/get-edit-booking-data/{id}', [App\Http\Controllers\Api\BookingController::class, 'get_edit_booking_data']);
     Route::post('/update-booking', [App\Http\Controllers\Api\BookingController::class, 'update_booking']);
