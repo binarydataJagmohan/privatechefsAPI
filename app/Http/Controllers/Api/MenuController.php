@@ -35,6 +35,7 @@ class MenuController extends Controller
 
     public function save_chef_menu(Request $request)
     {
+        // return($request->all());
         try {
 
            $checkmenuname = Menu::where('menu_name',$request->name)->where('status','active')->count();
@@ -44,8 +45,17 @@ class MenuController extends Controller
             $menu = new Menu();
             $menu->menu_name =  $request->name;
             $menu->description =  $request->description;
-            $menu->cuisine_id = $request->cuisineid;
+            // $menu->cuisine_id = $request->cuisineid;
             $menu->user_id = $request->user_id;
+
+            if ($request->has('cuisineid')) {
+                if (is_array($request->cuisineid)) {
+                    $menu->cuisine_id = implode(',', $request->cuisineid); // Convert array to string
+                } else {
+                    $menu->cuisine_id = $request->cuisineid; // Directly save string if already formatted
+                }
+            }
+            
 
             if ($request->hasFile('image')) {
                 $randomNumber = mt_rand(1000000000, 9999999999);
@@ -85,7 +95,6 @@ class MenuController extends Controller
         try {
 
             $MenuData = Menu::find($id);
-
              $Dishes = MenuItems::Select('menu_items.id as menu_item_id','item_name','menu_items.type')->where('menu_id',$id)->where('menu_items.status', 'active')->orderBy('menu_items.id', 'desc')->join('dishes', 'menu_items.dish_id', '=', 'dishes.id')->get();
 
         

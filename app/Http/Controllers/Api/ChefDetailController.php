@@ -701,6 +701,7 @@ class ChefDetailController extends Controller
     {
         try {
             $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos', 'Crete', 'Corfu', 'Lefkada', 'Zakynthos', 'Porto Heli', 'Paros', 'Antiparos', 'Diaporos'];
+
             $users = User::select('id', 'address', 'location_pic', 'slug', 'name', 'pic')
                 ->whereIn('address', $desiredLocations)
                 ->where('role', 'chef')
@@ -719,12 +720,12 @@ class ChefDetailController extends Controller
     public function get_location_by_slug(Request $request)
     {
         try {
+            
             $users = User::select('id', 'address', 'name', 'location_pic', 'slug')
                 ->where('role', 'chef')
                 ->where('status', '!=', 'deleted')
                 ->where('address', $request->slug)
                 ->get();
-
             return response()->json([
                 'status' => true,
                 'data' => $users
