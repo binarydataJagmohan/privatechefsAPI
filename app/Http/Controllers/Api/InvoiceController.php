@@ -69,7 +69,7 @@ class InvoiceController extends Controller
     public function get_single_invoice(Request $request)
     {
         try {
-            $invoice = Invoice::select('users.name', 'users.surname', 'invoices.date', 'invoices.booking_id', 'invoices.id as invoiceID', 'invoices.invoice_no', 'invoices.amount as invoiceAmount')->join('bookings', 'invoices.booking_id', 'bookings.id')
+            $invoice = Invoice::select('users.name', 'users.surname', 'invoices.date', 'invoices.booking_id', 'invoices.id as invoiceID', 'invoices.description', 'invoices.invoice_no', 'invoices.amount as invoiceAmount')->join('bookings', 'invoices.booking_id', 'bookings.id')
                 ->join('users', 'bookings.user_id', 'users.id')
                 ->where('invoices.id', $request->id)->where('invoices.status', 'active')->first();
             return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice], 200);
@@ -122,6 +122,7 @@ class InvoiceController extends Controller
             $invoice = Invoice::select(
                 'invoices.id as invoice_id',
                 'invoices.booking_id',
+                'invoices.description',
                 'dishes.id',
                 'dish_categories.id as dish_category_id',
                 'menus.menu_name',
@@ -154,8 +155,8 @@ class InvoiceController extends Controller
                 ->join('users as u2', 'bookings.user_id', '=', 'u2.id')
                 ->where('invoices.id', $request->id)
                 ->first();
-
-                $dishNames = DB::table('dishes')
+// return $invoice;
+            $dishNames = DB::table('dishes')
                 ->select('dishes.item_name', 'dishes.type')
                 ->join('menu_items', 'dishes.user_id', '=', 'menu_items.user_id')
                 ->join('menus', 'menu_items.menu_id', '=', 'menus.id')
@@ -166,7 +167,7 @@ class InvoiceController extends Controller
                 // ->distinct()
                 ->get();
 
-            return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice,'dishNames'=>$dishNames], 200);
+            return response()->json(['status' => true, 'message' => 'All Invoice fetched successfully', 'data' => $invoice, 'dishNames' => $dishNames], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
