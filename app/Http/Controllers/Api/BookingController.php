@@ -123,7 +123,9 @@ class BookingController extends Controller
                     createNotificationForUserAndAdmins($notify_by, $notify_to, $description, $description1, $type);
 
                     $chefs = User::where('role', 'chef')->where('status', 'active')->get();
-                    createNotificationForChefs($notify_by, $description1, $chefs, $type);
+                    // createNotificationForChefs($notify_by, $description1, $chefs, $type);
+                    createNotificationForChefs($notify_by, $description1, $booking, $type);
+
                 }
 
                 //mail send to user own booking
@@ -410,6 +412,14 @@ class BookingController extends Controller
 
             $today = now()->toDateString();
 
+            $chefLocations = DB::table('chef_location')
+                ->where('user_id', $id)
+                ->where('status', 'active')
+                ->get();
+
+            if ($chefLocations->isEmpty()) {
+                return response()->json(['message' => 'Chef location not found', 'status' => false], 404);
+            }
             $chefuserbookings = DB::table('users')
                 ->join('bookings', 'users.id', '=', 'bookings.user_id')
                 ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
@@ -442,6 +452,22 @@ class BookingController extends Controller
                         //->where('applied_jobs.status', '=', 'hired');
                         ->whereIn('applied_jobs.status', ['hired', 'discussion']);
                 })
+                ->where(function ($query) use ($chefLocations) {
+                    foreach ($chefLocations as $location) {
+                        $latitude = $location->lat;
+                        $longitude = $location->lng;
+                        $address = $location->address; // Chef address
+                        $radius = 10; // Radius in kilometers
+                        $query->orWhereRaw("
+                            (6371 * acos(cos(radians(?)) * cos(radians(bookings.lat)) * cos(radians(bookings.lng) - radians(?)) + sin(radians(?)) * sin(radians(bookings.lat)))) <= ?
+                        ", [$latitude, $longitude, $latitude, $radius])
+                            ->where(function ($q) use ($address) {
+                                // Address Location match (Exact ya Partial match)
+                                $q->where('bookings.location', $address)
+                                    ->orWhere('bookings.location', 'LIKE', "%{$address}%");
+                            });
+                    }
+                })
                 ->orderBy('bookings.id', 'DESC')
                 ->get();
 
@@ -468,9 +494,15 @@ class BookingController extends Controller
                 }
                 $booking->booking_status = $bookingStatus;
             }
-
-            if (!$chefuserbookings) {
-                return response()->json(['message' => 'Booking not found', 'status' => true], 404);
+            // if (!$chefuserbookings) {
+            //     return response()->json(['message' => 'Booking not found', 'status' => true], 404);
+            // }
+            if ($chefuserbookings->isEmpty()) {
+                return response()->json([
+                    'message' => 'No bookings found within radius and location match',
+                    'status'  => true,
+                    'data'    => []
+                ], 200);
             }
 
             return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $chefuserbookings]);
@@ -662,7 +694,7 @@ class BookingController extends Controller
                     $join->on(DB::raw("FIND_IN_SET(menus.id, applied_jobs.menu)"), '>', DB::raw('0'));
                 })
                 ->where('applied_jobs.chef_id', $id)
-                ->whereIn('applied_jobs.status', ['hired', 'discussion']) 
+                ->whereIn('applied_jobs.status', ['hired', 'discussion'])
                 ->select('bookings.name', 'users.id', 'bookings.surname', 'users.pic', 'bookings.location', 'bookings.booking_status', 'booking_meals.category', DB::raw('GROUP_CONCAT(booking_meals.date) AS dates'), DB::raw('MAX(booking_meals.created_at) AS latest_created_at'), 'bookings.id as booking_id', 'applied_jobs.status as applied_jobs_status', 'amount', DB::raw('GROUP_CONCAT(DISTINCT menus.menu_name SEPARATOR ",") AS menu_names'))
                 ->groupBy(
                     'bookings.name',
@@ -682,8 +714,7 @@ class BookingController extends Controller
                 return response()->json(['message' => 'Booking not found', 'status' => true], 404);
             }
 
-            return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $chefuserbookings,'assigned_jobs' => $assignedJobs]);
-          
+            return response()->json(['status' => true, 'message' => 'Data fetched', 'data' => $chefuserbookings, 'assigned_jobs' => $assignedJobs]);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -1258,6 +1289,8 @@ class BookingController extends Controller
     public function get_bookings_count(Request $request)
     {
         try {
+            $currentDate = Carbon::now()->toDateString();
+
             $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
                 ->leftJoin('applied_jobs', 'bookings.id', '=', 'applied_jobs.booking_id')
                 ->where('users.status', '!=', 'deleted')
@@ -1265,17 +1298,29 @@ class BookingController extends Controller
                 ->whereNull('applied_jobs.booking_id')
                 ->count();
 
+            // $admin_available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
+            //     ->leftJoin('applied_jobs', function ($join) {
+            //         $join->on('bookings.id', '=', 'applied_jobs.booking_id')
+            //             //->where('applied_jobs.status', '=', 'hired');
+            //             ->whereIn('applied_jobs.status', ['hired', 'discussion']);
+            //     })
+            //     ->where('users.status', '!=', 'deleted')
+            //     ->where('bookings.status', '!=', 'deleted')
+            //     ->whereNull('applied_jobs.booking_id')
+            //     ->count();
+
             $admin_available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
+                ->join('booking_meals', 'bookings.id', '=', 'booking_meals.booking_id')
                 ->leftJoin('applied_jobs', function ($join) {
                     $join->on('bookings.id', '=', 'applied_jobs.booking_id')
-                        //->where('applied_jobs.status', '=', 'hired');
                         ->whereIn('applied_jobs.status', ['hired', 'discussion']);
                 })
                 ->where('users.status', '!=', 'deleted')
                 ->where('bookings.status', '!=', 'deleted')
                 ->whereNull('applied_jobs.booking_id')
-                ->count();
-
+                ->where('booking_meals.date', '>=', $currentDate)
+                ->distinct('bookings.id')
+                ->count('bookings.id');
 
             $allBookings = DB::table('users')
                 ->join('bookings', 'users.id', '=', 'bookings.user_id')
@@ -1927,10 +1972,12 @@ class BookingController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
+
+
     public function get_chef_booking(Request $request)
     {
         try {
-            $bookings = Booking::select('users.address', 'bookings.id', 'applied_jobs.booking_id', 'applied_jobs.status as applystatus', 'applied_jobs.created_at as applydate')
+            $bookings = Booking::select('users.address', 'bookings.id', 'bookings.location', 'bookings.created_at', 'applied_jobs.booking_id', 'applied_jobs.status as applystatus', 'applied_jobs.created_at as applydate')
                 ->join('applied_jobs', 'bookings.id', 'applied_jobs.booking_id')
                 ->join('users', 'applied_jobs.chef_id', 'users.id')
                 ->where('applied_jobs.jobs_status', 'active')
@@ -1949,6 +1996,7 @@ class BookingController extends Controller
             ], 404);
         }
     }
+
     public function get_concierge_chef_by_booking(Request $request)
     {
 
@@ -2250,6 +2298,20 @@ class BookingController extends Controller
         try {
             $today = now()->toDateString();
 
+            $chefLocations = DB::table('chef_location')
+                ->where('user_id', $request->id)
+                ->where('status', 'active')
+                ->get();
+
+            if ($chefLocations->isEmpty()) {
+                return response()->json([
+                    'status' => true,
+                    'message' => 'No active chef location found.',
+                    'available_booking' => 0,
+                    'applied_booking' => 0,
+                    'hired_booking' => 0
+                ]);
+            }
             $available_booking = Booking::join('users', 'bookings.user_id', 'users.id')
                 ->leftJoin('applied_jobs', function ($join) use ($request) {
                     $join->on('applied_jobs.booking_id', '=', 'bookings.id')
@@ -2268,8 +2330,18 @@ class BookingController extends Controller
                 ->whereIn('bookings.id', function ($query) use ($today) {
                     $query->select('booking_meals.booking_id')
                         ->from('booking_meals')
-                        ->groupBy('booking_meals.booking_id')  // Group by booking_id to get latest date
+                        ->groupBy('booking_meals.booking_id')
                         ->havingRaw("MAX(STR_TO_DATE(booking_meals.date, '%Y-%m-%d')) >= ?", [$today]);
+                })
+                ->where(function ($query) use ($chefLocations) {
+                    foreach ($chefLocations as $location) {
+                        $query->orWhereRaw("
+                            (6371 * acos(
+                                cos(radians(?)) * cos(radians(bookings.lat)) * cos(radians(bookings.lng) - radians(?)) +
+                                sin(radians(?)) * sin(radians(bookings.lat))
+                            )) <= 50
+                        ", [$location->lat, $location->lng, $location->lat]);
+                    }
                 })
                 ->distinct() // Avoid duplicate bookings count
                 ->count();
@@ -2287,6 +2359,16 @@ class BookingController extends Controller
                 // ->where('applied_jobs.status', 'discussion')
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('applied_jobs.chef_id', $request->id)
+                ->where(function ($query) use ($chefLocations) {
+                    foreach ($chefLocations as $location) {
+                        $query->orWhereRaw("
+                            (6371 * acos(
+                                cos(radians(?)) * cos(radians(bookings.lat)) * cos(radians(bookings.lng) - radians(?)) +
+                                sin(radians(?)) * sin(radians(bookings.lat))
+                            )) <= 50
+                        ", [$location->lat, $location->lng, $location->lat]);
+                    }
+                })
                 ->count();
 
             // return $applied_booking;        
@@ -2299,6 +2381,16 @@ class BookingController extends Controller
                 ->where('applied_jobs.status', 'hired')
                 ->where('bookings.status', '!=', 'deleted')
                 ->where('applied_jobs.chef_id', $request->id)
+                ->where(function ($query) use ($chefLocations) {
+                    foreach ($chefLocations as $location) {
+                        $query->orWhereRaw("
+                            (6371 * acos(
+                                cos(radians(?)) * cos(radians(bookings.lat)) * cos(radians(bookings.lng) - radians(?)) +
+                                sin(radians(?)) * sin(radians(bookings.lat))
+                            )) <= 50
+                        ", [$location->lat, $location->lng, $location->lat]);
+                    }
+                })
                 ->count();
             return response()->json([
                 'status' => true,
