@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('booking:users')
             ->daily();
+
+            $schedule->command('bookings:update-expired')->dailyAt('00:01'); 
     }
 
     /**
