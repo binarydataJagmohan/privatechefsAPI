@@ -23,6 +23,7 @@ use Stripe\Exception\CardException;
 use Illuminate\Mail\Mailable;
 use App\Mail\InvitationEmail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 
 
 class BookingController extends Controller
@@ -145,6 +146,8 @@ class BookingController extends Controller
                         $message->bcc(User::select('email')->where('role', 'admin')->first()->email); // Add admin email as BCC
                     });
                 }
+                Artisan::call('booking:users');
+
                 return response()->json(['status' => true, 'message' => "booking done successfully", 'bookingid' => $booking->id], 200);
             } else {
                 $checkemail = User::where('email', $request->email)->count();
@@ -260,6 +263,8 @@ class BookingController extends Controller
                                 $message->to($data['email']);
                             });
                         }
+                        Artisan::call('booking:users');
+
                         return response()->json(['status' => true, 'message' => "booking done successfully", 'bookingid' => $booking->id], 200);
                     }
                 } else {
