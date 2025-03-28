@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Notification;
+use Illuminate\Support\Facades\Log;
 
 class ChefReminderEmail extends Command
 {
@@ -53,7 +54,6 @@ class ChefReminderEmail extends Command
 
             $results = DB::table('invite_for_proposal')
                 ->join('bookings', 'invite_for_proposal.booking_id', '=', 'bookings.id')
-                // ->join('users', 'invite_for_proposal.chef_id', '=', 'users.id')
                 ->join('users', function ($join) {
                     $join->on('invite_for_proposal.chef_id', '=', 'users.id')
                         ->where('users.role', '=', 'chef');
@@ -65,18 +65,16 @@ class ChefReminderEmail extends Command
                     'bookings.childrens',
                     'bookings.teens',
                     'invite_for_proposal.chef_id as chef_id',
-                    'invite_for_proposal.user_id as user_id',
+                    'invite_for_proposal.user_id as proposal_user_id',
                     'bookings.id'
                 )
                 ->where('bookings.id', $bookingId)
-                // ->where('users.role', 'chef')
                 ->whereNotIn('chef_id', function ($query) use ($bookingId) {
                     $query->select('chef_id')
                         ->from('applied_jobs')
                         ->where('booking_id', $bookingId);
                 })
                 ->get();
-
             // Assuming you have code here to process the $results, like sending emails
 
             foreach ($results as $result) {
@@ -184,8 +182,8 @@ class ChefReminderEmail extends Command
 
                         $notification = new Notification();
                         $notification->notify_to = $chef->id;
-                        $notification->notify_by = $result->user_id;
-                        $notifier = User::where('id', $result->user_id)->first(); // Assume the User model is used here
+                        $notification->notify_by = $result->proposal_user_id;
+                        $notifier = User::where('id', $result->proposal_user_id)->first(); // Assume the User model is used here
                         $notifierName = $notifier ? $notifier->name : 'Unknown';
                         $notification->description = "New Booking Alert!
                         There is one new job in your dashboard. Kindly review  to ensure you don't miss out on this opportunity";
