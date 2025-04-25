@@ -20,7 +20,10 @@ use App\Models\PasswordReset;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\DB;
 use App\Models\Notification;
+use Illuminate\Support\Facades\Log;
 use App\Models\Booking;
+use Google_Client;
+use Google_Service_Oauth2;
 
 class UserController extends Controller
 {
@@ -37,11 +40,76 @@ class UserController extends Controller
         while (User::where('slug', $slug)->exists()) {
             $slug = "{$baseSlug}-{$count}";
             $count++;
-
         }
         return $slug;
     }
 
+
+    public function handleGoogleLogin(Request $request)
+    {
+        $client = new Google_Client();
+        $client->setClientId(env('GOOGLE_CLIENT_ID'));
+        $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
+
+        // Get the ID token from the frontend
+        $idToken = $request->input('credential');
+
+        try {
+            // Verify the ID token
+            $payload = $client->verifyIdToken($idToken);
+            if ($payload) {
+                // Successfully verified the token
+                $googleId = $payload['sub'];
+                $email = $payload['email'];
+                $name = $payload['name'];
+
+                // Check if the user already exists by email
+                $user = User::where('email', $email)->first();
+
+                if ($user) {
+                    // If user exists, log them in
+                    // Generate JWT token
+                    $token = Auth::login($user);
+                    $expirationTime = Carbon::createFromTimestamp(Auth::getPayload($token)->get('exp'))->toDateTimeString();
+
+                    return response()->json([
+                        'message' => 'User logged in successfully',
+                        'user' => $user,
+                        'token' => $token,
+                        'expiration' => $expirationTime
+                    ], 200);
+                } else {
+                    // If user doesn't exist, create a new one
+                    $user = User::create([
+                        'google_id' => $googleId,
+                        'email' => $email,
+                        'name' => $name,
+                        // 'password' => Hash::make(Str::random(16)),
+                        // 'view_password' => Str::random(16),
+                        'password' => Hash::make('12345678'),
+                        'view_password' => $request->password,
+                        'role' => 'user'
+                    ]);
+
+                    // Generate JWT token
+                    $token = Auth::login($user);
+                    $expirationTime = Carbon::createFromTimestamp(Auth::getPayload($token)->get('exp'))->toDateTimeString();
+
+                    return response()->json([
+                        'message' => 'User registered and logged in successfully',
+                        'user' => $user,
+                        'token' => $token,
+                        'expiration' => $expirationTime
+                    ], 201);
+                }
+            } else {
+                // Invalid token
+                return response()->json(['error' => 'Invalid ID token'], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Google login failed'], 500);
+        }
+    }
 
     public function handleGoogleCallback()
     {
@@ -635,16 +703,13 @@ class UserController extends Controller
                     'data' => $userdata,
                     'message' => 'Additonal information data fetch successsfully',
                 ]);
-
             } else {
 
                 return response()->json([
                     'status' => false,
                     'message' => 'failed to fetch additional information',
                 ]);
-
             }
-
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
             return response()->json([
@@ -671,18 +736,13 @@ class UserController extends Controller
                     'status' => true,
                     'message' => 'Additonal information update successsfully',
                 ]);
-
             } else {
 
                 return response()->json([
                     'status' => false,
                     'message' => 'failed to save additional information',
                 ]);
-
             }
-
-
-
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
             return response()->json([
@@ -716,8 +776,7 @@ class UserController extends Controller
 
                 $user = Auth::user();
 
-                return response()->json(['status' => true, 'message' => 'User Loggedin successfully', 'data' => ['user' => $user, 'token' => $token, 'expiration' => $expirationTime]], 200);
-
+                return response()->json(['status' => true, 'message' => 'User Logged in successfully', 'data' => ['user' => $user, 'token' => $token, 'expiration' => $expirationTime]], 200);
             } else {
                 $data = $request->all();
                 $data['password'] = Hash::make($request->password);
@@ -1015,7 +1074,7 @@ class UserController extends Controller
                 //     $message->to($data['email']);
                 // });
 
-                return response()->json(['status' => true, 'message' => "Chef created successfully", 'data' => $user,'chef_id' => $user->id ], 200);
+                return response()->json(['status' => true, 'message' => "Chef created successfully", 'data' => $user, 'chef_id' => $user->id], 200);
             } else {
                 return response()->json(['status' => false, 'message' => "Email already exists", 'data' => ""], 200);
             }
@@ -1446,8 +1505,6 @@ class UserController extends Controller
                 'status' => true,
                 'message' => 'The message has been sent successfully'
             ], 200);
-
-
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());
         }
@@ -1499,13 +1556,10 @@ class UserController extends Controller
                 if ($request->approved_by_admin == 'yes') {
 
                     return response()->json(['status' => true, 'message' => "Concierge profile approved successfully", 'data' => $user], 200);
-
                 } else {
 
                     return response()->json(['status' => true, 'message' => "Concierge profile unapproved successfully", 'data' => $user], 200);
                 }
-
-
             } else {
                 return response()->json(['status' => false, 'message' => "There has been error for approving the concierge profile", 'data' => ""], 400);
             }
@@ -1590,30 +1644,30 @@ class UserController extends Controller
     // }
 
     //     public function userDelete($id)
-// {
-//     try {
-//         $user = User::where('id', $id)->where('role', 'user')->first();
+    // {
+    //     try {
+    //         $user = User::where('id', $id)->where('role', 'user')->first();
 
     //         if (!$user) {
-//             return response()->json(['status' => 'User not found'], 404);
-//         }
+    //             return response()->json(['status' => 'User not found'], 404);
+    //         }
 
     //         // Update user status
-//         $user->status = 'deleted';
-//         $user->save();
+    //         $user->status = 'deleted';
+    //         $user->save();
 
     //         // Find related bookings and update their status
-//         $bookings = Booking::where('user_id', $id)->where('status', '!=', 'deleted')->get();
-//         foreach ($bookings as $booking) {
-//             $booking->status = 'deleted';
-//             $booking->save();
-//         }
+    //         $bookings = Booking::where('user_id', $id)->where('status', '!=', 'deleted')->get();
+    //         foreach ($bookings as $booking) {
+    //             $booking->status = 'deleted';
+    //             $booking->save();
+    //         }
 
     //         return response()->json(['status' => true, 'message' => 'User and related bookings deleted', 'data' => $user]);
-//     } catch (\Exception $e) {
-//         throw new HttpException(500, $e->getMessage());
-//     }
-// }
+    //     } catch (\Exception $e) {
+    //         throw new HttpException(500, $e->getMessage());
+    //     }
+    // }
     public function userDelete($id)
     {
         try {
@@ -1661,5 +1715,4 @@ class UserController extends Controller
             throw new HttpException(500, $e->getMessage());
         }
     }
-
 }

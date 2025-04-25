@@ -700,14 +700,27 @@ class ChefDetailController extends Controller
     public function get_all_location(Request $request)
     {
         try {
-            $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos', 'Crete', 'Corfu', 'Lefkada', 'Zakynthos', 'Porto Heli', 'Paros', 'Antiparos', 'Diaporos'];
+            // $desiredLocations = ['Greece', 'Athens', 'Mykonos', 'Oslo', 'Samos', 'Crete', 'Corfu', 'Lefkada', 'Zakynthos', 'Porto Heli', 'Paros', 'Antiparos', 'Diaporos'];
+
+            // $desiredLocations = \App\Models\Location::where('status', 'active')->pluck('location')->toArray();
+            $locations = \App\Models\Location::where('status', 'active')->get(['location', 'slug', 'image']);
+            $locationNames = $locations->pluck('location')->toArray();
+
 
             $users = User::select('id', 'address', 'location_pic', 'slug', 'name', 'pic')
-                ->whereIn('address', $desiredLocations)
+                ->whereIn('address', $locationNames)
                 ->where('role', 'chef')
                 ->where('status', '!=', 'deleted')
                 ->groupBy('address')
                 ->get();
+            $users = $users->map(function ($user) use ($locations) {
+                $matchedLocation = $locations->firstWhere('location', $user->address);
+                $user->location_slug = $matchedLocation ? $matchedLocation->slug : null;
+                $user->location_image = $matchedLocation ? $matchedLocation->image : null;
+                $user->location_name = $matchedLocation ? $matchedLocation->location : null;
+                return $user;
+            });
+
 
             return response()->json([
                 'status' => true,
@@ -720,15 +733,27 @@ class ChefDetailController extends Controller
     public function get_location_by_slug(Request $request)
     {
         try {
-            
+
+            $location = \App\Models\Location::where('slug', $request->slug)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$location) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Location not found',
+                ], 404);
+            }
             $users = User::select('id', 'address', 'name', 'location_pic', 'slug')
                 ->where('role', 'chef')
                 ->where('status', '!=', 'deleted')
-                ->where('address', $request->slug)
+                // ->where('address', $request->slug)
+                ->where('address', $location->location)
                 ->get();
             return response()->json([
                 'status' => true,
-                'data' => $users
+                'data' => $users,
+                'location' => $location,
             ], 200);
         } catch (\Exception $e) {
             throw new HttpException(500, $e->getMessage());

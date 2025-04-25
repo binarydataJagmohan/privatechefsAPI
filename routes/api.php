@@ -40,6 +40,7 @@ Route::group(['middleware' => ['api']], function ($router) {
 
     Route::get('/get-all-chef-by-location', [App\Http\Controllers\Api\UserController::class, 'get_chef_by_location']);
 
+    Route::post('/google-login', [App\Http\Controllers\Api\UserController::class, 'handleGoogleLogin']);
 
 });
 
@@ -110,8 +111,13 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('/get-item-by-category/{id}', [DishesController::class, 'get_item_by_category']);
 
     Route::post('/save-chef-dish-images', [App\Http\Controllers\Api\DishesController::class, 'saveChefDishImages']);
-     Route::get('/delete-chef-dish-image/{id}', [DishesController::class, 'deleteChefDishImage']);
+    Route::get('/delete-chef-dish-image/{id}', [DishesController::class, 'deleteChefDishImage']);
 
+    Route::get('/location/{id}', [App\Http\Controllers\Api\LocationController::class, 'get_single_location']);
+    Route::post('/save-location', [App\Http\Controllers\Api\LocationController::class, 'save_location']);
+    Route::get('/get-location-data', [App\Http\Controllers\Api\LocationController::class, 'get_location_data']);
+    Route::post('/location-update/{id}', [App\Http\Controllers\Api\LocationController::class, 'update_location']);
+    Route::post('/location-delete/{id}', [App\Http\Controllers\Api\LocationController::class, 'delete_location']);
 });
 
 Route::get('/get-all-dish-gallery/{id}', [DishesController::class, 'getAllChefDishGallery']);
@@ -236,11 +242,11 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
 
     Route::post('/assigned-booking-by-admin-without-db', [App\Http\Controllers\Api\BookingController::class, 'AssignedBookingByAdminWithoutDatabse']);
 
-   Route::post('/assigned-villa-by-booking', [App\Http\Controllers\Api\VillasController::class, 'AssignedVillaByBooking']);
+    Route::post('/assigned-villa-by-booking', [App\Http\Controllers\Api\VillasController::class, 'AssignedVillaByBooking']);
 
-   Route::get('/get-admin-villa-by-booking/{id}', [App\Http\Controllers\Api\VillasController::class, 'get_admin_villa_by_booking']);
+    Route::get('/get-admin-villa-by-booking/{id}', [App\Http\Controllers\Api\VillasController::class, 'get_admin_villa_by_booking']);
 
-   Route::get('/get-user-booking-payment/{userid}', [App\Http\Controllers\Api\BookingController::class, 'getUserBookingPayment']);
+    Route::get('/get-user-booking-payment/{userid}', [App\Http\Controllers\Api\BookingController::class, 'getUserBookingPayment']);
 });
 Route::post('/update-allergy-additonal-info', [App\Http\Controllers\Api\UserController::class, 'updateAllergyAdditonalInfo']);
 
@@ -372,7 +378,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::post('create-group-by-concierge', [App\Http\Controllers\Api\ConciergeChatController::class, 'create_group_by_concierge']);
     Route::get('get-all-concierge-user-data/{id}', [App\Http\Controllers\Api\ConciergeChatController::class, 'get_all_concierge_user_data']);
 
-    Route::post('delete-chat-message/{id}', [App\Http\Controllers\Api\ConciergeChatController::class, 'delete_chat_message']);  
+    Route::post('delete-chat-message/{id}', [App\Http\Controllers\Api\ConciergeChatController::class, 'delete_chat_message']);
 });
 
 // Concierge chat api end
@@ -389,7 +395,7 @@ Route::group(['middleware' => ['api', 'jwt.auth']], function ($router) {
     Route::get('chef-location-filter', [App\Http\Controllers\Api\ChefDetailController::class, 'chef_location_filter']);
     Route::get('chef-price-filter', [App\Http\Controllers\Api\ChefDetailController::class, 'chef_price_filter']);
 
-// 27 oct
+    // 27 oct
     Route::get('get-user-all-location', [App\Http\Controllers\Api\UserController::class, 'get_user_all_location']);
     Route::get('user-location-filter', [App\Http\Controllers\Api\UserController::class, 'user_location_filter']);
 
@@ -403,7 +409,7 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('get-all-top-rated-chef', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_top_rated_chef']);
     Route::get('get-all-location', [App\Http\Controllers\Api\ChefDetailController::class, 'get_all_location']);
     Route::get('get-location-by-slug/{slug}', [App\Http\Controllers\Api\ChefDetailController::class, 'get_location_by_slug']);
-    Route::post('update-setting/{id}',[App\Http\Controllers\Api\SettingController::class,'update_setting']);
+    Route::post('update-setting/{id}', [App\Http\Controllers\Api\SettingController::class, 'update_setting']);
 
     Route::post('get-chef-details-by-location', [App\Http\Controllers\Api\ChefDetailController::class, 'getChefDetailByLocation']);
 
@@ -411,9 +417,9 @@ Route::group(['middleware' => ['api']], function ($router) {
 
     Route::post('/save-payment', [App\Http\Controllers\Api\BookingController::class, 'savePayment']);
 
-    Route::post('update-new-setting',[App\Http\Controllers\Api\SettingController::class,'UpdateNewSetting']);
+    Route::post('update-new-setting', [App\Http\Controllers\Api\SettingController::class, 'UpdateNewSetting']);
 
-    Route::get('subscribe/{email}',[App\Http\Controllers\Api\SettingController::class,'Subscribe']);
+    Route::get('subscribe/{email}', [App\Http\Controllers\Api\SettingController::class, 'Subscribe']);
 
     Route::get('/get-all-chef-by-location-onfronted', [App\Http\Controllers\Api\UserController::class, 'get_chef_by_location_onfronted']);
 
@@ -422,5 +428,4 @@ Route::group(['middleware' => ['api']], function ($router) {
     Route::get('/chefDelete/{id}', [App\Http\Controllers\Api\UserController::class, 'chefDelete']);
     Route::get('/userDelete/{id}', [App\Http\Controllers\Api\UserController::class, 'userDelete']);
     Route::get('/userDeactivate/{id}', [App\Http\Controllers\Api\UserController::class, 'userDeactivate']);
-
 });
